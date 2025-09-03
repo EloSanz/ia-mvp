@@ -1,0 +1,38 @@
+// This is your Prisma schema file
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-arm64-openssl-1.1.x", "windows", "debian-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Deck {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relación con flashcards
+  flashcards Flashcard[]
+}
+
+model Flashcard {
+  id          Int      @id @default(autoincrement())
+  front       String   @db.Text  // Anverso de la flashcard
+  back        String   @db.Text  // Reverso de la flashcard
+  deckId      Int      // Relación con el deck
+  deck        Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  // Campos opcionales para futuro uso con Anki
+  difficulty  Int?     @default(2) // 1=fácil, 2=normal, 3=difícil
+  lastReviewed DateTime?
+  nextReview  DateTime?
+  reviewCount Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
