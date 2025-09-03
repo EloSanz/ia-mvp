@@ -1,65 +1,91 @@
-# Reglas de Branching
+# Git Flow
+
+Este proyecto sigue una versión simplificada de Git Flow.
 
 ## Ramas Principales
 
-- `main`: Rama principal que contiene el código en producción
-- `develop`: Rama de desarrollo principal
+- `main`: Código en producción
+- `develop`: Rama principal de desarrollo
 
 ## Ramas de Características
 
-### Patrones de Nombrado
+### Tipos de Ramas
 
-- `feature/*`: Para nuevas características
+- `feature/*`: Nuevas características
   - Ejemplo: `feature/auth-system`
-  - Ejemplo: `feature/flashcard-generator`
+  - Ejemplo: `feature/card-generator`
 
-- `bugfix/*`: Para corrección de bugs
-  - Ejemplo: `bugfix/login-validation`
+- `bugfix/*`: Corrección de bugs
+  - Ejemplo: `bugfix/login-error`
   - Ejemplo: `bugfix/card-display`
 
-- `hotfix/*`: Para correcciones urgentes en producción
-  - Ejemplo: `hotfix/security-patch`
+- `hotfix/*`: Correcciones urgentes en producción
   - Ejemplo: `hotfix/critical-error`
 
-### Flujo de Trabajo
+## Flujo de Trabajo
 
-1. Crear rama desde `develop`:
-   ```bash
-   git checkout develop
-   git pull origin develop
-   git checkout -b feature/nombre-caracteristica
-   ```
+### 1. Desarrollo de Nuevas Características
 
-2. Realizar cambios y commits:
-   ```bash
-   git add .
-   git commit -m "feat: descripción del cambio"
-   ```
+```bash
+# Crear rama feature desde develop
+git checkout develop
+git pull origin develop
+git checkout -b feature/mi-caracteristica
 
-3. Publicar rama:
-   ```bash
-   git push -u origin feature/nombre-caracteristica
-   ```
+# Trabajar y commitear cambios
+git add .
+git commit -m "feat: descripción del cambio"
 
-4. Crear Pull Request a `develop`
+# Publicar rama
+git push -u origin feature/mi-caracteristica
 
-5. Después de la revisión y aprobación, hacer merge a `develop`
+# Crear Pull Request a develop
+```
 
-### Convenciones de Commits
+### 2. Corrección de Bugs
 
-Seguimos la convención de [Conventional Commits](https://www.conventionalcommits.org/):
+```bash
+# Crear rama bugfix desde develop
+git checkout develop
+git checkout -b bugfix/descripcion-bug
+
+# Corregir y commitear
+git add .
+git commit -m "fix: descripción de la corrección"
+
+# Publicar y crear PR
+git push -u origin bugfix/descripcion-bug
+```
+
+### 3. Hotfixes
+
+```bash
+# Crear rama hotfix desde main
+git checkout main
+git checkout -b hotfix/error-critico
+
+# Corregir y commitear
+git add .
+git commit -m "fix: corrección urgente"
+
+# Publicar y crear PR a main
+git push -u origin hotfix/error-critico
+```
+
+## Convenciones de Commits
+
+Usamos una versión simplificada de Conventional Commits:
 
 - `feat`: Nueva característica
 - `fix`: Corrección de bug
 - `docs`: Cambios en documentación
 - `style`: Cambios de formato
 - `refactor`: Refactorización de código
-- `test`: Agregar o modificar tests
+- `test`: Cambios en tests
 - `chore`: Tareas de mantenimiento
 
-### Reglas de Protección
-
-- Las ramas `main` y `develop` están protegidas
-- Se requiere revisión de código para hacer merge
-- Los tests deben pasar antes del merge
-- El nombre de la rama debe seguir los patrones establecidos
+Ejemplo:
+```bash
+git commit -m "feat: agregar generación de flashcards con IA"
+git commit -m "fix: corregir error en la visualización de cards"
+```
