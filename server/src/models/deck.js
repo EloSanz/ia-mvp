@@ -10,6 +10,7 @@ export class Deck {
     this.id = data.id || null;
     this.name = data.name || '';
     this.description = data.description || '';
+    this.userId = data.userId;
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
   }
@@ -48,8 +49,8 @@ export class Deck {
   /**
    * Obtiene todos los decks
    */
-  static async findAll() {
-    const entities = await DeckRepository.findAll();
+  static async findAll(filter = {}) {
+    const entities = await DeckRepository.findAll(filter);
     return entities.map((entity) => Deck.fromEntity(entity));
   }
 
@@ -101,6 +102,7 @@ export class Deck {
       id: entity.id,
       name: entity.name,
       description: entity.description,
+      userId: entity.userId,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt
     });
@@ -114,6 +116,7 @@ export class Deck {
       id: this.id,
       name: this.name,
       description: this.description,
+      userId: this.userId,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };

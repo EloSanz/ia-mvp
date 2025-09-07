@@ -3,8 +3,11 @@ import axios from 'axios';
 
 // Configurar axios con la URL base
 const api = axios.create({
-  baseURL: '/api',
-  timeout: 10000
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json'
+  }
 });
 
 // Interceptor para manejar errores
@@ -26,38 +29,47 @@ export const useApi = () => {
   return context;
 };
 
+// Interceptor para agregar el token de autenticación
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const ApiProvider = ({ children }) => {
   // Decks API
   const decks = {
-    getAll: () => api.get('/decks'),
-    getById: (id) => api.get(`/decks/${id}`),
-    create: (data) => api.post('/decks', data),
-    update: (id, data) => api.put(`/decks/${id}`, data),
-    delete: (id) => api.delete(`/decks/${id}`)
+    getAll: () => api.get('/api/decks'),
+    getById: (id) => api.get(`/api/decks/${id}`),
+    create: (data) => api.post('/api/decks', data),
+    update: (id, data) => api.put(`/api/decks/${id}`, data),
+    delete: (id) => api.delete(`/api/decks/${id}`)
   };
 
   // Flashcards API
   const flashcards = {
-    getAll: () => api.get('/flashcards'),
-    getById: (id) => api.get(`/flashcards/${id}`),
-    getByDeck: (deckId) => api.get(`/flashcards/deck/${deckId}`),
-    getDue: () => api.get('/flashcards/due'),
-    create: (data) => api.post('/flashcards', data),
-    createMany: (flashcards) => api.post('/flashcards/batch', { flashcards }),
-    update: (id, data) => api.put(`/flashcards/${id}`, data),
-    review: (id, data) => api.put(`/flashcards/${id}/review`, data),
-    delete: (id) => api.delete(`/flashcards/${id}`),
+    getAll: () => api.get('/api/flashcards'),
+    getById: (id) => api.get(`/api/flashcards/${id}`),
+    getByDeck: (deckId) => api.get(`/api/flashcards/deck/${deckId}`),
+    getDue: () => api.get('/api/flashcards/due'),
+    create: (data) => api.post('/api/flashcards', data),
+    createMany: (flashcards) => api.post('/api/flashcards/batch', { flashcards }),
+    update: (id, data) => api.put(`/api/flashcards/${id}`, data),
+    review: (id, data) => api.put(`/api/flashcards/${id}/review`, data),
+    delete: (id) => api.delete(`/api/flashcards/${id}`),
     search: (query, deckId) =>
-      api.get('/flashcards/search', {
+      api.get('/api/flashcards/search', {
         params: { q: query, deckId }
       })
   };
 
   // Sync API (para futuras integraciones)
   const sync = {
-    checkAnki: () => api.get('/sync/anki/status'),
-    syncWithAnki: (deckId) => api.post(`/sync/anki/sync${deckId ? `/${deckId}` : ''}`),
-    getStats: () => api.get('/sync/stats')
+    checkAnki: () => api.get('/api/sync/anki/status'),
+    syncWithAnki: (deckId) => api.post(`/api/sync/anki/sync${deckId ? `/${deckId}` : ''}`),
+    getStats: () => api.get('/api/sync/stats')
   };
 
   const value = {
