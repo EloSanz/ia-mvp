@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import {
   Dialog,
   DialogTitle,
@@ -25,14 +26,9 @@ const AIFlashcardsGenerator = ({ open, onClose, onGenerate }) => {
       setGenerating(true);
       setError(null);
 
-      // TODO: Aquí se integrará con el modelo de IA
-      // Por ahora, simulamos la generación con un ejemplo
-      const generatedCards = [
-        { front: 'Pregunta de ejemplo 1', back: 'Respuesta de ejemplo 1' },
-        { front: 'Pregunta de ejemplo 2', back: 'Respuesta de ejemplo 2' }
-      ];
-
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simular delay
+      // Real request to backend
+      const response = await axios.post('/api/flashcards/ai-generate', { text });
+      const generatedCards = response.data.flashcards;
       onGenerate(generatedCards);
       onClose();
     } catch (err) {

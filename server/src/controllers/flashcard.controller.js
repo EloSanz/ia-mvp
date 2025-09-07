@@ -48,6 +48,7 @@ export const FlashcardController = {
   updateFlashcard: BaseController.wrap(async (req, res) => {
     const { id } = req.params;
     const result = await BaseController.updateWithValidation(
+
       Flashcard.findById.bind(Flashcard),
       FlashcardDto.validateUpdate.bind(FlashcardDto),
       Flashcard.update.bind(Flashcard),
@@ -124,6 +125,25 @@ export const FlashcardController = {
     );
     BaseController.success(res, reviewedFlashcard, 'Flashcard marcada como revisada exitosamente');
   }),
+
+  /**
+   * Genera flashcards usando OpenAI a partir de texto
+   */
+  generateAIFlashcards: async (req, res, next) => {
+    try {
+      const { text } = req.body;
+      if (!text || typeof text !== 'string' || !text.trim()) {
+        return res.status(400).json({ error: 'Texto requerido para generar flashcards.' });
+      }
+
+      // Llama al servicio que integra OpenAI
+      const generatedCards = await flashcardService.generateFromAI(text);
+      return res.status(200).json({ flashcards: generatedCards });
+    } catch (error) {
+      console.error('Error generando flashcards con IA:', error);
+      return res.status(500).json({ error: 'Error generando flashcards con IA.' });
+    }
+  },
 
   /**
    * Busca flashcards por contenido

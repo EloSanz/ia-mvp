@@ -55,6 +55,7 @@ router.get('/:id', FlashcardController.getFlashcardById);
  * @body {number} difficulty - Dificultad (1-3, opcional, default: 2)
  */
 router.post('/', FlashcardController.createFlashcard);
+router.post('/ai-generate', FlashcardController.generateAIFlashcards);
 router.post('/batch', FlashcardController.createManyFlashcards);
 
 /**
