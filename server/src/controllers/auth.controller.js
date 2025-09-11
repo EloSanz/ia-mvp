@@ -14,11 +14,6 @@ export const AuthController = {
   register: asyncHandler(async (req, res) => {
     const { username, password } = req.body;
 
-    // Validar datos
-    if (!username || !password) {
-      throw new ValidationError('Username y password son requeridos');
-    }
-
     // Verificar si el usuario ya existe
     const existingUser = await prisma.user.findUnique({
       where: { username }
