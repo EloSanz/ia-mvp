@@ -40,7 +40,8 @@ export const ApiProvider = ({ children }) => {
   const flashcards = {
     getAll: () => api.get('/flashcards'),
     getById: (id) => api.get(`/flashcards/${id}`),
-    getByDeck: (deckId) => api.get(`/flashcards/deck/${deckId}`),
+    getByDeck: (deckId, { page = 0, pageSize = 15 } = {}) =>
+      api.get(`/flashcards/deck/${deckId}`, { params: { page, pageSize } }),
     getDue: () => api.get('/flashcards/due'),
     create: (data) => api.post('/flashcards', data),
     createMany: (flashcards) => api.post('/flashcards/batch', { flashcards }),

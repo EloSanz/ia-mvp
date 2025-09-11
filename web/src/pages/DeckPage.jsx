@@ -26,7 +26,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper
+  Paper,
+  TablePagination
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -49,6 +50,7 @@ const DeckPage = () => {
 
   const [deck, setDeck] = useState(null);
   const [cards, setCards] = useState([]);
+  const [totalCards, setTotalCards] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -73,19 +75,21 @@ const DeckPage = () => {
   const [showAnswer, setShowAnswer] = useState(false);
 
   useEffect(() => {
-    loadDeckAndCards();
-  }, [deckId]);
+    loadDeckAndCards(page, rowsPerPage);
+    // eslint-disable-next-line
+  }, [deckId, page, rowsPerPage]);
 
-  const loadDeckAndCards = async () => {
+  const loadDeckAndCards = async (page = 0, pageSize = 15) => {
     try {
       setLoading(true);
       const [deckResponse, cardsResponse] = await Promise.all([
         decks.getById(deckId),
-        flashcards.getByDeck(deckId)
+        flashcards.getByDeck(deckId, { page, pageSize })
       ]);
 
       setDeck(deckResponse.data.data);
       setCards(cardsResponse.data.data || []);
+      setTotalCards(cardsResponse.data.total || 0);
       setError(null);
     } catch (err) {
       setError('Error al cargar el deck y las flashcards');
@@ -106,7 +110,7 @@ const DeckPage = () => {
       });
       setCreateDialogOpen(false);
       setNewCard({ front: '', back: '' });
-      loadDeckAndCards();
+  loadDeckAndCards(page, rowsPerPage);
     } catch (err) {
       console.error('Error creating flashcard:', err);
     } finally {
@@ -121,7 +125,7 @@ const DeckPage = () => {
         deckId: parseInt(deckId)
       }));
       await flashcards.createMany(cardsWithDeckId);
-      loadDeckAndCards();
+  loadDeckAndCards(page, rowsPerPage);
     } catch (err) {
       console.error('Error creating generated flashcards:', err);
     }
@@ -135,7 +139,7 @@ const DeckPage = () => {
       await flashcards.update(editingCard.id, editingCard);
       setEditDialogOpen(false);
       setEditingCard(null);
-      loadDeckAndCards();
+  loadDeckAndCards(page, rowsPerPage);
     } catch (err) {
       console.error('Error editing flashcard:', err);
     } finally {
@@ -148,7 +152,7 @@ const DeckPage = () => {
 
     try {
       await flashcards.delete(cardId);
-      loadDeckAndCards();
+  loadDeckAndCards(page, rowsPerPage);
     } catch (err) {
       console.error('Error deleting flashcard:', err);
     }
@@ -162,7 +166,7 @@ const DeckPage = () => {
       setReviewDialogOpen(false);
       setReviewingCard(null);
       setShowAnswer(false);
-      loadDeckAndCards();
+  loadDeckAndCards(page, rowsPerPage);
     } catch (err) {
       console.error('Error reviewing flashcard:', err);
     }
@@ -251,7 +255,7 @@ const DeckPage = () => {
           </Alert>
         )}
 
-        <TableContainer 
+  <TableContainer 
           component={Paper} 
           sx={{ 
             backgroundColor: 'grey.900',
@@ -315,6 +319,16 @@ const DeckPage = () => {
               })}
             </TableBody>
           </Table>
+          <TablePagination
+            rowsPerPageOptions={[15]}
+            component="div"
+            count={totalCards}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={(event, newPage) => setPage(newPage)}
+            onRowsPerPageChange={() => {}}
+            labelRowsPerPage="Flashcards por página"
+          />
         </TableContainer>
 
         {cards.length === 0 && !loading && (
