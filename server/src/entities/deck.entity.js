@@ -7,6 +7,7 @@ export class DeckEntity {
     this.id = data.id || null;
     this.name = data.name || '';
     this.description = data.description || '';
+    this.userId = data.userId;
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
   }
@@ -19,6 +20,7 @@ export class DeckEntity {
       id: this.id,
       name: this.name,
       description: this.description,
+      userId: this.userId,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };
@@ -32,6 +34,7 @@ export class DeckEntity {
       id: prismaData.id,
       name: prismaData.name,
       description: prismaData.description,
+      userId: prismaData.userId,
       createdAt: prismaData.createdAt,
       updatedAt: prismaData.updatedAt
     });

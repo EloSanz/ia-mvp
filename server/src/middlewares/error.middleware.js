@@ -1,4 +1,4 @@
-import { DeckErrorDto } from '../dtos/deck.dto.js';
+import { CustomError } from '../utils/custom.errors.js';
 
 /**
  * Middleware global para manejo de errores
@@ -11,30 +11,34 @@ export const errorHandler = (error, req, res, next) => {
     return next(error);
   }
 
-  // Manejar diferentes tipos de errores
-  if (error.message && error.message.includes('Errores de validación')) {
-    // Errores de validación de DTO
-    const errorResponse = DeckErrorDto.validationError(error.message);
-    return res.status(400).json(errorResponse);
+  // Si es un error personalizado, usar su código de estado
+  if (error instanceof CustomError) {
+    return res.status(error.statusCode).json({
+      success: false,
+      message: error.message,
+      statusCode: error.statusCode
+    });
   }
 
-  if (error.message && error.message.includes('Deck no encontrado')) {
-    // Errores de recursos no encontrados
-    const errorResponse = DeckErrorDto.notFound();
-    return res.status(404).json(errorResponse);
-  }
-
+  // Manejar errores de Prisma
   if (error.code === 'P2025') {
-    // Error de Prisma: registro no encontrado
-    const errorResponse = DeckErrorDto.notFound();
-    return res.status(404).json(errorResponse);
+    return res.status(404).json({
+      success: false,
+      message: 'Recurso no encontrado',
+      statusCode: 404
+    });
   }
 
   // Error genérico del servidor
-  const errorResponse = DeckErrorDto.error(
-    process.env.NODE_ENV === 'development' ? error.message : 'Error interno del servidor'
-  );
-  res.status(500).json(errorResponse);
+  const message = process.env.NODE_ENV === 'development' 
+    ? error.message 
+    : 'Error interno del servidor';
+    
+  res.status(500).json({
+    success: false,
+    message,
+    statusCode: 500
+  });
 };
 
 /**

@@ -9,6 +9,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relación con decks
+  decks     Deck[]
+}
+
 model Deck {
   id          Int      @id @default(autoincrement())
   name        String
@@ -16,8 +27,10 @@ model Deck {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Relación con flashcards
-  flashcards Flashcard[]
+  // Relación con usuario y flashcards
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  flashcards  Flashcard[]
 }
 
 model Flashcard {
