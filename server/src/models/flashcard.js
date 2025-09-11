@@ -69,8 +69,11 @@ export class Flashcard {
    * Busca flashcards por deckId
    */
   static async findByDeckId(deckId) {
-    const entities = await FlashcardRepository.findByDeckId(deckId);
-    return entities.map((entity) => Flashcard.fromEntity(entity));
+    const { items, total } = await FlashcardRepository.findByDeckId(deckId, arguments[1]);
+    return {
+      items: items.map((entity) => Flashcard.fromEntity(entity)),
+      total
+    };
   }
 
   /**

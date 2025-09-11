@@ -57,19 +57,30 @@ export class FlashcardRepository {
    */
   static async findByDeckId(deckId) {
     try {
-      const flashcards = await prisma.flashcard.findMany({
-        where: { deckId: parseInt(deckId) },
-        include: {
-          deck: {
-            select: {
-              id: true,
-              name: true
+      const { page = 0, pageSize = 15 } = arguments[1] || {};
+      const skip = page * pageSize;
+      const take = pageSize;
+      const [flashcards, total] = await Promise.all([
+        prisma.flashcard.findMany({
+          where: { deckId: parseInt(deckId) },
+          include: {
+            deck: {
+              select: {
+                id: true,
+                name: true
+              }
             }
-          }
-        },
-        orderBy: { createdAt: 'desc' }
-      });
-      return flashcards.map((card) => FlashcardEntity.fromPrisma(card));
+          },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take
+        }),
+        prisma.flashcard.count({ where: { deckId: parseInt(deckId) } })
+      ]);
+      return {
+        items: flashcards.map((card) => FlashcardEntity.fromPrisma(card)),
+        total
+      };
     } catch (error) {
       throw new Error(`Error al buscar flashcards por deck: ${error.message}`);
     }
