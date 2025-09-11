@@ -35,6 +35,7 @@ import {
 } from '@mui/icons-material';
 import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -52,6 +53,10 @@ const HomePage = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingDeck, setEditingDeck] = useState(null);
   const [editing, setEditing] = useState(false);
+
+  // Modal para confirmar eliminación
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deckToDelete, setDeckToDelete] = useState(null);
 
   useEffect(() => {
     loadDecks();
@@ -104,10 +109,16 @@ const HomePage = () => {
   };
 
   const handleDeleteDeck = async (deckId) => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar este deck?')) return;
+    const deck = decksList.find(d => d.id === deckId);
+    setDeckToDelete(deck);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteDeck = async () => {
+    if (!deckToDelete) return;
 
     try {
-      await decks.delete(deckId);
+      await decks.delete(deckToDelete.id);
       loadDecks();
     } catch (err) {
       console.error('Error deleting deck:', err);
@@ -484,6 +495,22 @@ const HomePage = () => {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Modal para confirmar eliminación */}
+        <ConfirmDeleteModal
+          open={deleteDialogOpen}
+          onClose={() => {
+            setDeleteDialogOpen(false);
+            setDeckToDelete(null);
+          }}
+          onConfirm={confirmDeleteDeck}
+          title="Eliminar Deck"
+          message="¿Estás seguro de que quieres eliminar este deck?"
+          showItemName={false}
+          confirmText="Eliminar"
+          cancelText="Cancelar"
+          size="xs"
+        />
       </Container>
     </>
   );
