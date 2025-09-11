@@ -6,14 +6,18 @@ import {
   School as SchoolIcon,
   Sync as SyncIcon,
   DarkMode as DarkModeIcon,
-  LightMode as LightModeIcon
+  LightMode as LightModeIcon,
+  Logout as LogoutIcon,
+  Person as PersonIcon
 } from '@mui/icons-material';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isDarkMode, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
 
   const isHome = location.pathname === '/';
 
@@ -57,6 +61,28 @@ const Navigation = () => {
               {isDarkMode ? <LightModeIcon /> : <DarkModeIcon />}
             </IconButton>
           </Tooltip>
+
+          {user && (
+            <>
+              <Tooltip title={user.username}>
+                <IconButton color="inherit" size="large">
+                  <PersonIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Cerrar sesión">
+                <IconButton
+                  color="inherit"
+                  onClick={() => {
+                    logout();
+                    navigate('/login');
+                  }}
+                  size="large"
+                >
+                  <LogoutIcon />
+                </IconButton>
+              </Tooltip>
+            </>
+          )}
         </Box>
       </Toolbar>
     </AppBar>

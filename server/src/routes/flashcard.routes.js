@@ -1,7 +1,11 @@
 import { Router } from 'express';
 import { FlashcardController } from '../controllers/flashcard.controller.js';
+import { authMiddleware } from '../middlewares/auth.middleware.js';
 
 const router = Router();
+
+// Proteger todas las rutas de flashcards
+router.use(authMiddleware);
 
 /**
  * @route GET /api/flashcards
