@@ -24,6 +24,7 @@ class OpenAIService {
     Generate concise and clear flashcards from the provided text.
     Each flashcard should have a front (question/concept) and back (answer/explanation).
     Focus on key concepts and important details.
+    If the provided text is very short (1-2 sentences), generate only 1 flashcard. If the text is longer, generate at least 5 flashcards covering different concepts or facts from the text.
     Return the flashcards in the following JSON format:
     {
       "flashcards": [
