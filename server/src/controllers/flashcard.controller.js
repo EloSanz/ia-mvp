@@ -4,6 +4,18 @@ import { BaseController } from './base.controller.js';
 
 export const FlashcardController = {
   /**
+   * Busca flashcards por consigna (front) dentro de un deck
+   */
+  searchFlashcardsInDeck: BaseController.wrap(async (req, res) => {
+    const { deckId } = req.params;
+    const q = req.query.q || '';
+    const page = parseInt(req.query.page || '0');
+    const pageSize = parseInt(req.query.pageSize || '15');
+    const parsedDeckId = BaseController.validateId(deckId);
+    const { items, total } = await Flashcard.searchByDeckIdAndFront(parsedDeckId, q, { page, pageSize });
+    res.json({ success: true, data: items, total, page, pageSize, message: 'Búsqueda de flashcards en deck' });
+  }),
+  /**
    * Obtiene todas las flashcards
    */
   getAllFlashcards: BaseController.wrap(async (req, res) => {

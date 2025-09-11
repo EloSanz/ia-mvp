@@ -7,6 +7,16 @@ import { Deck } from './deck.js';
  * Maneja las reglas de negocio y orquesta las operaciones
  */
 export class Flashcard {
+  /**
+   * Busca flashcards por deckId y consigna (front)
+   */
+  static async searchByDeckIdAndFront(deckId, query, { page = 0, pageSize = 15 } = {}) {
+    const { items, total } = await FlashcardRepository.searchByDeckIdAndFront(deckId, query, { page, pageSize });
+    return {
+      items: items.map((entity) => Flashcard.fromEntity(entity)),
+      total
+    };
+  }
   constructor(data = {}) {
     this.id = data.id || null;
     this.front = data.front || '';

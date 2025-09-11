@@ -4,6 +4,13 @@ import { authMiddleware } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
+/**
+ * @route GET /api/flashcards/deck/:deckId/search?q=termino
+ * @desc Busca flashcards por consigna dentro de un deck
+ * @access Public
+ */
+router.get('/deck/:deckId/search', FlashcardController.searchFlashcardsInDeck);
+
 // Proteger todas las rutas de flashcards
 router.use(authMiddleware);
 
