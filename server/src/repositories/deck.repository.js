@@ -11,9 +11,10 @@ export class DeckRepository {
   /**
    * Busca todos los decks
    */
-  static async findAll() {
+  static async findAll(filter = {}) {
     try {
       const decks = await prisma.deck.findMany({
+        where: filter,
         orderBy: { createdAt: 'desc' }
       });
       return decks.map((deck) => DeckEntity.fromPrisma(deck));
@@ -45,7 +46,10 @@ export class DeckRepository {
       delete prismaData.id; // Remover ID para que sea auto-generado
 
       const createdDeck = await prisma.deck.create({
-        data: prismaData
+        data: {
+          ...prismaData,
+          userId: parseInt(prismaData.userId)
+        }
       });
 
       return DeckEntity.fromPrisma(createdDeck);

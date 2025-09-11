@@ -1,13 +1,14 @@
 import { Deck } from '../models/deck.js';
 import { DeckDto } from '../dtos/deck.dto.js';
 import { BaseController } from './base.controller.js';
+import { ForbiddenError } from '../utils/custom.errors.js';
 
 export const DeckController = {
   /**
-   * Obtiene todos los decks
+   * Obtiene todos los decks del usuario
    */
   getAllDecks: BaseController.wrap(async (req, res) => {
-    const decks = await Deck.findAll();
+    const decks = await Deck.findAll({ userId: req.userId });
     BaseController.successList(res, decks, 'Decks obtenidos exitosamente');
   }),
 
@@ -16,30 +17,26 @@ export const DeckController = {
    */
   getDeckById: BaseController.wrap(async (req, res) => {
     const { id } = req.params;
-    const result = await BaseController.findAndExecute(
-      Deck.findById.bind(Deck),
-      id,
-      (deck) => deck,
-      'Deck obtenido exitosamente'
-    );
-
-    if (result.success) {
-      BaseController.success(res, result.data, result.message);
+    const deck = await Deck.findById(id);
+    
+    if (deck && deck.userId !== req.userId) {
+      throw new ForbiddenError('No tienes permiso para ver este deck');
     }
+
+    BaseController.success(res, deck, 'Deck obtenido exitosamente');
   }),
 
   /**
    * Crea un nuevo deck
    */
   createDeck: BaseController.wrap(async (req, res) => {
-    const result = await BaseController.createWithValidation(
-      DeckDto.validateCreate.bind(DeckDto),
-      Deck.create.bind(Deck),
-      req.body,
-      'Deck creado exitosamente'
-    );
+    const deckData = {
+      ...req.body,
+      userId: parseInt(req.userId)
+    };
 
-    BaseController.success(res, result.data, result.message, 201);
+    const deck = await Deck.create(deckData);
+    BaseController.success(res, deck, 'Deck creado exitosamente', 201);
   }),
 
   /**
@@ -47,16 +44,20 @@ export const DeckController = {
    */
   updateDeck: BaseController.wrap(async (req, res) => {
     const { id } = req.params;
-    const result = await BaseController.updateWithValidation(
-      Deck.findById.bind(Deck),
-      DeckDto.validateUpdate.bind(DeckDto),
-      Deck.update.bind(Deck),
-      id,
-      req.body,
-      'Deck actualizado exitosamente'
-    );
+    const existingDeck = await Deck.findById(id);
 
-    BaseController.success(res, result.data, result.message);
+    if (!existingDeck) {
+      throw new NotFoundError('Deck no encontrado');
+    }
+
+    if (existingDeck.userId !== req.userId) {
+      throw new ForbiddenError('No tienes permiso para modificar este deck');
+    }
+
+    const validatedData = await DeckDto.validateUpdate(req.body);
+    const deck = await Deck.update(id, validatedData);
+    
+    BaseController.success(res, deck, 'Deck actualizado exitosamente');
   }),
 
   /**
@@ -64,15 +65,17 @@ export const DeckController = {
    */
   deleteDeck: BaseController.wrap(async (req, res) => {
     const { id } = req.params;
-    const result = await BaseController.findAndExecute(
-      Deck.findById.bind(Deck),
-      id,
-      () => Deck.delete(BaseController.validateId(id)),
-      'Deck eliminado exitosamente'
-    );
+    const existingDeck = await Deck.findById(id);
 
-    if (result.success) {
-      BaseController.success(res, null, result.message);
+    if (!existingDeck) {
+      throw new NotFoundError('Deck no encontrado');
     }
+
+    if (existingDeck.userId !== req.userId) {
+      throw new ForbiddenError('No tienes permiso para eliminar este deck');
+    }
+
+    await Deck.delete(id);
+    BaseController.success(res, null, 'Deck eliminado exitosamente');
   })
 };
