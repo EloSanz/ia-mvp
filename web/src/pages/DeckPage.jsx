@@ -19,7 +19,14 @@ import {
   Box,
   Chip,
   IconButton,
-  Tooltip
+  Tooltip,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -59,6 +66,8 @@ const DeckPage = () => {
   const [editing, setEditing] = useState(false);
 
   // Modal para revisar flashcard
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(15);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [reviewingCard, setReviewingCard] = useState(null);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -242,57 +251,71 @@ const DeckPage = () => {
           </Alert>
         )}
 
-        <Grid container spacing={3}>
-          {cards.map((card) => (
-            <Grid item xs={12} sm={6} md={4} key={card.id}>
-              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography variant="h6" component="div" gutterBottom>
-                    {card.front}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    {card.back}
-                  </Typography>
-                  <Box display="flex" gap={1} flexWrap="wrap">
-                    <Chip
-                      label={getDifficultyLabel(card.difficulty)}
-                      color={getDifficultyColor(card.difficulty)}
-                      size="small"
-                    />
-                    {card.reviewCount > 0 && (
+        <TableContainer 
+          component={Paper} 
+          sx={{ 
+            backgroundColor: 'grey.900',
+            borderRadius: 1,
+            mt: 2,
+            mb: 2,
+            '& .MuiTableCell-root': {
+              borderBottom: '1px solid',
+              borderColor: 'grey.800'
+            }
+          }}
+        >
+          <Table sx={{ minWidth: 650 }}>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ color: 'grey.400', fontWeight: 'normal', fontSize: '0.875rem', py: 1.5 }}>Consigna</TableCell>
+                <TableCell sx={{ color: 'grey.400', fontWeight: 'normal', fontSize: '0.875rem', py: 1.5 }}>Dificultad</TableCell>
+                <TableCell sx={{ color: 'grey.400', fontWeight: 'normal', fontSize: '0.875rem', py: 1.5 }}>Revisiones</TableCell>
+                <TableCell sx={{ color: 'grey.400', fontWeight: 'normal', fontSize: '0.875rem', py: 1.5, width: '120px' }}>Acciones</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {cards.map((card) => {
+                const truncatedFront = card.front.length > 25
+                  ? card.front.substring(0, 25) + '...'
+                  : card.front;
+                return (
+                  <TableRow key={card.id} hover sx={{ backgroundColor: 'grey.900', cursor: 'pointer', '&:hover': { backgroundColor: 'grey.800' } }}>
+                    <TableCell sx={{ color: 'grey.300', fontSize: '0.95rem', py: 1.5 }}>{truncatedFront}</TableCell>
+                    <TableCell sx={{ py: 1.5 }}>
                       <Chip
-                        label={`${card.reviewCount} revisiones`}
-                        variant="outlined"
+                        label={getDifficultyLabel(card.difficulty)}
+                        color={getDifficultyColor(card.difficulty)}
                         size="small"
                       />
-                    )}
-                  </Box>
-                </CardContent>
-                <CardActions>
-                  <Tooltip title="Revisar">
-                    <IconButton size="small" color="primary" onClick={() => openReviewDialog(card)}>
-                      <PlayIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Editar">
-                    <IconButton size="small" color="secondary" onClick={() => openEditDialog(card)}>
-                      <EditIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Eliminar">
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={() => handleDeleteCard(card.id)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+                    </TableCell>
+                    <TableCell sx={{ py: 1.5 }}>
+                      {card.reviewCount > 0 ? `${card.reviewCount}` : '0'}
+                    </TableCell>
+                    <TableCell sx={{ py: 1 }}>
+                      <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                        <Tooltip title="Revisar" placement="top">
+                          <IconButton size="small" color="primary" onClick={() => openReviewDialog(card)}>
+                            <PlayIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Editar" placement="top">
+                          <IconButton size="small" color="secondary" onClick={() => openEditDialog(card)}>
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Eliminar" placement="top">
+                          <IconButton size="small" color="error" onClick={() => handleDeleteCard(card.id)}>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
         {cards.length === 0 && !loading && (
           <Box textAlign="center" mt={6}>
