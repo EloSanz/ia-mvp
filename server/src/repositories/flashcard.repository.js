@@ -11,6 +11,42 @@ const prisma = new PrismaClient();
  */
 export class FlashcardRepository {
   /**
+   * Busca flashcards por deckId y consigna (front)
+   */
+  static async searchByDeckIdAndFront(deckId, query, { page = 0, pageSize = 15 } = {}) {
+    try {
+      const skip = page * pageSize;
+      const take = pageSize;
+      const where = {
+        deckId: parseInt(deckId),
+        front: {
+          contains: query,
+          mode: 'insensitive'
+        }
+      };
+      const [flashcards, total] = await Promise.all([
+        prisma.flashcard.findMany({
+          where,
+          include: {
+            deck: {
+              select: { id: true, name: true }
+            }
+          },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take
+        }),
+        prisma.flashcard.count({ where })
+      ]);
+      return {
+        items: flashcards.map((card) => FlashcardEntity.fromPrisma(card)),
+        total
+      };
+    } catch (error) {
+      throw new Error(`Error al buscar flashcards por consigna: ${error.message}`);
+    }
+  }
+  /**
    * Busca todas las flashcards
    */
   static async findAll() {
