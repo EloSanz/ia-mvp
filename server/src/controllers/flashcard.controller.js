@@ -1,6 +1,7 @@
 import { Flashcard } from '../models/flashcard.js';
 import { FlashcardDto } from '../dtos/flashcard.dto.js';
 import { BaseController } from './base.controller.js';
+import { generateFromAI } from '../services/flashcard.service.js';
 
 export const FlashcardController = {
   /**
@@ -137,7 +138,7 @@ export const FlashcardController = {
       }
 
       // Llama al servicio que integra OpenAI
-      const generatedCards = await flashcardService.generateFromAI(text);
+      const generatedCards = await generateFromAI(text);
       return res.status(200).json({ flashcards: generatedCards });
     } catch (error) {
       console.error('Error generando flashcards con IA:', error);
