@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { generateToken } from '../middlewares/auth.middleware.js';
 import { ValidationError, AuthenticationError } from '../utils/custom.errors.js';
 import { asyncHandler } from '../middlewares/error.middleware.js';
+import { BaseController } from './base.controller.js';
 
 const prisma = new PrismaClient();
 
@@ -41,14 +42,11 @@ export const AuthController = {
     // Generar token
     const token = generateToken(user.id);
 
-    res.status(201).json({
-      success: true,
-      data: {
-        id: user.id,
-        username: user.username,
-        token
-      }
-    });
+    BaseController.success(res, {
+      id: user.id,
+      username: user.username,
+      token
+    }, 'Usuario registrado exitosamente', 201);
   }),
 
   /**
@@ -68,25 +66,24 @@ export const AuthController = {
     });
 
     if (!user) {
+      console.log(`Intento de login fallido: usuario no existe -> ${username}`);
       throw new ValidationError('Credenciales inválidas');
     }
 
     // Verificar password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
+      console.log(`Intento de login fallido: contraseña incorrecta -> ${username}`);
       throw new ValidationError('Credenciales inválidas');
     }
 
     // Generar token
     const token = generateToken(user.id);
 
-    res.json({
-      success: true,
-      data: {
-        id: user.id,
-        username: user.username,
-        token
-      }
-    });
+    BaseController.success(res, {
+      id: user.id,
+      username: user.username,
+      token
+    }, 'Login exitoso');
   })
 };
