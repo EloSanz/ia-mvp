@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client';
+import { cacheAdapter } from '../adapters/cache.adapter.js';
+import { CACHE_TTL_FLASHCARDS } from '../config/constants.js';
 import { FlashcardEntity } from '../entities/flashcard.entity.js';
 
 const prisma = new PrismaClient();
@@ -58,6 +60,16 @@ export class FlashcardRepository {
   static async findByDeckId(deckId) {
     try {
       const { page = 0, pageSize = 15 } = arguments[1] || {};
+      const cacheKey = `deck:${deckId}:page:${page}:size:${pageSize}`;
+
+      const cached = cacheAdapter.get(cacheKey);
+      if (cached) {
+        console.log(`[CACHE HIT] Flashcards deckId=${deckId} page=${page} size=${pageSize}`);
+        return cached;
+      } else {
+        console.log(`[CACHE MISS] Flashcards deckId=${deckId} page=${page} size=${pageSize}`);
+      }
+
       const skip = page * pageSize;
       const take = pageSize;
       const [flashcards, total] = await Promise.all([
@@ -77,10 +89,15 @@ export class FlashcardRepository {
         }),
         prisma.flashcard.count({ where: { deckId: parseInt(deckId) } })
       ]);
-      return {
+
+      const result = {
         items: flashcards.map((card) => FlashcardEntity.fromPrisma(card)),
         total
       };
+  cacheAdapter.set(cacheKey, result, CACHE_TTL_FLASHCARDS);
+
+      // 5. Devolvemos el resultado
+      return result;
     } catch (error) {
       throw new Error(`Error al buscar flashcards por deck: ${error.message}`);
     }
