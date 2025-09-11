@@ -34,6 +34,7 @@ import {
 import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
 import AIFlashcardsGenerator from '../components/AIFlashcardsGenerator';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 
 const DeckPage = () => {
   const { deckId } = useParams();
@@ -62,6 +63,10 @@ const DeckPage = () => {
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [reviewingCard, setReviewingCard] = useState(null);
   const [showAnswer, setShowAnswer] = useState(false);
+
+  // Modal para confirmar eliminación
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [cardToDelete, setCardToDelete] = useState(null);
 
   useEffect(() => {
     loadDeckAndCards();
@@ -135,10 +140,16 @@ const DeckPage = () => {
   };
 
   const handleDeleteCard = async (cardId) => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar esta flashcard?')) return;
+    const card = cards.find(c => c.id === cardId);
+    setCardToDelete(card);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteCard = async () => {
+    if (!cardToDelete) return;
 
     try {
-      await flashcards.delete(cardId);
+      await flashcards.delete(cardToDelete.id);
       loadDeckAndCards();
     } catch (err) {
       console.error('Error deleting flashcard:', err);
@@ -482,6 +493,22 @@ const DeckPage = () => {
           open={aiGeneratorOpen}
           onClose={() => setAiGeneratorOpen(false)}
           onGenerate={handleGeneratedCards}
+        />
+
+        {/* Modal para confirmar eliminación */}
+        <ConfirmDeleteModal
+          open={deleteDialogOpen}
+          onClose={() => {
+            setDeleteDialogOpen(false);
+            setCardToDelete(null);
+          }}
+          onConfirm={confirmDeleteCard}
+          title="Eliminar Flashcard"
+          message="¿Estás seguro de que quieres eliminar esta flashcard?"
+          showItemName={false}
+          confirmText="Eliminar"
+          cancelText="Cancelar"
+          size="xs"
         />
       </Container>
     </>
