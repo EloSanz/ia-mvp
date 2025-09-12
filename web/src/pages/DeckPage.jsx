@@ -217,7 +217,7 @@ const DeckPage = () => {
   return (
     <>
       <Navigation />
-      <Container maxWidth="lg" sx={{ py: 4, position: 'relative', minHeight: '100vh' }}>
+  <Container maxWidth="lg" sx={{ py: 4, position: 'relative', minHeight: '100vh', fontFamily: muiTheme.fontFamily }}>
         {(themeName === 'kyoto' || themeName === 'tokyo') && (
           <Box
             sx={{
@@ -231,13 +231,21 @@ const DeckPage = () => {
         {/* Buscador */}
         <Box display="flex" alignItems="center" mb={2}>
           <TextField
-            label="Buscar por consigna" variant="outlined" size="small" value={searchQuery}
+            label="Buscar por consigna"
+            variant="outlined"
+            size="small"
+            value={searchQuery}
             onChange={e => { setPage(0); setSearchQuery(e.target.value); }}
-            sx={{ width: 320, mr: 2 }} disabled={loading || searching}
+            sx={{ width: 320, mr: 2, fontFamily: muiTheme.fontFamily, '& .MuiInputBase-input': { fontFamily: muiTheme.fontFamily }, '& .MuiInputLabel-root': { fontFamily: muiTheme.fontFamily } }}
+            InputProps={{ style: { fontFamily: muiTheme.fontFamily } }}
+            InputLabelProps={{ style: { fontFamily: muiTheme.fontFamily } }}
+            placeholder="Buscar por consigna"
+            disabled={loading || searching}
           />
           <Button variant="contained" startIcon={<SearchIcon />}
                   onClick={() => handleSearch(searchQuery, page, rowsPerPage)}
-                  disabled={loading || searching || !searchQuery.trim()}>
+                  disabled={loading || searching || !searchQuery.trim()}
+                  sx={{ fontFamily: muiTheme.fontFamily }}>
             Buscar
           </Button>
           {searchQuery && (
@@ -250,18 +258,26 @@ const DeckPage = () => {
         <Box display="flex" alignItems="center" mb={4}>
           <IconButton onClick={() => navigate('/')} sx={{ mr: 2 }}><ArrowBackIcon /></IconButton>
           <Box>
-            <Typography variant="h4" component="h1" gutterBottom>{deck.name}</Typography>
-            <Typography variant="body1" color="text.secondary">{deck.description || 'Sin descripción'}</Typography>
-            <Typography variant="body2" color="text.secondary">{cards.length} flashcards</Typography>
+            <Typography variant="h4" component="h1" gutterBottom sx={{ fontFamily: muiTheme.fontFamily }}>{deck.name}</Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ fontFamily: muiTheme.fontFamily }}>{deck.description || 'Sin descripción'}</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ fontFamily: muiTheme.fontFamily }}>{cards.length} flashcards</Typography>
           </Box>
         </Box>
 
         {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
         <TableContainer component={Paper} sx={{
-          backgroundColor: muiTheme.palette.background.paper, borderRadius: 1, mt: 2, mb: 2,
+          backgroundColor: muiTheme.palette.background.paper,
+          borderRadius: 1,
+          mt: 2,
+          mb: 2,
           boxShadow: muiTheme.shadows[1],
-          '& .MuiTableCell-root': { borderBottom: `1px solid ${muiTheme.palette.divider}`, color: muiTheme.palette.text.primary }
+          fontFamily: muiTheme.fontFamily,
+          '& .MuiTableCell-root': {
+            borderBottom: `1px solid ${muiTheme.palette.divider}`,
+            color: muiTheme.palette.text.primary,
+            fontFamily: muiTheme.fontFamily
+          }
         }}>
           <Table sx={{ minWidth: 650 }}>
             <TableHead>
@@ -327,18 +343,28 @@ const DeckPage = () => {
 
         {/* Crear */}
         <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} maxWidth="sm" fullWidth>
-          <DialogTitle>Crear Nueva Flashcard</DialogTitle>
-          <DialogContent>
+          <DialogTitle sx={{ fontFamily: muiTheme.fontFamily }}>Crear Nueva Flashcard</DialogTitle>
+          <DialogContent sx={{ fontFamily: muiTheme.fontFamily }}>
             <TextField autoFocus margin="dense" label="Anverso (pregunta)" fullWidth multiline rows={3}
                        variant="outlined" value={newCard.front}
-                       onChange={(e) => setNewCard({ ...newCard, front: e.target.value })} sx={{ mb: 2 }} />
+                       onChange={(e) => setNewCard({ ...newCard, front: e.target.value })}
+                       sx={{ mb: 2, fontFamily: muiTheme.fontFamily, '& .MuiInputBase-input': { fontFamily: muiTheme.fontFamily }, '& .MuiInputLabel-root': { fontFamily: muiTheme.fontFamily } }}
+                       InputProps={{ style: { fontFamily: muiTheme.fontFamily } }}
+                       InputLabelProps={{ style: { fontFamily: muiTheme.fontFamily } }}
+                       placeholder="Anverso (pregunta)" />
             <TextField margin="dense" label="Reverso (respuesta)" fullWidth multiline rows={3}
                        variant="outlined" value={newCard.back}
-                       onChange={(e) => setNewCard({ ...newCard, back: e.target.value })} />
+                       onChange={(e) => setNewCard({ ...newCard, back: e.target.value })}
+                       sx={{ fontFamily: muiTheme.fontFamily, '& .MuiInputBase-input': { fontFamily: muiTheme.fontFamily }, '& .MuiInputLabel-root': { fontFamily: muiTheme.fontFamily } }}
+                       InputProps={{ style: { fontFamily: muiTheme.fontFamily } }}
+                       InputLabelProps={{ style: { fontFamily: muiTheme.fontFamily } }}
+                       placeholder="Reverso (respuesta)" />
           </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setCreateDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateCard} variant="contained" disabled={!newCard.front.trim() || !newCard.back.trim() || creating}>
+          <DialogContent sx={{ fontFamily: muiTheme.fontFamily, backgroundColor: '#fff', opacity: 1, borderRadius: 2 }}>
+          </DialogContent>
+          <DialogActions sx={{ fontFamily: muiTheme.fontFamily }}>
+            <Button onClick={() => setCreateDialogOpen(false)} sx={{ fontFamily: muiTheme.fontFamily }}>Cancelar</Button>
+            <Button onClick={handleCreateCard} variant="contained" disabled={!newCard.front.trim() || !newCard.back.trim() || creating} sx={{ fontFamily: muiTheme.fontFamily }}>
               {creating ? <CircularProgress size={20} /> : 'Crear'}
             </Button>
           </DialogActions>
@@ -346,18 +372,26 @@ const DeckPage = () => {
 
         {/* Editar */}
         <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
-          <DialogTitle>Editar Flashcard</DialogTitle>
-          <DialogContent>
+          <DialogTitle sx={{ fontFamily: muiTheme.fontFamily }}>Editar Flashcard</DialogTitle>
+          <DialogContent sx={{ fontFamily: muiTheme.fontFamily }}>
             <TextField autoFocus margin="dense" label="Anverso (pregunta)" fullWidth multiline rows={3}
                        variant="outlined" value={editingCard?.front || ''}
-                       onChange={(e) => setEditingCard({ ...editingCard, front: e.target.value })} sx={{ mb: 2 }} />
+                       onChange={(e) => setEditingCard({ ...editingCard, front: e.target.value })}
+                       sx={{ mb: 2, fontFamily: muiTheme.fontFamily, '& .MuiInputBase-input': { fontFamily: muiTheme.fontFamily }, '& .MuiInputLabel-root': { fontFamily: muiTheme.fontFamily } }}
+                       InputProps={{ style: { fontFamily: muiTheme.fontFamily } }}
+                       InputLabelProps={{ style: { fontFamily: muiTheme.fontFamily } }}
+                       placeholder="Anverso (pregunta)" />
             <TextField margin="dense" label="Reverso (respuesta)" fullWidth multiline rows={3}
                        variant="outlined" value={editingCard?.back || ''}
-                       onChange={(e) => setEditingCard({ ...editingCard, back: e.target.value })} />
+                       onChange={(e) => setEditingCard({ ...editingCard, back: e.target.value })}
+                       sx={{ fontFamily: muiTheme.fontFamily, '& .MuiInputBase-input': { fontFamily: muiTheme.fontFamily }, '& .MuiInputLabel-root': { fontFamily: muiTheme.fontFamily } }}
+                       InputProps={{ style: { fontFamily: muiTheme.fontFamily } }}
+                       InputLabelProps={{ style: { fontFamily: muiTheme.fontFamily } }}
+                       placeholder="Reverso (respuesta)" />
           </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setEditDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleEditCard} variant="contained" disabled={!editingCard?.front?.trim() || !editingCard?.back?.trim() || editing}>
+          <DialogActions sx={{ fontFamily: muiTheme.fontFamily }}>
+            <Button onClick={() => setEditDialogOpen(false)} sx={{ fontFamily: muiTheme.fontFamily }}>Cancelar</Button>
+            <Button onClick={handleEditCard} variant="contained" disabled={!editingCard?.front?.trim() || !editingCard?.back?.trim() || editing} sx={{ fontFamily: muiTheme.fontFamily }}>
               {editing ? <CircularProgress size={20} /> : 'Guardar'}
             </Button>
           </DialogActions>
