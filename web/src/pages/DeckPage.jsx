@@ -204,6 +204,11 @@ const DeckPage = () => {
     });
   };
 
+  // Función para actualizar localmente la tag de una card
+  const onCardTagUpdated = (cardId, tagId) => {
+    setCards((prev) => prev.map((c) => (c.id === cardId ? { ...c, tagId } : c)));
+  };
+
   const openEditDialog = (card) => {
     flashcardManager.openEditDialog(card);
   };
@@ -307,6 +312,7 @@ const DeckPage = () => {
           setTags={setTags}
           loadDeckAndCards={loadDeckAndCards}
           tagsService={tagsService}
+          onCardTagUpdated={onCardTagUpdated}
         />
 
         {/* Modal de revisión de flashcards */}
