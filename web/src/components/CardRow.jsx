@@ -29,12 +29,15 @@ const CardRow = ({
       key={card.id}
       hover
       onClick={(e) => {
-        // Solo abrir review si no se hizo clic en un elemento hijo
-        if (
-          !e.target.closest('.tag-crud, .MuiIconButton-root, .MuiSelect-root, .MuiTextField-root')
-        ) {
+        // Solo abrir review si no se hizo clic en el campo de texto del tag
+        const isTagTextField = e.target.closest('.MuiTextField-root');
+        const isTagCrudArea = e.target.closest('.tag-crud');
+
+        // Si no es el campo de texto del tag, abrir la flashcard para estudiar
+        if (!isTagTextField && !isTagCrudArea) {
           openReviewDialog(card);
         }
+        // Si es el campo de texto, el TagCrud manejará su propio onClick
       }}
       sx={{
         backgroundColor: muiTheme?.palette?.background?.paper || '#ffffff',

@@ -76,7 +76,15 @@ const TagCrud = ({
         variant="outlined"
         sx={{ width: 140, cursor: 'pointer' }}
         InputProps={{ readOnly: true }}
-        onClick={() => setOpen(true)}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpen(true);
+        }}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
       />
 
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth>
