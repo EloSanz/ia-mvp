@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-      console.log('Intentando login con URL:', `${API_URL}/api/auth/login`);
+      // console.debug('Intentando login con URL:', `${API_URL}/api/auth/login`);
       const response = await axios.post(`${API_URL}/api/auth/login`, {
         username,
         password
@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, password) => {
     try {
-      console.log('Intentando registro con URL:', `${API_URL}/api/auth/register`);
+      // console.debug('Intentando registro con URL:', `${API_URL}/api/auth/register`);
       const response = await axios.post(`${API_URL}/api/auth/register`, {
         username,
         password

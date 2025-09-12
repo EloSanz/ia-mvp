@@ -12,11 +12,11 @@ export class FlashcardDto {
     this.lastReviewed = data.lastReviewed || null;
     this.nextReview = data.nextReview || null;
     this.reviewCount = data.reviewCount || 0;
-      this.tagId = data.tagId || null;
-      this.tag = data.tag || null; // Objeto TagDto
-      this.createdAt = data.createdAt || null;
-      this.updatedAt = data.updatedAt || null;
-      this.deck = data.deck || null; // Información del deck relacionado
+    this.tagId = data.tagId || null;
+    this.tag = data.tag || null; // Objeto TagDto
+    this.createdAt = data.createdAt || null;
+    this.updatedAt = data.updatedAt || null;
+    this.deck = data.deck || null; // Información del deck relacionado
   }
 
   /**
@@ -32,11 +32,11 @@ export class FlashcardDto {
       lastReviewed: flashcardModel.lastReviewed,
       nextReview: flashcardModel.nextReview,
       reviewCount: flashcardModel.reviewCount,
-        tagId: flashcardModel.tagId,
-        tag: flashcardModel.tag,
-        createdAt: flashcardModel.createdAt,
-        updatedAt: flashcardModel.updatedAt
-      });
+      tagId: flashcardModel.tagId,
+      tag: flashcardModel.tag,
+      createdAt: flashcardModel.createdAt,
+      updatedAt: flashcardModel.updatedAt
+    });
   }
 
   /**

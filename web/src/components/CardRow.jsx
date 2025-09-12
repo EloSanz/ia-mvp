@@ -21,20 +21,30 @@ const CardRow = ({
   flashcards,
   setTags,
   loadDeckAndCards,
-  tagsService
+  tagsService,
+  onCardTagUpdated
 }) => {
   return (
     <TableRow
       key={card.id}
       hover
-      onClick={() => openReviewDialog(card)}
+      onClick={(e) => {
+        // Solo abrir review si no se hizo clic en un elemento hijo
+        if (
+          !e.target.closest('.tag-crud, .MuiIconButton-root, .MuiSelect-root, .MuiTextField-root')
+        ) {
+          openReviewDialog(card);
+        }
+      }}
       sx={{
-        backgroundColor: muiTheme.palette.background.paper,
+        backgroundColor: muiTheme?.palette?.background?.paper || '#ffffff',
         cursor: 'pointer',
-        '&:hover': { backgroundColor: muiTheme.palette.action.hover }
+        '&:hover': { backgroundColor: muiTheme?.palette?.action?.hover || '#f5f5f5' }
       }}
     >
-      <TableCell sx={{ color: muiTheme.palette.text.primary, fontSize: '0.95rem', py: 1.5 }}>
+      <TableCell
+        sx={{ color: muiTheme?.palette?.text?.primary || '#000000', fontSize: '0.95rem', py: 1.5 }}
+      >
         {card.front.length > 25 ? card.front.substring(0, 25) + '…' : card.front}
       </TableCell>
       <TableCell sx={{ py: 1.5 }}>
@@ -46,6 +56,7 @@ const CardRow = ({
           setTags={setTags}
           loadDeckAndCards={loadDeckAndCards}
           tagsService={tagsService}
+          onCardTagUpdated={onCardTagUpdated}
         />
       </TableCell>
       <TableCell sx={{ py: 1.5 }}>

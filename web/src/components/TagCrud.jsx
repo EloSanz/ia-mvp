@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   TextField,
   Dialog,
@@ -13,78 +13,82 @@ import {
   Box
 } from '@mui/material';
 
-const TagCrud = ({ card, tags, muiTheme, flashcards, setTags, loadDeckAndCards, tagsService }) => {
-  const [tagModalOpen, setTagModalOpen] = useState(false);
+const TagCrud = ({
+  card,
+  tags,
+  muiTheme,
+  flashcards,
+  setTags,
+  loadDeckAndCards,
+  tagsService,
+  onCardTagUpdated
+}) => {
+  const [open, setOpen] = useState(false);
   const [newTagName, setNewTagName] = useState('');
   const [creatingTag, setCreatingTag] = useState(false);
-  const [selectedTagId, setSelectedTagId] = useState(card.tagId || '');
+  const [selectedTagId, setSelectedTagId] = useState(card.tagId ?? '');
 
-  const tagName = card.tagId ? tags.find((t) => t.id === card.tagId)?.name || 'Sin tag' : 'Sin tag';
+  // Si el card cambia desde arriba, sincronizar selección
+  useEffect(() => {
+    setSelectedTagId(card.tagId ?? '');
+  }, [card.tagId]);
 
-  // Actualizar tag existente
-  const handleTagChange = async (e) => {
-    const tagId = e.target.value;
+  const displayName =
+    tags.find((t) => t.id === selectedTagId)?.name ||
+    (card.tagId ? tags.find((t) => t.id === card.tagId)?.name || 'Sin tag' : 'Sin tag');
+
+  const updateTag = async (tagId) => {
     setSelectedTagId(tagId);
-    await flashcards.update(card.id, { ...card, tagId });
-    loadDeckAndCards();
+    try {
+      await flashcards.update(card.id, { ...card, tagId: tagId || null });
+      onCardTagUpdated?.(card.id, tagId || null); // opcional: para actualizar la lista arriba
+      setOpen(false);
+      // Si querés recargar desde el server, hacelo después de cerrar:
+      // await loadDeckAndCards();
+    } catch (error) {
+      alert(`Error al actualizar la tag: ${error.response?.data?.message || error.message}`);
+      setSelectedTagId(card.tagId ?? '');
+    }
   };
 
-  // Crear nueva tag y asignar
-  const handleCreateTag = async () => {
+  const createTag = async () => {
     if (!newTagName.trim()) return;
     setCreatingTag(true);
     try {
-      const tag = await tagsService.create({ name: newTagName.trim() });
-      setTags((prev) => [...prev, tag.data]);
-      setSelectedTagId(tag.data.id);
-      await flashcards.update(card.id, { ...card, tagId: tag.data.id });
+      const resp = await tagsService.create({ name: newTagName.trim() });
+      const created = resp?.data?.data || resp?.data || resp; // tolerante al shape
+      setTags((prev) => [...prev, created]);
+      await updateTag(created.id);
       setNewTagName('');
-      setTagModalOpen(false);
-      loadDeckAndCards();
-    } catch (error) {
-      console.error('Error creando tag:', error);
-      // Podrías mostrar un error aquí
     } finally {
       setCreatingTag(false);
     }
   };
 
   return (
-    <>
+    <div
+      className="tag-crud"
+      onClick={(e) => e.stopPropagation()} // evita que el click burbujee a la fila
+    >
       <TextField
-        value={tagName}
+        value={displayName}
         size="small"
         variant="outlined"
-        sx={{ width: 120, cursor: 'pointer' }}
+        sx={{ width: 140, cursor: 'pointer' }}
         InputProps={{ readOnly: true }}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setTagModalOpen(true);
-        }}
-        onMouseDown={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
+        onClick={() => setOpen(true)}
       />
-      <Dialog open={tagModalOpen} onClose={() => setTagModalOpen(false)} maxWidth="xs" fullWidth>
+
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontFamily: muiTheme.fontFamily }}>Cambiar o crear tag</DialogTitle>
         <DialogContent sx={{ fontFamily: muiTheme.fontFamily }}>
           <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel id="modal-tag-select-label">Tag existente</InputLabel>
+            <InputLabel id="tag-select-label">Tag existente</InputLabel>
             <Select
-              labelId="modal-tag-select-label"
+              labelId="tag-select-label"
               value={selectedTagId}
               label="Tag existente"
-              onChange={handleTagChange}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
+              onChange={(e) => updateTag(e.target.value)}
             >
               <MenuItem value="">
                 <em>Sin tag</em>
@@ -96,57 +100,30 @@ const TagCrud = ({ card, tags, muiTheme, flashcards, setTags, loadDeckAndCards, 
               ))}
             </Select>
           </FormControl>
+
           <Box display="flex" alignItems="center" gap={1}>
             <TextField
-              placeholder="Nueva tag..."
+              placeholder="Nueva tag…"
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
               size="small"
-              sx={{ width: 120 }}
+              sx={{ flex: 1 }}
             />
             <Button
               variant="outlined"
               size="small"
               disabled={!newTagName.trim() || creatingTag}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleCreateTag();
-              }}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
+              onClick={createTag}
             >
               +
             </Button>
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setTagModalOpen(false);
-            }}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-          >
-            Cerrar
-          </Button>
+          <Button onClick={() => setOpen(false)}>Cerrar</Button>
         </DialogActions>
       </Dialog>
-    </>
+    </div>
   );
 };
 

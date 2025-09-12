@@ -39,15 +39,8 @@ const CreateFlashcardModal = ({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="sm"
-      fullWidth
-    >
-      <DialogTitle sx={{ fontFamily: muiTheme.fontFamily }}>
-        Crear Nueva Flashcard
-      </DialogTitle>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{ fontFamily: muiTheme.fontFamily }}>Crear Nueva Flashcard</DialogTitle>
       <DialogContent sx={{ fontFamily: muiTheme.fontFamily }}>
         <TextField
           autoFocus

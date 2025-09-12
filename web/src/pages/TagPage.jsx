@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useApi } from '../contexts/ApiContext';
 import {
   Box,
@@ -21,7 +21,7 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 
-export default function TagPage({ token }) {
+export default function TagPage({ _token }) {
   const { tags: tagsService } = useApi();
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,71 +32,113 @@ export default function TagPage({ token }) {
   const [editTag, setEditTag] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  const fetchTags = async () => {
+  const fetchTags = useCallback(async () => {
     setLoading(true);
+    setError(null);
+
     try {
       const response = await tagsService.getAll();
-      setTags(response.data);
+      console.log('Tags loaded:', response.data);
+      setTags(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
-      setError('Error al cargar tags');
+      console.error('Error loading tags:', err);
+      setError(
+        `Error al cargar tags: ${err.response?.data?.message || err.message || 'Error desconocido'}`
+      );
+      setTags([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [tagsService]);
 
   useEffect(() => {
     fetchTags();
-  }, [tagsService]);
+  }, [fetchTags]);
 
   const handleCreate = async () => {
+    if (!newTagName?.trim()) {
+      setError('El nombre de la tag es requerido');
+      return;
+    }
+
     setSaving(true);
+    setError(null);
+
     try {
-      await tagsService.create({ name: newTagName });
+      const response = await tagsService.create({ name: newTagName.trim() });
+      console.log('Tag created successfully:', response);
       setCreateOpen(false);
       setNewTagName('');
-      fetchTags();
-    } catch {
-      setError('Error al crear tag');
+      await fetchTags();
+    } catch (err) {
+      console.error('Error creating tag:', err);
+      setError(
+        `Error al crear tag: ${err.response?.data?.message || err.message || 'Error desconocido'}`
+      );
     } finally {
       setSaving(false);
     }
   };
 
   const handleEdit = async () => {
+    if (!editTag?.name?.trim()) {
+      setError('El nombre de la tag es requerido');
+      return;
+    }
+
     setSaving(true);
+    setError(null);
+
     try {
-      await tagsService.update(editTag.id, { name: editTag.name });
+      const response = await tagsService.update(editTag.id, { name: editTag.name.trim() });
+      console.log('Tag updated successfully:', response);
       setEditOpen(false);
       setEditTag(null);
-      fetchTags();
-    } catch {
-      setError('Error al editar tag');
+      await fetchTags();
+    } catch (err) {
+      console.error('Error updating tag:', err);
+      setError(
+        `Error al editar tag: ${err.response?.data?.message || err.message || 'Error desconocido'}`
+      );
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id) => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar esta tag?')) {
+      return;
+    }
+
     setSaving(true);
+    setError(null);
+
     try {
       await tagsService.delete(id);
-      fetchTags();
-    } catch {
-      setError('Error al eliminar tag');
+      console.log('Tag deleted successfully');
+      await fetchTags();
+    } catch (err) {
+      console.error('Error deleting tag:', err);
+      setError(
+        `Error al eliminar tag: ${err.response?.data?.message || err.message || 'Error desconocido'}`
+      );
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <Box p={3}>
+    <Box p={3} onClick={(e) => e.stopPropagation()} sx={{ isolation: 'isolate' }}>
       <Typography variant="h4" gutterBottom>
         Gestión de Tags
       </Typography>
       <Button
         variant="contained"
         startIcon={<AddIcon />}
-        onClick={() => setCreateOpen(true)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setCreateOpen(true);
+        }}
         sx={{ mb: 2 }}
       >
         Nueva Tag
@@ -104,7 +146,7 @@ export default function TagPage({ token }) {
       {loading ? (
         <CircularProgress />
       ) : (
-        <TableContainer component={Paper}>
+        <TableContainer component={Paper} onClick={(e) => e.stopPropagation()}>
           <Table>
             <TableHead>
               <TableRow>
@@ -114,19 +156,30 @@ export default function TagPage({ token }) {
             </TableHead>
             <TableBody>
               {tags.map((tag) => (
-                <TableRow key={tag.id}>
+                <TableRow
+                  key={tag.id}
+                  onClick={(e) => e.stopPropagation()}
+                  sx={{ cursor: 'default' }}
+                >
                   <TableCell>{tag.name}</TableCell>
                   <TableCell align="right">
                     <IconButton
                       color="primary"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setEditTag(tag);
                         setEditOpen(true);
                       }}
                     >
                       <EditIcon />
                     </IconButton>
-                    <IconButton color="error" onClick={() => handleDelete(tag.id)}>
+                    <IconButton
+                      color="error"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(tag.id);
+                      }}
+                    >
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>
@@ -137,7 +190,15 @@ export default function TagPage({ token }) {
         </TableContainer>
       )}
       {/* Crear Tag */}
-      <Dialog open={createOpen} onClose={() => setCreateOpen(false)}>
+      <Dialog
+        open={createOpen}
+        onClose={(e) => {
+          e?.stopPropagation();
+          setCreateOpen(false);
+        }}
+        onClick={(e) => e.stopPropagation()}
+        disableBackdropClick={false}
+      >
         <DialogTitle>Nueva Tag</DialogTitle>
         <DialogContent>
           <TextField
@@ -147,12 +208,23 @@ export default function TagPage({ token }) {
             fullWidth
             value={newTagName}
             onChange={(e) => setNewTagName(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCreateOpen(false)}>Cancelar</Button>
           <Button
-            onClick={handleCreate}
+            onClick={(e) => {
+              e.stopPropagation();
+              setCreateOpen(false);
+            }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCreate();
+            }}
             variant="contained"
             disabled={!newTagName.trim() || saving}
           >
@@ -161,7 +233,15 @@ export default function TagPage({ token }) {
         </DialogActions>
       </Dialog>
       {/* Editar Tag */}
-      <Dialog open={editOpen} onClose={() => setEditOpen(false)}>
+      <Dialog
+        open={editOpen}
+        onClose={(e) => {
+          e?.stopPropagation();
+          setEditOpen(false);
+        }}
+        onClick={(e) => e.stopPropagation()}
+        disableBackdropClick={false}
+      >
         <DialogTitle>Editar Tag</DialogTitle>
         <DialogContent>
           <TextField
@@ -171,12 +251,23 @@ export default function TagPage({ token }) {
             fullWidth
             value={editTag?.name || ''}
             onChange={(e) => setEditTag({ ...editTag, name: e.target.value })}
+            onClick={(e) => e.stopPropagation()}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditOpen(false)}>Cancelar</Button>
           <Button
-            onClick={handleEdit}
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditOpen(false);
+            }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEdit();
+            }}
             variant="contained"
             disabled={!editTag?.name?.trim() || saving}
           >

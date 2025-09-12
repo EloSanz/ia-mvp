@@ -25,7 +25,7 @@ export class AnkiAdapter extends BaseAdapter {
       });
 
       const data = await response.json();
-      
+
       if (data.error) {
         throw new AnkiConnectError(data.error);
       }
@@ -69,14 +69,14 @@ export class AnkiAdapter extends BaseAdapter {
 
   async syncFlashcards(flashcards) {
     const ankiNotes = flashcards.map(ankiMapper.toAnkiNote);
-    
+
     // Asegurarse de que el deck existe
     const deckName = this.config.defaultDeckName;
     await this._invoke('createDeck', { deck: deckName });
 
     // Crear las notas en Anki
     const result = await this._invoke('addNotes', {
-      notes: ankiNotes.map(note => ({
+      notes: ankiNotes.map((note) => ({
         ...note,
         deckName
       }))
@@ -97,15 +97,15 @@ export class AnkiAdapter extends BaseAdapter {
     });
 
     // Convertir notas de Anki a nuestro formato
-    return notesInfo.map(note => ankiMapper.fromAnkiNote(note, deckId));
+    return notesInfo.map((note) => ankiMapper.fromAnkiNote(note, deckId));
   }
 
-  async exportFlashcards(flashcardIds) {
+  async exportFlashcards(_flashcardIds) {
     // Implementar exportación específica a Anki
     throw new Error('Método no implementado');
   }
 
-  async updateReviewProgress(flashcardId, difficulty) {
+  async updateReviewProgress(_flashcardId, _difficulty) {
     // Implementar actualización de progreso en Anki
     throw new Error('Método no implementado');
   }
