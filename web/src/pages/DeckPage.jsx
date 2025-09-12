@@ -7,12 +7,6 @@ import {
   Alert,
   CircularProgress,
   Box,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Typography,
-  TextField,
   useTheme as useMuiTheme,
   Fab,
   Tooltip
@@ -46,18 +40,18 @@ const DeckPage = () => {
   const [cards, setCards] = useState([]);
   const [totalCards, setTotalCards] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [_error, setError] = useState(null);
 
   // Búsqueda y paginación
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searching, setSearching] = useState(false);
+  const [searchQuery, _setSearchQuery] = useState('');
+  const [_searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [searchTotal, setSearchTotal] = useState(0);
 
   // Estados para tags y paginación
   const [tags, setTags] = useState([]); // Lista de tags disponibles
   const [newCardTagId, setNewCardTagId] = useState('');
-  const [editingCardTagId, setEditingCardTagId] = useState('');
+  const [_editingCardTagId, _setEditingCardTagId] = useState('');
 
   // Hook personalizado para manejar flashcards
   const flashcardManager = useFlashcardManager(deckId);
@@ -100,8 +94,7 @@ const DeckPage = () => {
         flashcards.getByDeck(deckId, { page: p, pageSize })
       ]);
 
-      console.log('✅ Loaded flashcards:', cardsResponse.data?.data?.length || 0);
-
+      // console.debug('✅ Loaded flashcards:', cardsResponse.data?.data?.length || 0);
 
       // Verificar si la respuesta tiene la estructura correcta
       const cardsData = cardsResponse.data.data || cardsResponse.data || [];
@@ -121,7 +114,11 @@ const DeckPage = () => {
     }
   };
 
-  const handleSearch = async (query, p = flashcardManager.page, pageSize = flashcardManager.rowsPerPage) => {
+  const handleSearch = async (
+    query,
+    p = flashcardManager.page,
+    pageSize = flashcardManager.rowsPerPage
+  ) => {
     try {
       setSearching(true);
       const res = await flashcards.searchInDeck(deckId, query, { page: p, pageSize });
@@ -215,9 +212,9 @@ const DeckPage = () => {
     flashcardManager.openReviewDialog(card);
   };
 
-  const getDifficultyColor = (d) =>
+  const _getDifficultyColor = (d) =>
     d === 1 ? 'success' : d === 2 ? 'warning' : d === 3 ? 'error' : 'default';
-  const getDifficultyLabel = (d) =>
+  const _getDifficultyLabel = (d) =>
     d === 1 ? 'Fácil' : d === 2 ? 'Normal' : d === 3 ? 'Difícil' : 'Sin dificultad';
 
   // Loading

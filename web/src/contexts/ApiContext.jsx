@@ -34,7 +34,10 @@ api.interceptors.response.use(
     }
 
     // Si es un error 500 pero el mensaje indica que es un 404 (recurso no encontrado)
-    if (error.response?.status === 500 && error.response?.data?.message?.includes('no encontrado')) {
+    if (
+      error.response?.status === 500 &&
+      error.response?.data?.message?.includes('no encontrado')
+    ) {
       // Crear una nueva respuesta con status 404
       const notFoundResponse = {
         ...error.response,

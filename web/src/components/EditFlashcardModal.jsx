@@ -47,15 +47,8 @@ const EditFlashcardModal = ({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth="md"
-      fullWidth
-    >
-      <DialogTitle sx={{ fontFamily: muiTheme.fontFamily }}>
-        Editar Flashcard
-      </DialogTitle>
+    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+      <DialogTitle sx={{ fontFamily: muiTheme.fontFamily }}>Editar Flashcard</DialogTitle>
       <DialogContent sx={{ fontFamily: muiTheme.fontFamily }}>
         {editingCard && (
           <Box sx={{ pt: 2 }}>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -21,7 +21,6 @@ import {
   TableHead,
   TableRow,
   IconButton,
-  useTheme,
   Tooltip
 } from '@mui/material';
 import {
@@ -62,11 +61,7 @@ const HomePage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deckToDelete, setDeckToDelete] = useState(null);
 
-  useEffect(() => {
-    loadDecks();
-  }, []);
-
-  const loadDecks = async () => {
+  const loadDecks = useCallback(async () => {
     try {
       setLoading(true);
       const response = await decks.getAll();
@@ -78,7 +73,11 @@ const HomePage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [decks]);
+
+  useEffect(() => {
+    loadDecks();
+  }, [loadDecks]);
 
   const handleCreateDeck = async () => {
     if (!newDeck.name.trim()) return;

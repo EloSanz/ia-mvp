@@ -31,15 +31,8 @@ const ReviewFlashcardModal = ({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth="md"
-      fullWidth
-    >
-      <DialogTitle sx={{ fontFamily: muiTheme.fontFamily }}>
-        Estudiando Flashcard
-      </DialogTitle>
+    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+      <DialogTitle sx={{ fontFamily: muiTheme.fontFamily }}>Estudiando Flashcard</DialogTitle>
       <DialogContent sx={{ fontFamily: muiTheme.fontFamily }}>
         {reviewingCard && (
           <Box>
@@ -63,12 +56,7 @@ const ReviewFlashcardModal = ({
 
             {!showAnswer ? (
               <Box textAlign="center" sx={{ mt: 3 }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="large"
-                  onClick={handleShowAnswer}
-                >
+                <Button variant="contained" color="primary" size="large" onClick={handleShowAnswer}>
                   Mostrar Respuesta
                 </Button>
               </Box>
@@ -96,25 +84,13 @@ const ReviewFlashcardModal = ({
                   ¿Qué tan fácil fue recordar esta respuesta?
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 2 }}>
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    onClick={() => handleReview(3)}
-                  >
+                  <Button variant="outlined" color="error" onClick={() => handleReview(3)}>
                     Difícil
                   </Button>
-                  <Button
-                    variant="outlined"
-                    color="warning"
-                    onClick={() => handleReview(2)}
-                  >
+                  <Button variant="outlined" color="warning" onClick={() => handleReview(2)}>
                     Normal
                   </Button>
-                  <Button
-                    variant="outlined"
-                    color="success"
-                    onClick={() => handleReview(1)}
-                  >
+                  <Button variant="outlined" color="success" onClick={() => handleReview(1)}>
                     Fácil
                   </Button>
                 </Box>
@@ -124,9 +100,7 @@ const ReviewFlashcardModal = ({
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>
-          Cerrar
-        </Button>
+        <Button onClick={handleClose}>Cerrar</Button>
       </DialogActions>
     </Dialog>
   );

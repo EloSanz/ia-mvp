@@ -32,7 +32,6 @@ const FlashcardTable = ({
 }) => {
   const displayCards = searchQuery ? searchResults : cards;
 
-
   return (
     <TableContainer>
       <Table sx={{ minWidth: 650 }}>
@@ -91,10 +90,14 @@ const FlashcardTable = ({
             <TableRow>
               <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
                 <Typography variant="body1" color="text.secondary">
-                  {searchQuery ? 'No se encontraron flashcards con esa búsqueda' : 'No hay flashcards en este deck'}
+                  {searchQuery
+                    ? 'No se encontraron flashcards con esa búsqueda'
+                    : 'No hay flashcards en este deck'}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  {searchQuery ? 'Intenta con otros términos de búsqueda' : 'Crea tu primera flashcard para comenzar'}
+                  {searchQuery
+                    ? 'Intenta con otros términos de búsqueda'
+                    : 'Crea tu primera flashcard para comenzar'}
                 </Typography>
               </TableCell>
             </TableRow>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useApi } from '../contexts/ApiContext';
 import {
   Box,
@@ -21,7 +21,7 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 
-export default function TagPage({ token }) {
+export default function TagPage({ _token }) {
   const { tags: tagsService } = useApi();
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +32,7 @@ export default function TagPage({ token }) {
   const [editTag, setEditTag] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  const fetchTags = async () => {
+  const fetchTags = useCallback(async () => {
     setLoading(true);
     try {
       const response = await tagsService.getAll();
@@ -42,11 +42,11 @@ export default function TagPage({ token }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tagsService]);
 
   useEffect(() => {
     fetchTags();
-  }, [tagsService]);
+  }, [fetchTags]);
 
   const handleCreate = async () => {
     setSaving(true);
