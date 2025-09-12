@@ -108,11 +108,20 @@ export default function TagPage({ token }) {
 
   return (
     <Box p={3}>
-      <Typography variant="h4" gutterBottom>Gestión de Tags</Typography>
-      <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)} sx={{ mb: 2 }}>
+      <Typography variant="h4" gutterBottom>
+        Gestión de Tags
+      </Typography>
+      <Button
+        variant="contained"
+        startIcon={<AddIcon />}
+        onClick={() => setCreateOpen(true)}
+        sx={{ mb: 2 }}
+      >
         Nueva Tag
       </Button>
-      {loading ? <CircularProgress /> : (
+      {loading ? (
+        <CircularProgress />
+      ) : (
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -122,11 +131,17 @@ export default function TagPage({ token }) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {tags.map(tag => (
+              {tags.map((tag) => (
                 <TableRow key={tag.id}>
                   <TableCell>{tag.name}</TableCell>
                   <TableCell align="right">
-                    <IconButton color="primary" onClick={() => { setEditTag(tag); setEditOpen(true); }}>
+                    <IconButton
+                      color="primary"
+                      onClick={() => {
+                        setEditTag(tag);
+                        setEditOpen(true);
+                      }}
+                    >
                       <EditIcon />
                     </IconButton>
                     <IconButton color="error" onClick={() => handleDelete(tag.id)}>
@@ -149,12 +164,16 @@ export default function TagPage({ token }) {
             label="Nombre"
             fullWidth
             value={newTagName}
-            onChange={e => setNewTagName(e.target.value)}
+            onChange={(e) => setNewTagName(e.target.value)}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCreateOpen(false)}>Cancelar</Button>
-          <Button onClick={handleCreate} variant="contained" disabled={!newTagName.trim() || saving}>
+          <Button
+            onClick={handleCreate}
+            variant="contained"
+            disabled={!newTagName.trim() || saving}
+          >
             {saving ? <CircularProgress size={20} /> : 'Crear'}
           </Button>
         </DialogActions>
@@ -169,17 +188,25 @@ export default function TagPage({ token }) {
             label="Nombre"
             fullWidth
             value={editTag?.name || ''}
-            onChange={e => setEditTag({ ...editTag, name: e.target.value })}
+            onChange={(e) => setEditTag({ ...editTag, name: e.target.value })}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditOpen(false)}>Cancelar</Button>
-          <Button onClick={handleEdit} variant="contained" disabled={!editTag?.name?.trim() || saving}>
+          <Button
+            onClick={handleEdit}
+            variant="contained"
+            disabled={!editTag?.name?.trim() || saving}
+          >
             {saving ? <CircularProgress size={20} /> : 'Guardar'}
           </Button>
         </DialogActions>
       </Dialog>
-      {error && <Typography color="error" mt={2}>{error}</Typography>}
+      {error && (
+        <Typography color="error" mt={2}>
+          {error}
+        </Typography>
+      )}
     </Box>
   );
 }

@@ -63,7 +63,20 @@ export const ApiProvider = ({ children }) => {
     search: (query, deckId) =>
       api.get('/api/flashcards/search', {
         params: { q: query, deckId }
+      }),
+    searchInDeck: (deckId, consigna, { page = 0, pageSize = 15 } = {}) =>
+      api.get(`/api/flashcards/deck/${deckId}/search`, {
+        params: { q: consigna, page, pageSize }
       })
+  };
+
+  // Tags API
+  const tags = {
+    getAll: () => api.get('/api/tags'),
+    getById: (id) => api.get(`/api/tags/${id}`),
+    create: (data) => api.post('/api/tags', data),
+    update: (id, data) => api.put(`/api/tags/${id}`, data),
+    delete: (id) => api.delete(`/api/tags/${id}`)
   };
 
   // Sync API (para futuras integraciones)
@@ -76,6 +89,7 @@ export const ApiProvider = ({ children }) => {
   const value = {
     decks,
     flashcards,
+    tags,
     sync
   };
 

@@ -6,6 +6,7 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(localStorage.getItem('token') || null);
 
   useEffect(() => {
     // Verificar si hay un token guardado
@@ -14,6 +15,7 @@ export const AuthProvider = ({ children }) => {
     if (token && savedUser) {
       setUser(JSON.parse(savedUser));
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setToken(token);
     }
     setLoading(false);
   }, []);
@@ -33,6 +35,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(userData));
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(userData);
+      setToken(token);
       return { success: true };
     } catch (error) {
       return {
@@ -55,6 +58,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(userData));
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(userData);
+      setToken(token);
       return { success: true };
     } catch (error) {
       return {
@@ -69,6 +73,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
     delete axios.defaults.headers.common['Authorization'];
     setUser(null);
+    setToken(null);
   };
 
   if (loading) {
@@ -76,7 +81,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
