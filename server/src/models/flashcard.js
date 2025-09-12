@@ -80,8 +80,8 @@ export class Flashcard {
   /**
    * Busca flashcards por deckId
    */
-  static async findByDeckId(deckId) {
-    const { items, total } = await FlashcardRepository.findByDeckId(deckId, arguments[1]);
+  static async findByDeckId(deckId, { page = 0, pageSize = 15 } = {}) {
+    const { items, total } = await FlashcardRepository.findByDeckId(deckId, { page, pageSize });
     return {
       items: items.map((entity) => Flashcard.fromEntity(entity)),
       total
