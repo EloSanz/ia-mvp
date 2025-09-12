@@ -3,10 +3,12 @@ dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import deckRoutes from './routes/deck.routes.js';
+import tagRoutes from './routes/tag.routes.js';
 import flashcardRoutes from './routes/flashcard.routes.js';
 import syncRoutes from './routes/sync.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import { errorHandler } from './middlewares/error.middleware.js';
+import { authMiddleware } from './middlewares/auth.middleware.js';
 
 const app = express();
 
@@ -18,6 +20,7 @@ app.use(express.json());
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 // API routes
+app.use('/api/tags', authMiddleware, tagRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/decks', deckRoutes);
 app.use('/api/flashcards', flashcardRoutes);

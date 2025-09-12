@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -58,6 +59,8 @@ const DeckPage = () => {
   // Modal para crear flashcard
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newCard, setNewCard] = useState({ front: '', back: '' });
+  const [tags, setTags] = useState([]); // Lista de tags disponibles
+  const [newCardTagId, setNewCardTagId] = useState('');
   const [creating, setCreating] = useState(false);
 
   // Modal para generar flashcards con IA
@@ -66,6 +69,7 @@ const DeckPage = () => {
   // Modal para editar flashcard
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingCard, setEditingCard] = useState(null);
+  const [editingCardTagId, setEditingCardTagId] = useState('');
   const [editing, setEditing] = useState(false);
 
   // Modal para revisar flashcard
@@ -80,6 +84,11 @@ const DeckPage = () => {
   const [cardToDelete, setCardToDelete] = useState(null);
 
   useEffect(() => {
+    // Cargar tags al montar el componente
+    fetch('/api/tags')
+      .then(res => res.json())
+      .then(data => setTags(data))
+      .catch(() => setTags([]));
     loadDeckAndCards(page, rowsPerPage);
     // eslint-disable-next-line
   }, [deckId, page, rowsPerPage]);
@@ -419,7 +428,22 @@ const DeckPage = () => {
               variant="outlined"
               value={newCard.back}
               onChange={(e) => setNewCard({ ...newCard, back: e.target.value })}
+              sx={{ mb: 2 }}
             />
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel id="tag-select-label">Tag</InputLabel>
+              <Select
+                labelId="tag-select-label"
+                value={newCardTagId}
+                label="Tag"
+                onChange={e => setNewCardTagId(e.target.value)}
+              >
+                <MenuItem value=""><em>Sin tag</em></MenuItem>
+                {tags.map(tag => (
+                  <MenuItem key={tag.id} value={tag.id}>{tag.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setCreateDialogOpen(false)}>Cancelar</Button>
@@ -463,7 +487,22 @@ const DeckPage = () => {
               variant="outlined"
               value={editingCard?.back || ''}
               onChange={(e) => setEditingCard({ ...editingCard, back: e.target.value })}
+              sx={{ mb: 2 }}
             />
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel id="edit-tag-select-label">Tag</InputLabel>
+              <Select
+                labelId="edit-tag-select-label"
+                value={editingCardTagId}
+                label="Tag"
+                onChange={e => setEditingCardTagId(e.target.value)}
+              >
+                <MenuItem value=""><em>Sin tag</em></MenuItem>
+                {tags.map(tag => (
+                  <MenuItem key={tag.id} value={tag.id}>{tag.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setEditDialogOpen(false)}>Cancelar</Button>

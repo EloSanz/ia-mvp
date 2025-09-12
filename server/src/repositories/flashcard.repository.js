@@ -191,7 +191,8 @@ export class FlashcardRepository {
               id: true,
               name: true
             }
-          }
+          },
+          tag: true
         }
       });
 
@@ -222,7 +223,8 @@ export class FlashcardRepository {
               id: true,
               name: true
             }
-          }
+          },
+          tag: true
         }
       });
 
