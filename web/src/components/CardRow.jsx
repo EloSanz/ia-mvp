@@ -61,6 +61,7 @@ const CardRow = ({
           loadDeckAndCards={loadDeckAndCards}
           tagsService={tagsService}
           onCardTagUpdated={onCardTagUpdated}
+          onRightHalfClick={() => openReviewDialog(card)}
         />
       </TableCell>
       <TableCell sx={{ py: 1.5 }}>

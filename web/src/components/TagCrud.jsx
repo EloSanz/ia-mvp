@@ -21,7 +21,8 @@ const TagCrud = ({
   setTags,
   loadDeckAndCards,
   tagsService,
-  onCardTagUpdated
+  onCardTagUpdated,
+  onRightHalfClick
 }) => {
   const [open, setOpen] = useState(false);
   const [newTagName, setNewTagName] = useState('');
@@ -70,22 +71,46 @@ const TagCrud = ({
       className="tag-crud"
       onClick={(e) => e.stopPropagation()} // evita que el click burbujee a la fila
     >
-      <TextField
-        value={displayName}
-        size="small"
-        variant="outlined"
-        sx={{ width: 140, cursor: 'pointer' }}
-        InputProps={{ readOnly: true }}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setOpen(true);
-        }}
-        onMouseDown={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-      />
+      <Box sx={{ position: 'relative', display: 'inline-block' }}>
+        <TextField
+          value={displayName}
+          size="small"
+          variant="outlined"
+          sx={{ width: 140, cursor: 'pointer' }}
+          InputProps={{ readOnly: true }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setOpen(true); // mitad izquierda: abrir selector de tag
+          }}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        />
+        {/* Mitad derecha: estudiar */}
+        <Box
+          role="button"
+          aria-label="Estudiar"
+          title="Estudiar"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onRightHalfClick && onRightHalfClick();
+          }}
+          sx={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: '50%',
+            height: '100%',
+            cursor: 'pointer',
+            '&:hover': {
+              boxShadow: `inset 0 0 0 9999px ${muiTheme?.palette?.action?.hover ?? 'rgba(0,0,0,0.06)'}`
+            }
+          }}
+        />
+      </Box>
 
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontFamily: muiTheme.fontFamily }}>Cambiar o crear tag</DialogTitle>
