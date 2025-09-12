@@ -9,8 +9,7 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem,
-  Box
+  MenuItem
 } from '@mui/material';
 
 const TagCrud = ({
@@ -21,8 +20,7 @@ const TagCrud = ({
   setTags,
   loadDeckAndCards,
   tagsService,
-  onCardTagUpdated,
-  onRightHalfClick
+  onCardTagUpdated
 }) => {
   const [open, setOpen] = useState(false);
   const [newTagName, setNewTagName] = useState('');
@@ -67,68 +65,25 @@ const TagCrud = ({
   };
 
   return (
-    <Box
+    <div
       className="tag-crud"
-      sx={{
-        position: 'relative',
-        display: 'inline-block',
-        width: 140,
-        cursor: 'pointer'
-      }}
       onClick={(e) => e.stopPropagation()} // evita que el click burbujee a la fila
     >
-      {/* Mitad izquierda: editar tag */}
-      <Box
-        role="button"
-        aria-label="Editar tag"
-        title="Editar tag"
+      <TextField
+        value={displayName}
+        size="small"
+        variant="outlined"
+        sx={{ width: 140, cursor: 'pointer' }}
+        InputProps={{ readOnly: true }}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
           setOpen(true);
         }}
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '50%',
-          height: '100%',
-          cursor: 'pointer',
-          zIndex: 10
-        }}
-      />
-
-      {/* Mitad derecha: estudiar */}
-      <Box
-        role="button"
-        aria-label="Estudiar"
-        title="Estudiar"
-        onClick={(e) => {
+        onMouseDown={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log('Right half clicked for studying'); // debug
-          onRightHalfClick && onRightHalfClick();
         }}
-        sx={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          width: '50%',
-          height: '100%',
-          cursor: 'pointer',
-          zIndex: 10,
-          '&:hover': {
-            backgroundColor: 'rgba(0,0,0,0.04)'
-          }
-        }}
-      />
-
-      <TextField
-        value={displayName}
-        size="small"
-        variant="outlined"
-        sx={{ width: '100%', pointerEvents: 'none' }}
-        InputProps={{ readOnly: true }}
       />
 
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth>
@@ -153,7 +108,7 @@ const TagCrud = ({
             </Select>
           </FormControl>
 
-          <Box display="flex" alignItems="center" gap={1}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <TextField
               placeholder="Nueva tag…"
               value={newTagName}
@@ -169,13 +124,13 @@ const TagCrud = ({
             >
               +
             </Button>
-          </Box>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Cerrar</Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </div>
   );
 };
 
