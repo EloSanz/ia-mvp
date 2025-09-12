@@ -29,15 +29,16 @@ const CardRow = ({
       key={card.id}
       hover
       onClick={(e) => {
-        // Solo abrir review si no se hizo clic en el campo de texto del tag
+        // Excluir solo elementos específicos que tienen su propia funcionalidad
         const isTagTextField = e.target.closest('.MuiTextField-root');
-        const isTagCrudArea = e.target.closest('.tag-crud');
+        const isEditButton = e.target.closest('[aria-label="Editar"], [title="Editar"]');
+        const isDeleteButton = e.target.closest('[aria-label="Eliminar"], [title="Eliminar"]');
+        const isReviewButton = e.target.closest('[aria-label="Revisar"], [title="Revisar"]');
 
-        // Si no es el campo de texto del tag, abrir la flashcard para estudiar
-        if (!isTagTextField && !isTagCrudArea) {
+        // Si no es ninguno de los elementos excluidos, abrir la flashcard
+        if (!isTagTextField && !isEditButton && !isDeleteButton && !isReviewButton) {
           openReviewDialog(card);
         }
-        // Si es el campo de texto, el TagCrud manejará su propio onClick
       }}
       sx={{
         backgroundColor: muiTheme?.palette?.background?.paper || '#ffffff',
@@ -47,10 +48,6 @@ const CardRow = ({
     >
       <TableCell
         sx={{ color: muiTheme?.palette?.text?.primary || '#000000', fontSize: '0.95rem', py: 1.5 }}
-        onClick={(e) => {
-          e.stopPropagation();
-          openReviewDialog(card);
-        }}
       >
         {card.front.length > 25 ? card.front.substring(0, 25) + '…' : card.front}
       </TableCell>
@@ -66,39 +63,20 @@ const CardRow = ({
           onCardTagUpdated={onCardTagUpdated}
         />
       </TableCell>
-      <TableCell
-        sx={{ py: 1.5 }}
-        onClick={(e) => {
-          e.stopPropagation();
-          openReviewDialog(card);
-        }}
-      >
+      <TableCell sx={{ py: 1.5 }}>
         <Chip
           label={getDifficultyLabel(card.difficulty)}
           color={getDifficultyColor(card.difficulty)}
           size="small"
         />
       </TableCell>
-      <TableCell
-        sx={{ py: 1.5 }}
-        onClick={(e) => {
-          e.stopPropagation();
-          openReviewDialog(card);
-        }}
-      >
-        {card.reviewCount > 0 ? `${card.reviewCount}` : '0'}
-      </TableCell>
-      <TableCell
-        sx={{ py: 1 }}
-        onClick={(e) => {
-          e.stopPropagation();
-          openReviewDialog(card);
-        }}
-      >
+      <TableCell sx={{ py: 1.5 }}>{card.reviewCount > 0 ? `${card.reviewCount}` : '0'}</TableCell>
+      <TableCell sx={{ py: 1 }}>
         <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
           <Tooltip title="Revisar">
             <IconButton
               size="small"
+              aria-label="Revisar"
               sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.primary.main }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -111,6 +89,7 @@ const CardRow = ({
           <Tooltip title="Editar">
             <IconButton
               size="small"
+              aria-label="Editar"
               sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.secondary.main }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -123,6 +102,7 @@ const CardRow = ({
           <Tooltip title="Eliminar">
             <IconButton
               size="small"
+              aria-label="Eliminar"
               sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.error.main }}
               onClick={(e) => {
                 e.stopPropagation();
