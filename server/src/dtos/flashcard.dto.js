@@ -12,9 +12,11 @@ export class FlashcardDto {
     this.lastReviewed = data.lastReviewed || null;
     this.nextReview = data.nextReview || null;
     this.reviewCount = data.reviewCount || 0;
-    this.createdAt = data.createdAt || null;
-    this.updatedAt = data.updatedAt || null;
-    this.deck = data.deck || null; // Información del deck relacionado
+      this.tagId = data.tagId || null;
+      this.tag = data.tag || null; // Objeto TagDto
+      this.createdAt = data.createdAt || null;
+      this.updatedAt = data.updatedAt || null;
+      this.deck = data.deck || null; // Información del deck relacionado
   }
 
   /**
@@ -30,9 +32,11 @@ export class FlashcardDto {
       lastReviewed: flashcardModel.lastReviewed,
       nextReview: flashcardModel.nextReview,
       reviewCount: flashcardModel.reviewCount,
-      createdAt: flashcardModel.createdAt,
-      updatedAt: flashcardModel.updatedAt
-    });
+        tagId: flashcardModel.tagId,
+        tag: flashcardModel.tag,
+        createdAt: flashcardModel.createdAt,
+        updatedAt: flashcardModel.updatedAt
+      });
   }
 
   /**
@@ -72,6 +76,10 @@ export class FlashcardDto {
       errors.push('La dificultad debe estar entre 1 y 3');
     }
 
+    if (data.tagId !== undefined && data.tagId !== null && isNaN(Number(data.tagId))) {
+      errors.push('El tagId debe ser un número válido o null');
+    }
+
     if (errors.length > 0) {
       throw new Error(`Errores de validación: ${errors.join(', ')}`);
     }
@@ -80,7 +88,8 @@ export class FlashcardDto {
       front: data.front.trim(),
       back: data.back.trim(),
       deckId: data.deckId,
-      difficulty: data.difficulty || 2
+      difficulty: data.difficulty || 2,
+      tagId: data.tagId || null
     });
   }
 
@@ -88,6 +97,9 @@ export class FlashcardDto {
    * Valida los datos de entrada para actualizar una flashcard
    */
   static validateUpdate(data) {
+    if (data.tagId !== undefined && data.tagId !== null && isNaN(Number(data.tagId))) {
+      errors.push('El tagId debe ser un número válido o null');
+    }
     const errors = [];
 
     if (data.front !== undefined) {

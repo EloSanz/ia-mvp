@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material';
 
-
 export const ThemeContext = createContext();
 
 export const useTheme = () => {
@@ -35,14 +34,14 @@ const kyotoTheme = Object.assign(
       }
     }
   }),
-    { 
-      fontFamily: 'Sawarabi Mincho, Noto Serif JP, serif',
-      customBackground: {
-        image: '/src/assets/kyoto.png',
-        blur: 4,
-        opacity: 0.7,
-        brightness: 1.08
-      }
+  {
+    fontFamily: 'Sawarabi Mincho, Noto Serif JP, serif',
+    customBackground: {
+      image: '/src/assets/kyoto.png',
+      blur: 4,
+      opacity: 0.7,
+      brightness: 1.08
+    }
   }
 );
 
@@ -69,117 +68,64 @@ const tokyoTheme = Object.assign(
       }
     }
   }),
-    { 
-      fontFamily: 'M PLUS 1p, Noto Sans JP, sans-serif',
-      customBackground: {
-        image: '/src/assets/tokyo.png',
-        blur: 1,
-        opacity: 0.3,
-        brightness: 1.08
-      }
+  {
+    fontFamily: 'M PLUS 1p, Noto Sans JP, sans-serif',
+    customBackground: {
+      image: '/src/assets/tokyo.png',
+      blur: 1,
+      opacity: 0.3,
+      brightness: 1.08
+    }
   }
 );
 
 const themes = {
-  light: createTheme({
-    palette: {
-      mode: 'light',
-      primary: { main: '#1976d2' },
-      secondary: { main: '#9c27b0' },
-      background: {
-        default: '#f7f9fa',
-        paper: '#fdfdfd'
-      },
-      divider: '#e0e0e0',
-      action: {
-        hover: '#f0f4f8'
-      },
-      text: {
-        primary: '#222',
-        secondary: '#444'
-      },
-      icon: {
-        main: '#222'
+  light: Object.assign(
+    createTheme({
+      palette: {
+        mode: 'light',
+        primary: { main: '#1976d2' },
+        secondary: { main: '#9c27b0' },
+        background: {
+          default: '#f7f9fa',
+          paper: '#fdfdfd'
+        },
+        divider: '#e0e0e0',
+        action: {
+          hover: '#f0f4f8'
+        },
+        text: {
+          primary: '#222',
+          secondary: '#444'
+        },
+        icon: {
+          main: '#222'
+        }
       }
-    }
-  }),
-    light: Object.assign(
-      createTheme({
-        palette: {
-          mode: 'light',
-          primary: { main: '#1976d2' },
-          secondary: { main: '#9c27b0' },
-          background: {
-            default: '#f7f9fa',
-            paper: '#fdfdfd'
-          },
-          divider: '#e0e0e0',
-          action: {
-            hover: '#f0f4f8'
-          },
-          text: {
-            primary: '#222',
-            secondary: '#444'
-          },
-          icon: {
-            main: '#222'
-          }
-        }
-      }),
-      { fontFamily: 'Roboto, Arial, sans-serif' }
-    ),
-  dark: createTheme({
-    palette: {
-      mode: 'dark',
-      primary: { main: '#90caf9' },
-      secondary: { main: '#ce93d8' },
-      background: { default: '#1e1e1e', paper: '#2d2d2d' },
-      grey: { 800: '#333333', 900: '#1e1e1e' }
-    }
-  }),
-    dark: Object.assign(
-      createTheme({
-        palette: {
-          mode: 'dark',
-          primary: { main: '#90caf9' },
-          secondary: { main: '#ce93d8' },
-          background: { default: '#1e1e1e', paper: '#2d2d2d' },
-          grey: { 800: '#333333', 900: '#1e1e1e' }
-        }
-      }),
-      { fontFamily: 'Roboto, Arial, sans-serif' }
-    ),
+    }),
+    { fontFamily: 'Roboto, Arial, sans-serif' }
+  ),
+  dark: Object.assign(
+    createTheme({
+      palette: {
+        mode: 'dark',
+        primary: { main: '#90caf9' },
+        secondary: { main: '#ce93d8' },
+        background: { default: '#1e1e1e', paper: '#2d2d2d' },
+        grey: { 800: '#333333', 900: '#1e1e1e' }
+      }
+    }),
+    { fontFamily: 'Roboto, Arial, sans-serif' }
+  ),
   github: createTheme({
     palette: {
       mode: 'dark',
       primary: { main: '#2ea44f' },
       secondary: { main: '#24292f' },
       background: { default: '#0d1117', paper: '#161b22' },
-      text: { primary: '#c9d1d9', secondary: '#8b949e' },
-      grey: { 800: '#21262d', 900: '#0d1117' },
-      info: { main: '#58a6ff' },
-      warning: { main: '#f6c343' },
-      error: { main: '#f85149' },
-      success: { main: '#2ea44f' }
+      text: { primary: '#c9d1d9', secondary: '#8b949e' }
     }
   }),
-    github: Object.assign(
-      createTheme({
-        palette: {
-          mode: 'dark',
-          primary: { main: '#2ea44f' },
-          secondary: { main: '#24292f' },
-          background: { default: '#0d1117', paper: '#161b22' },
-          text: { primary: '#c9d1d9', secondary: '#8b949e' },
-          grey: { 800: '#21262d', 900: '#0d1117' },
-          info: { main: '#58a6ff' },
-          warning: { main: '#f6c343' },
-          error: { main: '#f85149' },
-          success: { main: '#2ea44f' }
-        }
-      }),
-      { fontFamily: 'Roboto Mono, Fira Mono, Menlo, Monaco, Consolas, monospace' }
-    ),
   tokyo: tokyoTheme,
   kyoto: kyotoTheme
 };
@@ -198,14 +144,12 @@ export const ThemeProvider = ({ children }) => {
     setThemeName(name);
   };
 
-  const theme = themes[themeName] || themes.dark;
+  const theme = themes[themeName] || themes.dark || createTheme();
 
   // Pass themeName so components can use it for background image logic
   return (
     <ThemeContext.Provider value={{ themeName, setTheme, themes }}>
-      <MuiThemeProvider theme={theme}>
-        {children}
-      </MuiThemeProvider>
+      <MuiThemeProvider theme={theme}>{children}</MuiThemeProvider>
     </ThemeContext.Provider>
   );
 };

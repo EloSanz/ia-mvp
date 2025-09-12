@@ -46,6 +46,17 @@ model Flashcard {
   nextReview  DateTime?
   reviewCount Int      @default(0)
 
+  tagId       Int?
+  tag         Tag?     @relation(fields: [tagId], references: [id])
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Tag {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  flashcards Flashcard[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }

@@ -10,11 +10,49 @@ const api = axios.create({
   }
 });
 
+// Interceptor para agregar token de autorización
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // Interceptor para manejar errores
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('API Error:', error);
+    console.error('❌ API Error:', error.response?.status, error.config?.url, error.message);
+
+    // Si el servidor devuelve success: true, no es realmente un error
+    if (error.response?.data?.success === true) {
+      return Promise.resolve(error.response);
+    }
+
+    // Si es un error 500 pero el mensaje indica que es un 404 (recurso no encontrado)
+    if (error.response?.status === 500 && error.response?.data?.message?.includes('no encontrado')) {
+      // Crear una nueva respuesta con status 404
+      const notFoundResponse = {
+        ...error.response,
+        status: 404,
+        statusText: 'Not Found',
+        data: {
+          ...error.response.data,
+          success: false,
+          message: 'Recurso no encontrado',
+          statusCode: 404
+        }
+      };
+      return Promise.reject({
+        ...error,
+        response: notFoundResponse
+      });
+    }
+
     return Promise.reject(error);
   }
 );
@@ -52,8 +90,13 @@ export const ApiProvider = ({ children }) => {
   const flashcards = {
     getAll: () => api.get('/api/flashcards'),
     getById: (id) => api.get(`/api/flashcards/${id}`),
-    getByDeck: (deckId, { page = 0, pageSize = 15 } = {}) =>
-      api.get(`/api/flashcards/deck/${deckId}`, { params: { page, pageSize } }),
+    getByDeck: (deckId, { page = 0, pageSize = 15 } = {}) => {
+      const params = {};
+      if (page !== undefined && page !== null) params.page = page;
+      if (pageSize !== undefined && pageSize !== null) params.pageSize = pageSize;
+
+      return api.get(`/api/flashcards/deck/${deckId}`, { params });
+    },
     getDue: () => api.get('/api/flashcards/due'),
     create: (data) => api.post('/api/flashcards', data),
     createMany: (flashcards) => api.post('/api/flashcards/batch', { flashcards }),
@@ -67,7 +110,17 @@ export const ApiProvider = ({ children }) => {
     searchInDeck: (deckId, consigna, { page = 0, pageSize = 15 } = {}) =>
       api.get(`/api/flashcards/deck/${deckId}/search`, {
         params: { q: consigna, page, pageSize }
-      })
+      }),
+    generateWithAI: (text) => api.post('/api/flashcards/ai-generate', { text })
+  };
+
+  // Tags API
+  const tags = {
+    getAll: () => api.get('/api/tags'),
+    getById: (id) => api.get(`/api/tags/${id}`),
+    create: (data) => api.post('/api/tags', data),
+    update: (id, data) => api.put(`/api/tags/${id}`, data),
+    delete: (id) => api.delete(`/api/tags/${id}`)
   };
 
   // Sync API (para futuras integraciones)
@@ -80,6 +133,7 @@ export const ApiProvider = ({ children }) => {
   const value = {
     decks,
     flashcards,
+    tags,
     sync
   };
 

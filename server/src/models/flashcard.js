@@ -18,16 +18,18 @@ export class Flashcard {
     };
   }
   constructor(data = {}) {
-    this.id = data.id || null;
-    this.front = data.front || '';
-    this.back = data.back || '';
-    this.deckId = data.deckId || null;
-    this.difficulty = data.difficulty || 2;
-    this.lastReviewed = data.lastReviewed || null;
-    this.nextReview = data.nextReview || null;
-    this.reviewCount = data.reviewCount || 0;
-    this.createdAt = data.createdAt || new Date();
-    this.updatedAt = data.updatedAt || new Date();
+  this.id = data.id || null;
+  this.front = data.front || '';
+  this.back = data.back || '';
+  this.deckId = data.deckId || null;
+  this.difficulty = data.difficulty || 2;
+  this.lastReviewed = data.lastReviewed || null;
+  this.nextReview = data.nextReview || null;
+  this.reviewCount = data.reviewCount || 0;
+  this.tagId = data.tagId || null;
+  this.tag = data.tag || null;
+  this.createdAt = data.createdAt || new Date();
+  this.updatedAt = data.updatedAt || new Date();
   }
 
   /**
@@ -78,8 +80,8 @@ export class Flashcard {
   /**
    * Busca flashcards por deckId
    */
-  static async findByDeckId(deckId) {
-    const { items, total } = await FlashcardRepository.findByDeckId(deckId, arguments[1]);
+  static async findByDeckId(deckId, { page = 0, pageSize = 15 } = {}) {
+    const { items, total } = await FlashcardRepository.findByDeckId(deckId, { page, pageSize });
     return {
       items: items.map((entity) => Flashcard.fromEntity(entity)),
       total

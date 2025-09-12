@@ -113,7 +113,7 @@ const HomePage = () => {
   };
 
   const handleDeleteDeck = async (deckId) => {
-    const deck = decksList.find(d => d.id === deckId);
+    const deck = decksList.find((d) => d.id === deckId);
     setDeckToDelete(deck);
     setDeleteDialogOpen(true);
   };
@@ -165,7 +165,7 @@ const HomePage = () => {
               height: '100vh',
               background: `url(${themeName === 'kyoto' ? '/kyoto.png' : '/tokyo.png'}) center center / cover no-repeat`,
               filter: 'blur(3px) brightness(1.08)',
-              opacity: 0.7,
+              opacity: 0.7
             }}
           />
         )}
@@ -184,10 +184,10 @@ const HomePage = () => {
             }
           `}
         </style>
-        <Box 
-          display="flex" 
-          justifyContent="space-between" 
-          alignItems="center" 
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
           mb={3}
           sx={{
             borderBottom: '1px solid',
@@ -202,9 +202,9 @@ const HomePage = () => {
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
             <Tooltip title="Versión Beta" placement="bottom">
-              <Typography 
-                variant="caption" 
-                sx={{ 
+              <Typography
+                variant="caption"
+                sx={{
                   color: 'grey.500',
                   bgcolor: 'grey.800',
                   px: 1,
@@ -216,17 +216,26 @@ const HomePage = () => {
               </Typography>
             </Tooltip>
             <Tooltip title="Repositorio en GitHub" placement="bottom">
-              <IconButton size="small" sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.text.primary }}>
+              <IconButton
+                size="small"
+                sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.text.primary }}
+              >
                 <GitHubIcon fontSize="small" />
               </IconButton>
             </Tooltip>
             <Tooltip title="Contacto" placement="bottom">
-              <IconButton size="small" sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.text.primary }}>
+              <IconButton
+                size="small"
+                sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.text.primary }}
+              >
                 <EmailIcon fontSize="small" />
               </IconButton>
             </Tooltip>
             <Tooltip title="Acerca de" placement="bottom">
-              <IconButton size="small" sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.text.primary }}>
+              <IconButton
+                size="small"
+                sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.text.primary }}
+              >
                 <InfoIcon fontSize="small" />
               </IconButton>
             </Tooltip>
@@ -239,7 +248,7 @@ const HomePage = () => {
           </Alert>
         )}
 
-        <TableContainer 
+        <TableContainer
           component={Paper}
           sx={{
             backgroundColor: muiTheme.palette.background.paper,
@@ -256,9 +265,9 @@ const HomePage = () => {
           <Table sx={{ minWidth: 650 }}>
             <TableHead>
               <TableRow>
-                <TableCell 
-                  sx={{ 
-                    color: muiTheme.palette.text.secondary, 
+                <TableCell
+                  sx={{
+                    color: muiTheme.palette.text.secondary,
                     fontWeight: 'normal',
                     fontSize: '0.875rem',
                     py: 1.5
@@ -266,10 +275,10 @@ const HomePage = () => {
                 >
                   Deck
                 </TableCell>
-                <TableCell 
-                  align="right" 
-                  sx={{ 
-                    color: muiTheme.palette.text.secondary, 
+                <TableCell
+                  align="right"
+                  sx={{
+                    color: muiTheme.palette.text.secondary,
                     fontWeight: 'normal',
                     fontSize: '0.875rem',
                     py: 1.5
@@ -277,10 +286,10 @@ const HomePage = () => {
                 >
                   New
                 </TableCell>
-                <TableCell 
-                  align="right" 
-                  sx={{ 
-                    color: muiTheme.palette.text.secondary, 
+                <TableCell
+                  align="right"
+                  sx={{
+                    color: muiTheme.palette.text.secondary,
                     fontWeight: 'normal',
                     fontSize: '0.875rem',
                     py: 1.5
@@ -288,10 +297,10 @@ const HomePage = () => {
                 >
                   Learn
                 </TableCell>
-                <TableCell 
-                  align="right" 
-                  sx={{ 
-                    color: muiTheme.palette.text.secondary, 
+                <TableCell
+                  align="right"
+                  sx={{
+                    color: muiTheme.palette.text.secondary,
                     fontWeight: 'normal',
                     fontSize: '0.875rem',
                     py: 1.5
@@ -299,10 +308,10 @@ const HomePage = () => {
                 >
                   Due
                 </TableCell>
-                <TableCell 
-                  align="right" 
-                  sx={{ 
-                    color: muiTheme.palette.text.secondary, 
+                <TableCell
+                  align="right"
+                  sx={{
+                    color: muiTheme.palette.text.secondary,
                     fontWeight: 'normal',
                     fontSize: '0.875rem',
                     py: 1.5,
@@ -322,7 +331,7 @@ const HomePage = () => {
                   sx={{
                     cursor: 'pointer',
                     backgroundColor: muiTheme.palette.background.paper,
-                    '&:hover': { 
+                    '&:hover': {
                       backgroundColor: muiTheme.palette.action.hover,
                       '& .action-icons': {
                         opacity: 1
@@ -342,12 +351,17 @@ const HomePage = () => {
                       fontSize: '0.9rem'
                     }}
                   >
-                    <SchoolIcon sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.primary.main, fontSize: '1.1rem' }} />
+                    <SchoolIcon
+                      sx={{
+                        color: muiTheme.palette.icon?.main || muiTheme.palette.primary.main,
+                        fontSize: '1.1rem'
+                      }}
+                    />
                     {deck.name}
                   </TableCell>
-                  <TableCell 
-                    align="right" 
-                    sx={{ 
+                  <TableCell
+                    align="right"
+                    sx={{
                       color: '#2196f3',
                       py: 1.5,
                       fontSize: '0.9rem'
@@ -355,9 +369,9 @@ const HomePage = () => {
                   >
                     0
                   </TableCell>
-                  <TableCell 
-                    align="right" 
-                    sx={{ 
+                  <TableCell
+                    align="right"
+                    sx={{
                       color: '#ff9800',
                       py: 1.5,
                       fontSize: '0.9rem'
@@ -365,9 +379,9 @@ const HomePage = () => {
                   >
                     0
                   </TableCell>
-                  <TableCell 
-                    align="right" 
-                    sx={{ 
+                  <TableCell
+                    align="right"
+                    sx={{
                       color: '#4caf50',
                       py: 1.5,
                       fontSize: '0.9rem'
@@ -376,9 +390,9 @@ const HomePage = () => {
                     0
                   </TableCell>
                   <TableCell align="right" sx={{ py: 1 }}>
-                    <Box 
+                    <Box
                       className="action-icons"
-                      sx={{ 
+                      sx={{
                         opacity: 0,
                         transition: 'opacity 0.2s',
                         display: 'flex',
@@ -393,7 +407,7 @@ const HomePage = () => {
                             e.stopPropagation();
                             openEditDialog(deck);
                           }}
-                          sx={{ 
+                          sx={{
                             color: 'grey.400',
                             padding: 0.5
                           }}
@@ -408,7 +422,7 @@ const HomePage = () => {
                             e.stopPropagation();
                             handleDeleteDeck(deck.id);
                           }}
-                          sx={{ 
+                          sx={{
                             color: 'grey.400',
                             padding: 0.5,
                             '&:hover': {
@@ -442,9 +456,9 @@ const HomePage = () => {
         <Fab
           color="primary"
           aria-label="add"
-          sx={{ 
-            position: 'fixed', 
-            bottom: 24, 
+          sx={{
+            position: 'fixed',
+            bottom: 24,
             right: 24,
             width: 64,
             height: 64,

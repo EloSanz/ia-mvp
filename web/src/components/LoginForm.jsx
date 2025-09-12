@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Container,
-  Alert
-} from '@mui/material';
+import { Box, Button, TextField, Typography, Container, Alert } from '@mui/material';
 
 export const LoginForm = () => {
   const [username, setUsername] = useState('');
@@ -36,7 +29,7 @@ export const LoginForm = () => {
           marginTop: 8,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
+          alignItems: 'center'
         }}
       >
         <Typography component="h1" variant="h5">
@@ -66,12 +59,7 @@ export const LoginForm = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-          >
+          <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
             Iniciar Sesión
           </Button>
         </Box>
