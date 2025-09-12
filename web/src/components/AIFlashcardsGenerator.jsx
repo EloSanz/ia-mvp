@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTheme as useMuiTheme } from '@mui/material';
 import axios from 'axios';
 import {
   Dialog,
@@ -15,6 +16,7 @@ import {
 import { AutoFixHigh as AIIcon } from '@mui/icons-material';
 
 const AIFlashcardsGenerator = ({ open, onClose, onGenerate }) => {
+  const muiTheme = useMuiTheme();
   const [text, setText] = useState('');
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState(null);
@@ -40,17 +42,17 @@ const AIFlashcardsGenerator = ({ open, onClose, onGenerate }) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth >
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontFamily: muiTheme.fontFamily}}>
         <AIIcon /> Generar Flashcards con IA
       </DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ fontFamily: muiTheme.fontFamily}}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
         )}
-        <Typography variant="body1" gutterBottom>
+  <Typography variant="body1" gutterBottom sx={{ fontFamily: muiTheme.fontFamily }}>
           Ingresa el texto del que quieres generar flashcards. La IA analizará el contenido y creará
           preguntas y respuestas relevantes.
         </Typography>
@@ -64,10 +66,10 @@ const AIFlashcardsGenerator = ({ open, onClose, onGenerate }) => {
           variant="outlined"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          sx={{ mt: 2 }}
+          sx={{ mt: 2, fontFamily: muiTheme.fontFamily }}
         />
         <Box mt={2}>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: muiTheme.fontFamily }}>
             * Las flashcards generadas serán guardadas en el deck actual y podrás editarlas manualmente
             después.
           </Typography>

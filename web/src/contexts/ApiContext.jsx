@@ -63,6 +63,10 @@ export const ApiProvider = ({ children }) => {
     search: (query, deckId) =>
       api.get('/api/flashcards/search', {
         params: { q: query, deckId }
+      }),
+    searchInDeck: (deckId, consigna, { page = 0, pageSize = 15 } = {}) =>
+      api.get(`/api/flashcards/deck/${deckId}/search`, {
+        params: { q: consigna, page, pageSize }
       })
   };
 
