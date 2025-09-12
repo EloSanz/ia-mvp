@@ -37,7 +37,11 @@ import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 
+import { useTheme as useMuiTheme } from '@mui/material';
+import { useTheme as useAppTheme } from '../contexts/ThemeContext';
 const HomePage = () => {
+  const muiTheme = useMuiTheme();
+  const { themeName } = useAppTheme();
   const navigate = useNavigate();
   const { decks } = useApi();
   const [decksList, setDecksList] = useState([]);
@@ -141,7 +145,45 @@ const HomePage = () => {
   return (
     <>
       <Navigation />
-      <Container maxWidth="lg" sx={{ py: 2, backgroundColor: 'grey.900', minHeight: '100vh' }}>
+      <Container
+        maxWidth="lg"
+        sx={{
+          py: 2,
+          backgroundColor: muiTheme.palette.background.default,
+          minHeight: '100vh',
+          position: 'relative',
+          fontFamily: muiTheme.fontFamily
+        }}
+      >
+        {(themeName === 'kyoto' || themeName === 'tokyo') && (
+          <Box
+            sx={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: -1,
+              width: '100vw',
+              height: '100vh',
+              background: `url(${themeName === 'kyoto' ? '/kyoto.png' : '/tokyo.png'}) center center / cover no-repeat`,
+              filter: 'blur(3px) brightness(1.08)',
+              opacity: 0.7,
+            }}
+          />
+        )}
+        {/* Estilo japonés para Kyoto y Tokyo */}
+        <style>
+          {`
+            body {
+              font-family: ${themeName === 'kyoto' ? '"Sawarabi Mincho", "Noto Serif JP", serif' : themeName === 'tokyo' ? '"M PLUS 1p", "Noto Sans JP", sans-serif' : 'inherit'};
+            }
+            .japanese-title {
+              font-family: ${themeName === 'kyoto' ? '"Sawarabi Mincho", "Noto Serif JP", serif' : themeName === 'tokyo' ? '"M PLUS 1p", "Noto Sans JP", sans-serif' : 'inherit'};
+              letter-spacing: ${themeName === 'kyoto' ? '0.08em' : themeName === 'tokyo' ? '0.12em' : 'normal'};
+              font-weight: ${themeName === 'kyoto' ? '600' : themeName === 'tokyo' ? '700' : 'normal'};
+              color: ${themeName === 'kyoto' ? '#6d4c41' : themeName === 'tokyo' ? '#00eaff' : 'inherit'};
+              text-shadow: ${themeName === 'kyoto' ? '0 2px 8px #f7cac9' : themeName === 'tokyo' ? '0 2px 12px #ff00cc' : 'none'};
+            }
+          `}
+        </style>
         <Box 
           display="flex" 
           justifyContent="space-between" 
@@ -154,8 +196,8 @@ const HomePage = () => {
           }}
         >
           <Box display="flex" alignItems="center" gap={1}>
-            <Typography variant="h5" component="h1" sx={{ color: 'grey.300' }}>
-              Decks
+            <Typography variant="h5" component="h1" sx={{ color: muiTheme.palette.text.primary }}>
+              <span className="japanese-title">Decks</span>
             </Typography>
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
@@ -174,17 +216,17 @@ const HomePage = () => {
               </Typography>
             </Tooltip>
             <Tooltip title="Repositorio en GitHub" placement="bottom">
-              <IconButton size="small" sx={{ color: 'grey.400' }}>
+              <IconButton size="small" sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.text.primary }}>
                 <GitHubIcon fontSize="small" />
               </IconButton>
             </Tooltip>
             <Tooltip title="Contacto" placement="bottom">
-              <IconButton size="small" sx={{ color: 'grey.400' }}>
+              <IconButton size="small" sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.text.primary }}>
                 <EmailIcon fontSize="small" />
               </IconButton>
             </Tooltip>
             <Tooltip title="Acerca de" placement="bottom">
-              <IconButton size="small" sx={{ color: 'grey.400' }}>
+              <IconButton size="small" sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.text.primary }}>
                 <InfoIcon fontSize="small" />
               </IconButton>
             </Tooltip>
@@ -198,13 +240,16 @@ const HomePage = () => {
         )}
 
         <TableContainer 
-          component={Paper} 
-          sx={{ 
-            backgroundColor: 'grey.900',
+          component={Paper}
+          sx={{
+            backgroundColor: muiTheme.palette.background.paper,
             borderRadius: 1,
+            boxShadow: muiTheme.shadows[1],
+            fontFamily: muiTheme.fontFamily,
             '& .MuiTableCell-root': {
-              borderBottom: '1px solid',
-              borderColor: 'grey.800'
+              borderBottom: `1px solid ${muiTheme.palette.divider}`,
+              color: muiTheme.palette.text.primary,
+              fontFamily: muiTheme.fontFamily
             }
           }}
         >
@@ -213,7 +258,7 @@ const HomePage = () => {
               <TableRow>
                 <TableCell 
                   sx={{ 
-                    color: 'grey.400', 
+                    color: muiTheme.palette.text.secondary, 
                     fontWeight: 'normal',
                     fontSize: '0.875rem',
                     py: 1.5
@@ -224,7 +269,7 @@ const HomePage = () => {
                 <TableCell 
                   align="right" 
                   sx={{ 
-                    color: 'grey.400', 
+                    color: muiTheme.palette.text.secondary, 
                     fontWeight: 'normal',
                     fontSize: '0.875rem',
                     py: 1.5
@@ -235,7 +280,7 @@ const HomePage = () => {
                 <TableCell 
                   align="right" 
                   sx={{ 
-                    color: 'grey.400', 
+                    color: muiTheme.palette.text.secondary, 
                     fontWeight: 'normal',
                     fontSize: '0.875rem',
                     py: 1.5
@@ -246,7 +291,7 @@ const HomePage = () => {
                 <TableCell 
                   align="right" 
                   sx={{ 
-                    color: 'grey.400', 
+                    color: muiTheme.palette.text.secondary, 
                     fontWeight: 'normal',
                     fontSize: '0.875rem',
                     py: 1.5
@@ -257,7 +302,7 @@ const HomePage = () => {
                 <TableCell 
                   align="right" 
                   sx={{ 
-                    color: 'grey.400', 
+                    color: muiTheme.palette.text.secondary, 
                     fontWeight: 'normal',
                     fontSize: '0.875rem',
                     py: 1.5,
@@ -276,20 +321,20 @@ const HomePage = () => {
                   onClick={() => navigate(`/decks/${deck.id}`)}
                   sx={{
                     cursor: 'pointer',
+                    backgroundColor: muiTheme.palette.background.paper,
                     '&:hover': { 
-                      backgroundColor: 'grey.800',
+                      backgroundColor: muiTheme.palette.action.hover,
                       '& .action-icons': {
                         opacity: 1
                       }
-                    },
-                    backgroundColor: 'grey.900'
+                    }
                   }}
                 >
                   <TableCell
                     component="th"
                     scope="row"
                     sx={{
-                      color: 'grey.300',
+                      color: muiTheme.palette.text.primary,
                       display: 'flex',
                       alignItems: 'center',
                       gap: 1,
@@ -297,7 +342,7 @@ const HomePage = () => {
                       fontSize: '0.9rem'
                     }}
                   >
-                    <SchoolIcon sx={{ color: 'primary.main', fontSize: '1.1rem' }} />
+                    <SchoolIcon sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.primary.main, fontSize: '1.1rem' }} />
                     {deck.name}
                   </TableCell>
                   <TableCell 
