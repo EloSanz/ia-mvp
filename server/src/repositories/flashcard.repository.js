@@ -100,11 +100,8 @@ export class FlashcardRepository {
 
       const cached = cacheAdapter.get(cacheKey);
       if (cached) {
-        console.log(`[CACHE HIT] Flashcards deckId=${deckId} page=${page} size=${pageSize}`);
         return cached;
-      } else {
-        console.log(`[CACHE MISS] Flashcards deckId=${deckId} page=${page} size=${pageSize}`);
-      }
+      } 
 
       const skip = page * pageSize;
       const take = pageSize;

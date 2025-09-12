@@ -6,7 +6,8 @@ import {
   TableCell,
   TableBody,
   TablePagination,
-  TableContainer
+  TableContainer,
+  Typography
 } from '@mui/material';
 import CardRow from './CardRow';
 
@@ -29,6 +30,9 @@ const FlashcardTable = ({
   loadDeckAndCards,
   tagsService
 }) => {
+  const displayCards = searchQuery ? searchResults : cards;
+
+
   return (
     <TableContainer>
       <Table sx={{ minWidth: 650 }}>
@@ -67,21 +71,34 @@ const FlashcardTable = ({
           </TableRow>
         </TableHead>
         <TableBody>
-          {(searchQuery ? searchResults : cards).map((card) => (
-            <CardRow
-              key={card.id}
-              card={card}
-              tags={tags}
-              muiTheme={muiTheme}
-              openReviewDialog={openReviewDialog}
-              openEditDialog={openEditDialog}
-              handleDeleteCard={handleDeleteCard}
-              flashcards={flashcards}
-              setTags={setTags}
-              loadDeckAndCards={loadDeckAndCards}
-              tagsService={tagsService}
-            />
-          ))}
+          {displayCards && displayCards.length > 0 ? (
+            displayCards.map((card) => (
+              <CardRow
+                key={card.id}
+                card={card}
+                tags={tags}
+                muiTheme={muiTheme}
+                openReviewDialog={openReviewDialog}
+                openEditDialog={openEditDialog}
+                handleDeleteCard={handleDeleteCard}
+                flashcards={flashcards}
+                setTags={setTags}
+                loadDeckAndCards={loadDeckAndCards}
+                tagsService={tagsService}
+              />
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
+                <Typography variant="body1" color="text.secondary">
+                  {searchQuery ? 'No se encontraron flashcards con esa búsqueda' : 'No hay flashcards en este deck'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  {searchQuery ? 'Intenta con otros términos de búsqueda' : 'Crea tu primera flashcard para comenzar'}
+                </Typography>
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
       <TablePagination

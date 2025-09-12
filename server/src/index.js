@@ -20,6 +20,7 @@ app.use(express.json());
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 // API routes
+// Tags: solo requiere token válido, no filtra por usuario
 app.use('/api/tags', authMiddleware, tagRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/decks', deckRoutes);

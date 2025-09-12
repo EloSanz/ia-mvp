@@ -4,6 +4,7 @@ import { TagDto } from '../dtos/tag.dto.js';
 
 export class TagController {
   static async getAll(req, res) {
+    // Devuelve todas las tags, sin filtrar por usuario
     const tags = await TagRepository.findAll();
     res.json(tags.map(tag => new TagDto(tag)));
   }

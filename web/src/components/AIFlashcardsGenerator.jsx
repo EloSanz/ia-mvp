@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTheme as useMuiTheme } from '@mui/material';
-import axios from 'axios';
+import { useApi } from '../contexts/ApiContext';
 import {
   Dialog,
   DialogTitle,
@@ -17,6 +17,7 @@ import { AutoFixHigh as AIIcon } from '@mui/icons-material';
 
 const AIFlashcardsGenerator = ({ open, onClose, onGenerate }) => {
   const muiTheme = useMuiTheme();
+  const { flashcards: flashcardsService } = useApi();
   const [text, setText] = useState('');
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState(null);
@@ -28,8 +29,8 @@ const AIFlashcardsGenerator = ({ open, onClose, onGenerate }) => {
       setGenerating(true);
       setError(null);
 
-      // Real request to backend
-      const response = await axios.post('/api/flashcards/ai-generate', { text });
+      // Real request to backend - usando servicio centralizado
+      const response = await flashcardsService.generateWithAI(text);
       const generatedCards = response.data.flashcards;
       onGenerate(generatedCards);
       onClose();

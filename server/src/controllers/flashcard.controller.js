@@ -78,6 +78,7 @@ export const FlashcardController = {
    */
   deleteFlashcard: BaseController.wrap(async (req, res) => {
     const { id } = req.params;
+
     const result = await BaseController.findAndExecute(
       Flashcard.findById.bind(Flashcard),
       id,
@@ -86,7 +87,7 @@ export const FlashcardController = {
     );
 
     if (result.success) {
-      BaseController.success(res, null, result.message);
+      BaseController.success(res, undefined, result.message);
     }
   }),
 

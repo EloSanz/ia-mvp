@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useApi } from '../contexts/ApiContext';
 import {
   Box,
   Typography,
@@ -21,6 +22,7 @@ import {
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 
 export default function TagPage({ token }) {
+  const { tags: tagsService } = useApi();
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,11 +35,8 @@ export default function TagPage({ token }) {
   const fetchTags = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/tags', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setTags(data);
+      const response = await tagsService.getAll();
+      setTags(response.data);
     } catch (err) {
       setError('Error al cargar tags');
     } finally {
@@ -47,19 +46,12 @@ export default function TagPage({ token }) {
 
   useEffect(() => {
     fetchTags();
-  }, []);
+  }, [tagsService]);
 
   const handleCreate = async () => {
     setSaving(true);
     try {
-      await fetch('/api/tags', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ name: newTagName })
-      });
+      await tagsService.create({ name: newTagName });
       setCreateOpen(false);
       setNewTagName('');
       fetchTags();
@@ -73,14 +65,7 @@ export default function TagPage({ token }) {
   const handleEdit = async () => {
     setSaving(true);
     try {
-      await fetch(`/api/tags/${editTag.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ name: editTag.name })
-      });
+      await tagsService.update(editTag.id, { name: editTag.name });
       setEditOpen(false);
       setEditTag(null);
       fetchTags();
@@ -94,10 +79,7 @@ export default function TagPage({ token }) {
   const handleDelete = async (id) => {
     setSaving(true);
     try {
-      await fetch(`/api/tags/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await tagsService.delete(id);
       fetchTags();
     } catch {
       setError('Error al eliminar tag');
