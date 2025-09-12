@@ -67,50 +67,69 @@ const TagCrud = ({
   };
 
   return (
-    <div
+    <Box
       className="tag-crud"
+      sx={{
+        position: 'relative',
+        display: 'inline-block',
+        width: 140,
+        cursor: 'pointer'
+      }}
       onClick={(e) => e.stopPropagation()} // evita que el click burbujee a la fila
     >
-      <Box sx={{ position: 'relative', display: 'inline-block' }}>
-        <TextField
-          value={displayName}
-          size="small"
-          variant="outlined"
-          sx={{ width: 140, cursor: 'pointer' }}
-          InputProps={{ readOnly: true }}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setOpen(true); // mitad izquierda: abrir selector de tag
-          }}
-          onMouseDown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-        />
-        {/* Mitad derecha: estudiar */}
-        <Box
-          role="button"
-          aria-label="Estudiar"
-          title="Estudiar"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onRightHalfClick && onRightHalfClick();
-          }}
-          sx={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            width: '50%',
-            height: '100%',
-            cursor: 'pointer',
-            '&:hover': {
-              boxShadow: `inset 0 0 0 9999px ${muiTheme?.palette?.action?.hover ?? 'rgba(0,0,0,0.06)'}`
-            }
-          }}
-        />
-      </Box>
+      {/* Mitad izquierda: editar tag */}
+      <Box
+        role="button"
+        aria-label="Editar tag"
+        title="Editar tag"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpen(true);
+        }}
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '50%',
+          height: '100%',
+          cursor: 'pointer',
+          zIndex: 10
+        }}
+      />
+
+      {/* Mitad derecha: estudiar */}
+      <Box
+        role="button"
+        aria-label="Estudiar"
+        title="Estudiar"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('Right half clicked for studying'); // debug
+          onRightHalfClick && onRightHalfClick();
+        }}
+        sx={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          width: '50%',
+          height: '100%',
+          cursor: 'pointer',
+          zIndex: 10,
+          '&:hover': {
+            backgroundColor: 'rgba(0,0,0,0.04)'
+          }
+        }}
+      />
+
+      <TextField
+        value={displayName}
+        size="small"
+        variant="outlined"
+        sx={{ width: '100%', pointerEvents: 'none' }}
+        InputProps={{ readOnly: true }}
+      />
 
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontFamily: muiTheme.fontFamily }}>Cambiar o crear tag</DialogTitle>
@@ -156,7 +175,7 @@ const TagCrud = ({
           <Button onClick={() => setOpen(false)}>Cerrar</Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Box>
   );
 };
 
