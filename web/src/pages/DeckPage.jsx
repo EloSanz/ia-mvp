@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -46,6 +47,7 @@ import AIFlashcardsGenerator from '../components/AIFlashcardsGenerator';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 
 const DeckPage = () => {
+  const { token } = useAuth();
   const { deckId } = useParams();
   const navigate = useNavigate();
   const { flashcards, decks } = useApi();
@@ -85,9 +87,17 @@ const DeckPage = () => {
 
   useEffect(() => {
     // Cargar tags al montar el componente
-    fetch('/api/tags')
+    fetch('/api/tags', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
       .then(res => res.json())
-      .then(data => setTags(data))
+      .then(data => {
+        if (Array.isArray(data)) {
+          setTags(data);
+        } else {
+          setTags([]);
+        }
+      })
       .catch(() => setTags([]));
     loadDeckAndCards(page, rowsPerPage);
     // eslint-disable-next-line

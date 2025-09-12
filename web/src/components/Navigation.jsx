@@ -55,6 +55,13 @@ const Navigation = () => {
           >
             Sincronizar
           </Button>
+          <Button
+            color="inherit"
+            onClick={() => navigate('/tags')}
+            sx={{ mr: 1 }}
+          >
+            Tags
+          </Button>
 
           <Tooltip title={isDarkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}>
             <IconButton color="inherit" onClick={toggleTheme} size="large">

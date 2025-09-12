@@ -6,6 +6,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
+import TagPage from './pages/TagPage';
 import DeckPage from './pages/DeckPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -33,6 +34,14 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <DeckPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/tags"
+                element={
+                  <ProtectedRoute>
+                    <TagPage />
                   </ProtectedRoute>
                 }
               />
