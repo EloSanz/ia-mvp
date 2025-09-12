@@ -178,7 +178,7 @@ const themes = {
           success: { main: '#2ea44f' }
         }
       }),
-      { fontFamily: 'Roboto, Arial, sans-serif' }
+      { fontFamily: 'Roboto Mono, Fira Mono, Menlo, Monaco, Consolas, monospace' }
     ),
   tokyo: tokyoTheme,
   kyoto: kyotoTheme
