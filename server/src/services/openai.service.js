@@ -15,7 +15,7 @@ class OpenAIService {
   /**
    * Genera flashcards a partir de un texto
    */
-  async generateFlashcards(text, options = {}) {
+  async generateFlashcards(text, _options = {}) {
     if (!this.openai) {
       throw new Error('OpenAI service is not configured');
     }

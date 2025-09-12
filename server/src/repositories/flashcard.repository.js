@@ -263,7 +263,6 @@ export class FlashcardRepository {
 
       // Invalidar el cache del deck
       FlashcardRepository.invalidateDeckCache(flashcard.deckId);
-
     } catch (error) {
       if (error.code === 'P2025') {
         throw new Error('Flashcard no encontrada');
@@ -352,19 +351,21 @@ export class FlashcardRepository {
       const cacheKeysToDelete = [];
 
       // Iterar sobre todas las claves del cache
-      for (const [key, value] of cacheAdapter.store.entries()) {
+      for (const [key] of cacheAdapter.store.entries()) {
         if (key.startsWith(`deck:${deckId}:`)) {
           cacheKeysToDelete.push(key);
         }
       }
 
       // Eliminar todas las claves relacionadas con este deck
-      cacheKeysToDelete.forEach(key => {
+      cacheKeysToDelete.forEach((key) => {
         cacheAdapter.del(key);
-        console.log(`[CACHE INVALIDATE] Deleted cache key: ${key}`);
+        // console.debug(`[CACHE INVALIDATE] Deleted cache key: ${key}`);
       });
 
-      console.log(`[CACHE INVALIDATE] Invalidated ${cacheKeysToDelete.length} cache entries for deck ${deckId}`);
+      // console.debug(
+      //   `[CACHE INVALIDATE] Invalidated ${cacheKeysToDelete.length} cache entries for deck ${deckId}`
+      // );
     } catch (error) {
       console.error(`Error al invalidar cache del deck ${deckId}:`, error);
     }

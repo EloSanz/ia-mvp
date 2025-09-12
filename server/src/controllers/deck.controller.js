@@ -1,7 +1,7 @@
 import { Deck } from '../models/deck.js';
 import { DeckDto } from '../dtos/deck.dto.js';
 import { BaseController } from './base.controller.js';
-import { ForbiddenError } from '../utils/custom.errors.js';
+import { ForbiddenError, NotFoundError } from '../utils/custom.errors.js';
 
 export const DeckController = {
   /**
@@ -18,7 +18,7 @@ export const DeckController = {
   getDeckById: BaseController.wrap(async (req, res) => {
     const { id } = req.params;
     const deck = await Deck.findById(id);
-    
+
     if (deck && deck.userId !== req.userId) {
       throw new ForbiddenError('No tienes permiso para ver este deck');
     }
@@ -56,7 +56,7 @@ export const DeckController = {
 
     const validatedData = await DeckDto.validateUpdate(req.body);
     const deck = await Deck.update(id, validatedData);
-    
+
     BaseController.success(res, deck, 'Deck actualizado exitosamente');
   }),
 

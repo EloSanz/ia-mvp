@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 export class TagRepository {
   static async findAll() {
     const tags = await prisma.tag.findMany({ orderBy: { name: 'asc' } });
-    return tags.map(tag => new TagEntity(tag));
+    return tags.map((tag) => new TagEntity(tag));
   }
 
   static async findById(id) {
