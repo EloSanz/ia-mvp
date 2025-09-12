@@ -47,6 +47,10 @@ const CardRow = ({
     >
       <TableCell
         sx={{ color: muiTheme?.palette?.text?.primary || '#000000', fontSize: '0.95rem', py: 1.5 }}
+        onClick={(e) => {
+          e.stopPropagation();
+          openReviewDialog(card);
+        }}
       >
         {card.front.length > 25 ? card.front.substring(0, 25) + '…' : card.front}
       </TableCell>
@@ -62,15 +66,35 @@ const CardRow = ({
           onCardTagUpdated={onCardTagUpdated}
         />
       </TableCell>
-      <TableCell sx={{ py: 1.5 }}>
+      <TableCell
+        sx={{ py: 1.5 }}
+        onClick={(e) => {
+          e.stopPropagation();
+          openReviewDialog(card);
+        }}
+      >
         <Chip
           label={getDifficultyLabel(card.difficulty)}
           color={getDifficultyColor(card.difficulty)}
           size="small"
         />
       </TableCell>
-      <TableCell sx={{ py: 1.5 }}>{card.reviewCount > 0 ? `${card.reviewCount}` : '0'}</TableCell>
-      <TableCell sx={{ py: 1 }}>
+      <TableCell
+        sx={{ py: 1.5 }}
+        onClick={(e) => {
+          e.stopPropagation();
+          openReviewDialog(card);
+        }}
+      >
+        {card.reviewCount > 0 ? `${card.reviewCount}` : '0'}
+      </TableCell>
+      <TableCell
+        sx={{ py: 1 }}
+        onClick={(e) => {
+          e.stopPropagation();
+          openReviewDialog(card);
+        }}
+      >
         <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
           <Tooltip title="Revisar">
             <IconButton
