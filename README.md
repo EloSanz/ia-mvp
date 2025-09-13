@@ -12,6 +12,10 @@ Aplicación de flashcards con integración de IA para generación automática de
   - Windows: [Descargar Git para Windows](https://git-scm.com/download/win)
   - macOS: `brew install git`
   - Linux: `sudo apt-get install git` o equivalente
+- PostgreSQL
+  - Windows: [Descargar PostgreSQL para Windows](https://www.postgresql.org/download/windows/)
+  - macOS: [Descargar PostgreSQL para macOS](https://www.postgresql.org/download/macosx/)
+  - Linux: [Descargar PostgreSQL para Linux](https://www.postgresql.org/download/)
 
 ## Configuración Inicial
 
@@ -95,6 +99,31 @@ Aplicación de flashcards con integración de IA para generación automática de
 2. Error de conexión a la base de datos:
    - Verificar que las credenciales en .env coincidan con docker-compose.yml
    - Esperar ~30 segundos después de `docker-compose up` para que PostgreSQL inicie completamente
+
+3. Error "@prisma/client did not initialize yet. Please run 'prisma generate' and try to import it again":
+   - Este error ocurre cuando Prisma no ha generado correctamente el cliente.
+   - Soluciones:
+     - Dentro del contenedor backend:
+       ```bash
+       docker-compose exec backend npx prisma generate
+       ```
+     - Alternativamente, apaga el backend (asegúrate de que Docker no esté activo) y ejecuta en tu terminal:
+       ```bash
+       npx prisma generate
+       ```
+       Si te solicita instalar Prisma, acepta la instalación y continúa.
+   - Si el problema persiste, asegúrate de que el contenedor `backend` tenga acceso a los archivos de Prisma y que el volumen esté correctamente montado
+
+4. Error "AuthenticationError: 401 Incorrect API key provided":
+   - Este error indica que la API key de OpenAI es incorrecta, inválida o está mal configurada.
+   - Solución:
+     - Verifica que la variable `OPENAI_API_KEY` en tu archivo `.env` tenga una API key válida y sin espacios extra.
+     - Puedes obtener una nueva API key en: https://platform.openai.com/account/api-keys
+     - Reinicia el backend después de actualizar la clave:
+       ```bash
+       docker-compose restart backend
+       ```
+     - Si usas Docker, asegúrate de que el archivo `.env` esté accesible dentro del contenedor
 
 ## Desarrollo
 

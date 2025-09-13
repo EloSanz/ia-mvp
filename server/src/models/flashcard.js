@@ -39,6 +39,11 @@ export class Flashcard {
    * Crea una nueva flashcard aplicando reglas de negocio
    */
   static async create(flashcardData) {
+    // Forzar deckId a número si es string numérico
+    if (typeof flashcardData.deckId === 'string' && !isNaN(Number(flashcardData.deckId))) {
+      flashcardData.deckId = Number(flashcardData.deckId);
+    }
+
     const flashcard = new Flashcard(flashcardData);
 
     // Aplicar reglas de negocio
