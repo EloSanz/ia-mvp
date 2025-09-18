@@ -9,8 +9,7 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem,
-  Box
+  MenuItem
 } from '@mui/material';
 
 const TagCrud = ({
@@ -76,7 +75,15 @@ const TagCrud = ({
         variant="outlined"
         sx={{ width: 140, cursor: 'pointer' }}
         InputProps={{ readOnly: true }}
-        onClick={() => setOpen(true)}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpen(true);
+        }}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
       />
 
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth>
@@ -101,7 +108,7 @@ const TagCrud = ({
             </Select>
           </FormControl>
 
-          <Box display="flex" alignItems="center" gap={1}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <TextField
               placeholder="Nueva tag…"
               value={newTagName}
@@ -117,7 +124,7 @@ const TagCrud = ({
             >
               +
             </Button>
-          </Box>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Cerrar</Button>

@@ -29,10 +29,14 @@ const CardRow = ({
       key={card.id}
       hover
       onClick={(e) => {
-        // Solo abrir review si no se hizo clic en un elemento hijo
-        if (
-          !e.target.closest('.tag-crud, .MuiIconButton-root, .MuiSelect-root, .MuiTextField-root')
-        ) {
+        // Excluir solo elementos específicos que tienen su propia funcionalidad
+        const isTagTextField = e.target.closest('.MuiTextField-root');
+        const isEditButton = e.target.closest('[aria-label="Editar"], [title="Editar"]');
+        const isDeleteButton = e.target.closest('[aria-label="Eliminar"], [title="Eliminar"]');
+        const isReviewButton = e.target.closest('[aria-label="Revisar"], [title="Revisar"]');
+
+        // Si no es ninguno de los elementos excluidos, abrir la flashcard
+        if (!isTagTextField && !isEditButton && !isDeleteButton && !isReviewButton) {
           openReviewDialog(card);
         }
       }}
@@ -72,6 +76,7 @@ const CardRow = ({
           <Tooltip title="Revisar">
             <IconButton
               size="small"
+              aria-label="Revisar"
               sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.primary.main }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -84,6 +89,7 @@ const CardRow = ({
           <Tooltip title="Editar">
             <IconButton
               size="small"
+              aria-label="Editar"
               sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.secondary.main }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -96,6 +102,7 @@ const CardRow = ({
           <Tooltip title="Eliminar">
             <IconButton
               size="small"
+              aria-label="Eliminar"
               sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.error.main }}
               onClick={(e) => {
                 e.stopPropagation();
