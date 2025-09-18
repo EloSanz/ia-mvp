@@ -102,7 +102,14 @@ export const ApiProvider = ({ children }) => {
     },
     getDue: () => api.get('/api/flashcards/due'),
     create: (data) => api.post('/api/flashcards', data),
-    createMany: (flashcards) => api.post('/api/flashcards/batch', { flashcards }),
+    createMany: (flashcardsInput) => {
+      // Si ya viene como { flashcards: [...] }, lo usa tal cual
+      // Si viene como array, lo envuelve correctamente
+      const payload = Array.isArray(flashcardsInput)
+        ? { flashcards: flashcardsInput }
+        : flashcardsInput;
+      return api.post('/api/flashcards/batch', payload);
+    },
     update: (id, data) => api.put(`/api/flashcards/${id}`, data),
     review: (id, data) => api.put(`/api/flashcards/${id}/review`, data),
     delete: (id) => api.delete(`/api/flashcards/${id}`),

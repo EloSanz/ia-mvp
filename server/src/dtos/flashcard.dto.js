@@ -52,6 +52,11 @@ export class FlashcardDto {
   static validateCreate(data) {
     const errors = [];
 
+    // Forzar deckId a número si es string numérico
+    if (typeof data.deckId === 'string' && !isNaN(Number(data.deckId))) {
+      data.deckId = Number(data.deckId);
+    }
+
     if (!data.front || typeof data.front !== 'string') {
       errors.push('El anverso (front) es requerido y debe ser una cadena de texto');
     } else if (data.front.trim().length === 0) {
@@ -68,7 +73,12 @@ export class FlashcardDto {
       errors.push('El reverso no puede tener más de 1000 caracteres');
     }
 
-    if (!data.deckId || typeof data.deckId !== 'number' || data.deckId <= 0) {
+    if (
+      data.deckId === undefined ||
+      data.deckId === null ||
+      typeof data.deckId !== 'number' ||
+      data.deckId <= 0
+    ) {
       errors.push('El deckId es requerido y debe ser un número positivo');
     }
 
