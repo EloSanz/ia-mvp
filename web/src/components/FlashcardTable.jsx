@@ -7,9 +7,11 @@ import {
   TableBody,
   TablePagination,
   TableContainer,
-  Typography
+  Typography,
+  Box
 } from '@mui/material';
 import CardRow from './CardRow';
+import SearchBar from './SearchBar';
 
 const FlashcardTable = ({
   cards,
@@ -21,6 +23,9 @@ const FlashcardTable = ({
   searchQuery,
   searchResults,
   searchTotal,
+  searching,
+  onSearchChange,
+  onClearSearch,
   openReviewDialog,
   openEditDialog,
   handleDeleteCard,
@@ -61,6 +66,27 @@ const FlashcardTable = ({
                 sx={{ color: safeMuiTheme.palette?.text?.secondary, fontSize: '0.875rem', py: 1.5 }}
               >
                 Consigna
+              </TableCell>
+              <TableCell
+                sx={{
+                  color: safeMuiTheme.palette?.text?.secondary,
+                  fontSize: '0.875rem',
+                  py: 1.5,
+                  minWidth: 200
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="inherit">Buscar</Typography>
+                  <SearchBar
+                    searchQuery={searchQuery || ''}
+                    onSearchChange={onSearchChange}
+                    onClearSearch={onClearSearch}
+                    searching={searching}
+                    placeholder="Buscar flashcards..."
+                    label=""
+                    size="small"
+                  />
+                </Box>
               </TableCell>
               <TableCell
                 sx={{ color: safeMuiTheme.palette?.text?.secondary, fontSize: '0.875rem', py: 1.5 }}
@@ -109,7 +135,7 @@ const FlashcardTable = ({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
+                <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
                   <Typography variant="body1" color="text.secondary">
                     {searchQuery
                       ? 'No se encontraron flashcards con esa búsqueda'
