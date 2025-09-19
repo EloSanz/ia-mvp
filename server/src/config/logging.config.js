@@ -12,20 +12,26 @@ export const loggingConfig = {
 
   // Configuración de logging HTTP
   http: {
-    enabled: process.env.HTTP_LOGGING_ENABLED !== 'false',
+    enabled: process.env.HTTP_LOGGING_ENABLED === 'true', // Por defecto DESHABILITADO
     logRequestBody: process.env.LOG_REQUEST_BODY === 'true',
     logResponseBody: process.env.LOG_RESPONSE_BODY === 'true',
     maxBodyLogLength: parseInt(process.env.MAX_BODY_LOG_LENGTH || '1000'),
-    excludePaths: ['/api/health', '/favicon.ico'], // Paths a excluir del logging detallado
+    excludePaths: [
+      '/api/health',
+      '/api/health/detailed',
+      '/favicon.ico',
+      '/api/logging/stats',
+      '/api/logging/health'
+    ], // Paths a excluir del logging detallado
   },
 
   // Configuración de logging de base de datos
   database: {
-    enabled: process.env.DB_LOGGING_ENABLED !== 'false',
-    logQueries: process.env.DB_LOG_QUERIES !== 'false',
-    logSlowQueries: process.env.DB_LOG_SLOW_QUERIES !== 'false',
-    slowQueryThreshold: parseInt(process.env.DB_SLOW_QUERY_THRESHOLD || '100'), // ms
-    maxLoggedQueries: parseInt(process.env.DB_MAX_LOGGED_QUERIES || '1000'),
+    enabled: process.env.DB_LOGGING_ENABLED === 'true', // Por defecto DESHABILITADO
+    logQueries: process.env.DB_LOG_QUERIES === 'true', // Por defecto DESHABILITADO
+    logSlowQueries: process.env.DB_LOG_SLOW_QUERIES === 'true', // Por defecto DESHABILITADO
+    slowQueryThreshold: parseInt(process.env.DB_SLOW_QUERY_THRESHOLD || '1000'), // ms (aumentado)
+    maxLoggedQueries: parseInt(process.env.DB_MAX_LOGGED_QUERIES || '100'),
   },
 
   // Configuración de logging de errores

@@ -9,7 +9,18 @@ import { loggingConfig, shouldLog, formatLogMessage, shouldExcludePath, truncate
 /**
  * Colores para los logs en consola (usando configuración centralizada)
  */
-const colors = loggingConfig.colors.themes;
+const colors = loggingConfig?.colors?.themes || {
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  red: '\x1b[31m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  magenta: '\x1b[35m',
+  cyan: '\x1b[36m',
+  white: '\x1b[37m',
+  gray: '\x1b[90m'
+};
 
 /**
  * Formatea la información del request para logging
@@ -71,55 +82,38 @@ const getStatusColor = (statusCode) => {
  * Registra información detallada de cada request y response
  */
 export const requestLogger = (req, res, next) => {
-  // Verificar si el path debe ser excluido
-  if (shouldExcludePath(req.path)) {
+  // Excluir requests OPTIONS (CORS preflight) y paths específicos
+  if (req.method === 'OPTIONS' || shouldExcludePath(req.path)) {
     return next();
   }
 
   const startTime = performance.now();
   const startTimestamp = Date.now();
 
-  // Guardar referencia original del método end
-  const originalEnd = res.end;
-  const originalWrite = res.write;
-  const chunks = [];
-
-  // Interceptar la escritura de la response
-  res.write = function(chunk) {
-    if (chunk) chunks.push(chunk);
-    return originalWrite.apply(this, arguments);
-  };
-
   // Interceptar el final de la response para logging
+  const originalEnd = res.end;
+
   res.end = function(chunk) {
-    if (chunk) chunks.push(chunk);
+    const statusCode = res.statusCode;
+    const method = req.method;
+    const url = req.originalUrl || req.url;
 
-    // Calcular tamaño de la response
-    const responseSize = chunks.reduce((total, chunk) => {
-      return total + (Buffer.isBuffer(chunk) ? chunk.length : Buffer.byteLength(chunk.toString(), 'utf8'));
-    }, 0);
+    // Loggear TODOS los métodos HTTP (GET, POST, PUT, DELETE) con info mínima
+    const shouldLogRequest = (
+      req.method === 'GET' ||
+      req.method === 'POST' ||
+      req.method === 'PUT' ||
+      req.method === 'DELETE'
+    );
 
-    const requestInfo = formatRequestLog(req, startTimestamp);
-    const responseInfo = formatResponseLog(res, startTimestamp);
+    if (shouldLogRequest && loggingConfig?.http?.enabled && shouldLog('info')) {
+      // Log mínimo: método URL status
+      const statusColor = statusCode >= 400 ? colors.red :
+                         statusCode >= 300 ? colors.yellow : colors.green;
 
-    // Solo loggear si está habilitado
-    if (loggingConfig.http.enabled && shouldLog('info')) {
-      // Log detallado del request
-      console.log(`${colors.cyan}[REQUEST]${colors.reset} ${colors.bright}${requestInfo.method}${colors.reset} ${requestInfo.url}`);
-      console.log(`  ${colors.yellow}→${colors.reset} IP: ${requestInfo.ip}`);
-      console.log(`  ${colors.yellow}→${colors.reset} User-Agent: ${truncateString(requestInfo.userAgent, 50)}`);
-      console.log(`  ${colors.yellow}→${colors.reset} Content-Length: ${requestInfo.contentLength} bytes`);
-      console.log(`  ${colors.yellow}→${colors.reset} Timestamp: ${requestInfo.timestamp}`);
-
-      // Log detallado de la response
-      console.log(`${responseInfo.statusColor}[RESPONSE]${colors.reset} ${responseInfo.statusCode} ${colors.bright}${requestInfo.url}${colors.reset}`);
-      console.log(`  ${colors.green}←${colors.reset} Response-Time: ${responseInfo.responseTime}`);
-      console.log(`  ${colors.green}←${colors.reset} Content-Length: ${responseSize} bytes`);
-      console.log(`  ${colors.green}←${colors.reset} Timestamp: ${new Date().toISOString()}`);
-      console.log(`${colors.magenta}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
+      console.log(`${colors.cyan}${method}${colors.reset} ${url} ${statusColor}${statusCode}${colors.reset}`);
     }
 
-    // Restaurar método original y llamar
     return originalEnd.apply(this, arguments);
   };
 
@@ -128,57 +122,24 @@ export const requestLogger = (req, res, next) => {
 
 /**
  * Middleware para logging específico de rutas de API
- * Solo loggea requests que van a /api/*
+ * Solo loggea requests que van a /api/* y son importantes
  */
 export const apiLogger = (req, res, next) => {
-  if (!req.path.startsWith('/api/')) {
+  // Solo procesar rutas de API y excluir health checks
+  if (!req.path.startsWith('/api/') || req.path.includes('/health')) {
     return next();
   }
 
-  const startTime = Date.now();
-
-  // Log solo para rutas de API
-  console.log(`${colors.blue}[API]${colors.reset} ${colors.bright}${req.method}${colors.reset} ${req.path}`);
-
-  // Log de body si existe (útil para debugging)
-  if (req.method !== 'GET' && req.body && Object.keys(req.body).length > 0) {
-    const bodyLog = JSON.stringify(req.body, null, 2);
-    console.log(`  ${colors.magenta}Body:${colors.reset} ${bodyLog.substring(0, 500)}${bodyLog.length > 500 ? '...' : ''}`);
-  }
-
-  // Log de query parameters si existen
-  if (req.query && Object.keys(req.query).length > 0) {
-    console.log(`  ${colors.cyan}Query:${colors.reset} ${JSON.stringify(req.query)}`);
-  }
-
-  // Log de route parameters si existen
-  if (req.params && Object.keys(req.params).length > 0) {
-    console.log(`  ${colors.yellow}Params:${colors.reset} ${JSON.stringify(req.params)}`);
-  }
-
-  // Interceptar la response para logging de API
+  // Interceptar la response para logging de errores de API
   const originalJson = res.json;
   res.json = function(data) {
-    const responseTime = Date.now() - startTime;
+    // Solo loggear errores de API
+    if (data && typeof data === 'object' && data.success === false) {
+      const statusCode = res.statusCode;
+      const method = req.method;
+      const url = req.originalUrl || req.url;
 
-    if (data && typeof data === 'object') {
-      const isSuccess = data.success !== false;
-      const statusColor = isSuccess ? colors.green : colors.red;
-      const statusIcon = isSuccess ? '✅' : '❌';
-
-      console.log(`${statusColor}[API RESPONSE]${colors.reset} ${statusIcon} ${responseTime}ms`);
-
-      // Log de datos de respuesta (limitado para evitar logs muy largos)
-      if (data.message) {
-        console.log(`  ${colors.white}Message:${colors.reset} ${data.message}`);
-      }
-
-      if (data.data && Array.isArray(data.data) && data.data.length > 0) {
-        console.log(`  ${colors.white}Data:${colors.reset} Array with ${data.data.length} items`);
-      } else if (data.data && typeof data.data === 'object' && !Array.isArray(data.data)) {
-        const dataKeys = Object.keys(data.data);
-        console.log(`  ${colors.white}Data:${colors.reset} Object with keys: ${dataKeys.join(', ')}`);
-      }
+      console.log(`${colors.red}API ERROR${colors.reset} ${method} ${url} ${statusCode} - ${data.message || 'Unknown error'}`);
     }
 
     return originalJson.call(this, data);
@@ -191,15 +152,21 @@ export const apiLogger = (req, res, next) => {
  * Middleware para logging de errores detallado
  */
 export const errorLogger = (error, req, res, next) => {
-  const timestamp = new Date().toISOString();
+  // Solo loggear errores críticos (no 404, etc.)
+  if (error.statusCode && error.statusCode < 500) {
+    return next(error);
+  }
 
-  console.error(`${colors.red}[ERROR]${colors.reset} ${colors.bright}${timestamp}${colors.reset}`);
-  console.error(`  ${colors.red}→${colors.reset} Method: ${req.method}`);
-  console.error(`  ${colors.red}→${colors.reset} URL: ${req.originalUrl || req.url}`);
-  console.error(`  ${colors.red}→${colors.reset} IP: ${req.ip || req.connection.remoteAddress}`);
-  console.error(`  ${colors.red}→${colors.reset} Error: ${error.message}`);
-  console.error(`  ${colors.red}→${colors.reset} Stack: ${error.stack}`);
-  console.error(`${colors.red}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
+  const method = req.method;
+  const url = req.originalUrl || req.url;
+  const ip = req.ip || req.connection.remoteAddress || 'Unknown';
+
+  console.error(`${colors.red}ERROR${colors.reset} ${method} ${url} ${ip} - ${error.message}`);
+
+  // Solo mostrar stack trace en desarrollo
+  if (process.env.NODE_ENV === 'development' && error.stack) {
+    console.error(`${colors.gray}${error.stack.split('\n')[1]}${colors.reset}`);
+  }
 
   next(error);
 };
@@ -209,31 +176,38 @@ export const errorLogger = (error, req, res, next) => {
  */
 export const customLogger = {
   info: (message, data = null) => {
-    console.log(`${colors.blue}[INFO]${colors.reset} ${message}`);
-    if (data) console.log(`  ${colors.white}Data:${colors.reset}`, data);
+    if (data) {
+      console.log(`${colors.blue}INFO${colors.reset} ${message} - ${JSON.stringify(data)}`);
+    } else {
+      console.log(`${colors.blue}INFO${colors.reset} ${message}`);
+    }
   },
 
   warn: (message, data = null) => {
-    console.warn(`${colors.yellow}[WARN]${colors.reset} ${message}`);
-    if (data) console.warn(`  ${colors.white}Data:${colors.reset}`, data);
+    if (data) {
+      console.log(`${colors.yellow}WARN${colors.reset} ${message} - ${JSON.stringify(data)}`);
+    } else {
+      console.log(`${colors.yellow}WARN${colors.reset} ${message}`);
+    }
   },
 
   error: (message, error = null) => {
-    console.error(`${colors.red}[ERROR]${colors.reset} ${message}`);
-    if (error) {
-      if (error instanceof Error) {
-        console.error(`  ${colors.red}→${colors.reset} Message: ${error.message}`);
-        console.error(`  ${colors.red}→${colors.reset} Stack: ${error.stack}`);
-      } else {
-        console.error(`  ${colors.red}→${colors.reset}`, error);
-      }
+    if (error instanceof Error) {
+      console.error(`${colors.red}ERROR${colors.reset} ${message} - ${error.message}`);
+    } else if (error) {
+      console.error(`${colors.red}ERROR${colors.reset} ${message} - ${error}`);
+    } else {
+      console.error(`${colors.red}ERROR${colors.reset} ${message}`);
     }
   },
 
   debug: (message, data = null) => {
     if (process.env.NODE_ENV === 'development') {
-      console.debug(`${colors.magenta}[DEBUG]${colors.reset} ${message}`);
-      if (data) console.debug(`  ${colors.white}Data:${colors.reset}`, data);
+      if (data) {
+        console.log(`${colors.magenta}DEBUG${colors.reset} ${message} - ${JSON.stringify(data)}`);
+      } else {
+        console.log(`${colors.magenta}DEBUG${colors.reset} ${message}`);
+      }
     }
   }
 };

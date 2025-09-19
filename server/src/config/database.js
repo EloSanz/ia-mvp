@@ -5,28 +5,29 @@
 
 import { PrismaClient } from '@prisma/client';
 import { customLogger } from '../middlewares/logging.middleware.js';
+import { loggingConfig } from './logging.config.js';
 
-// Configuración de logging de Prisma
-const prismaConfig = {
+// Configuración de logging de Prisma (solo si está habilitado)
+const prismaConfig = loggingConfig.database.enabled ? {
   log: [
-    {
+    ...(loggingConfig.database.logQueries ? [{
       emit: 'event',
       level: 'query',
-    },
+    }] : []),
     {
       emit: 'event',
       level: 'error',
     },
-    {
+    ...(process.env.NODE_ENV === 'development' ? [{
       emit: 'event',
       level: 'info',
     },
     {
       emit: 'event',
       level: 'warn',
-    },
+    }] : []),
   ],
-};
+} : {};
 
 // Crear instancia de Prisma con configuración de logging
 const prisma = new PrismaClient(prismaConfig);
@@ -35,63 +36,46 @@ const prisma = new PrismaClient(prismaConfig);
 let queryCount = 0;
 let slowQueries = [];
 
-// Event listener para queries
-prisma.$on('query', (e) => {
-  queryCount++;
-  const duration = e.duration;
-  const query = e.query;
-  const params = e.params;
+// Event listener para queries (solo si está habilitado)
+if (loggingConfig.database.enabled) {
+  prisma.$on('query', (e) => {
+    queryCount++;
+    const duration = e.duration;
+    const query = e.query;
 
-  // Log de queries normales
-  customLogger.info(`[DB QUERY] #${queryCount} - ${duration}ms`, {
-    query: query.substring(0, 100) + (query.length > 100 ? '...' : ''),
-    duration,
-    timestamp: new Date().toISOString()
-  });
+    // Solo loggear queries lentas según configuración
+    if (loggingConfig.database.logSlowQueries && duration > loggingConfig.database.slowQueryThreshold) {
+      slowQueries.push({
+        query: query.substring(0, 100),
+        duration,
+        timestamp: new Date().toISOString()
+      });
 
-  // Log detallado si está en desarrollo
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`  ${'\x1b[36m'}SQL:${'\x1b[0m'} ${query}`);
-    if (params && params !== '[]') {
-      console.log(`  ${'\x1b[35m'}Params:${'\x1b[0m'} ${params}`);
+      customLogger.warn(`SLOW QUERY ${duration}ms - ${query.substring(0, 50)}...`);
     }
-  }
 
-  // Track de queries lentas (>100ms)
-  if (duration > 100) {
-    slowQueries.push({
-      query: query.substring(0, 200),
-      duration,
-      timestamp: new Date().toISOString()
-    });
-
-    customLogger.warn(`[SLOW QUERY] ${duration}ms - ${query.substring(0, 50)}...`);
-  }
-
-  // Limpiar slow queries antiguas (mantener solo las últimas 50)
-  if (slowQueries.length > 50) {
-    slowQueries = slowQueries.slice(-25);
-  }
-});
+    // Limpiar slow queries antiguas
+    if (slowQueries.length > loggingConfig.database.maxLoggedQueries) {
+      slowQueries = slowQueries.slice(-Math.floor(loggingConfig.database.maxLoggedQueries / 2));
+    }
+  });
+}
 
 // Event listener para errores de DB
 prisma.$on('error', (e) => {
-  customLogger.error('[DB ERROR]', {
-    message: e.message,
-    target: e.target,
-    timestamp: new Date().toISOString()
+  customLogger.error(`DB ERROR: ${e.message}`);
+});
+
+// Event listener para información general (solo en desarrollo)
+if (process.env.NODE_ENV === 'development') {
+  prisma.$on('info', (e) => {
+    customLogger.info(`DB INFO: ${e.message}`);
   });
-});
 
-// Event listener para información general
-prisma.$on('info', (e) => {
-  customLogger.info('[DB INFO]', e.message);
-});
-
-// Event listener para warnings
-prisma.$on('warn', (e) => {
-  customLogger.warn('[DB WARN]', e.message);
-});
+  prisma.$on('warn', (e) => {
+    customLogger.warn(`DB WARN: ${e.message}`);
+  });
+}
 
 // Función para obtener estadísticas de queries
 export const getQueryStats = () => {
@@ -124,15 +108,16 @@ export const logPeriodicStats = () => {
   }
 };
 
-// Logging periódico de estadísticas
-const LOGGING_INTERVAL = process.env.LOGGING_STATS_INTERVAL || 5 * 60 * 1000; // 5 minutos por defecto
+// Logging periódico de estadísticas (solo si está habilitado)
+const LOGGING_INTERVAL = process.env.LOGGING_STATS_INTERVAL || 60 * 60 * 1000; // 1 hora por defecto
 
-if (LOGGING_INTERVAL > 0) {
+if (loggingConfig.database.enabled && LOGGING_INTERVAL > 0) {
   setInterval(() => {
-    logPeriodicStats();
+    const stats = getQueryStats();
+    if (stats.slowQueriesCount > 0) {
+      customLogger.info(`DB STATS: ${stats.totalQueries} queries, ${stats.slowQueriesCount} slow`);
+    }
   }, LOGGING_INTERVAL);
-
-  customLogger.info(`[DB] Logging periódico de estadísticas activado cada ${LOGGING_INTERVAL / 1000} segundos`);
 }
 
 // Graceful shutdown
