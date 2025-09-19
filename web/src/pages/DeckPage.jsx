@@ -355,63 +355,64 @@ const DeckPage = () => {
         )}
 
         {/* Componente de búsqueda */}
-        <Paper
-          elevation={1}
-          sx={{
-            p: 2,
-            mb: 3,
-            backgroundColor: muiTheme.palette.background.paper,
-            borderRadius: 2
-          }}
-        >
-          <TextField
-            fullWidth
-            variant="outlined"
-            label="Buscar flashcards en este deck"
-            placeholder="Ingresa términos de búsqueda..."
-            value={searchQuery}
-            onChange={handleSearchInputChange}
-            disabled={loading}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="action" />
-                </InputAdornment>
-              ),
-              endAdornment: searchQuery ? (
-                <InputAdornment position="end">
-                  <IconButton
-                    size="small"
-                    onClick={handleClearSearch}
-                    disabled={loading}
-                    sx={{ mr: 0.5 }}
-                  >
-                    <ClearIcon />
-                  </IconButton>
-                  {searching && <CircularProgress size={20} />}
-                </InputAdornment>
-              ) : (
-                searching && <CircularProgress size={20} />
-              )
-            }}
-            helperText={
-              searchQuery
-                ? `${searchTotal} resultado${searchTotal !== 1 ? 's' : ''} encontrado${searchTotal !== 1 ? 's' : ''}`
-                : "Busca en las preguntas de las flashcards"
-            }
+        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
+          <Paper
+            elevation={1}
             sx={{
-              '& .MuiInputBase-root': {
-                fontFamily: muiTheme.fontFamily
-              },
-              '& .MuiInputLabel-root': {
-                fontFamily: muiTheme.fontFamily
-              },
-              '& .MuiFormHelperText-root': {
-                fontFamily: muiTheme.fontFamily
-              }
+              p: 1.5,
+              backgroundColor: muiTheme.palette.background.paper,
+              borderRadius: 2,
+              width: 400,
+              maxWidth: '90%'
             }}
-          />
-        </Paper>
+          >
+            <TextField
+              size="small"
+              variant="outlined"
+              label="Buscar flashcards"
+              placeholder="Buscar..."
+              value={searchQuery}
+              onChange={handleSearchInputChange}
+              disabled={loading}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" fontSize="small" />
+                  </InputAdornment>
+                ),
+                endAdornment: searchQuery ? (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={handleClearSearch}
+                      disabled={loading}
+                      sx={{ mr: 0.5 }}
+                    >
+                      <ClearIcon fontSize="small" />
+                    </IconButton>
+                    {searching && <CircularProgress size={16} />}
+                  </InputAdornment>
+                ) : (
+                  searching && <CircularProgress size={16} />
+                )
+              }}
+              sx={{
+                '& .MuiInputBase-root': {
+                  fontFamily: muiTheme.fontFamily,
+                  fontSize: '0.875rem'
+                },
+                '& .MuiInputLabel-root': {
+                  fontFamily: muiTheme.fontFamily,
+                  fontSize: '0.8rem'
+                },
+                '& .MuiFormHelperText-root': {
+                  fontFamily: muiTheme.fontFamily,
+                  fontSize: '0.75rem'
+                }
+              }}
+            />
+          </Paper>
+        </Box>
 
         {(themeName === 'kyoto' || themeName === 'tokyo') && (
           <Box
