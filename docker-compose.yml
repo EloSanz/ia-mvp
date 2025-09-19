@@ -30,7 +30,7 @@ services:
     build: ./web
     container_name: ia-flashcards-web
     environment:
-      - VITE_API_URL=http://backend:3000
+      - VITE_API_URL=http://localhost:3000
     volumes:
       - ./web:/usr/src/app
       - /usr/src/app/node_modules

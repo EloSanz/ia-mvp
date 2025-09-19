@@ -9,7 +9,8 @@ import {
   Box,
   useTheme as useMuiTheme,
   Fab,
-  Tooltip
+  Tooltip,
+  Typography
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -43,8 +44,8 @@ const DeckPage = () => {
   const [_error, setError] = useState(null);
 
   // Búsqueda y paginación
-  const [searchQuery, _setSearchQuery] = useState('');
-  const [_searching, setSearching] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [searchTotal, setSearchTotal] = useState(0);
 
@@ -135,6 +136,44 @@ const DeckPage = () => {
     }
   };
 
+  // Función para manejar el cambio en el input de búsqueda
+  const handleSearchInputChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    // Si el query está vacío, volver a cargar todas las cards
+    if (!query.trim()) {
+      loadDeckAndCards(flashcardManager.page, flashcardManager.rowsPerPage);
+    } else {
+      // Debounced search - esperar 300ms antes de buscar
+      clearTimeout(window.searchTimeout);
+      window.searchTimeout = setTimeout(() => {
+        if (query.trim()) {
+          handleSearch(query.trim(), 0, flashcardManager.rowsPerPage);
+        }
+      }, 300);
+    }
+  };
+
+  // Función para manejar cambios de página durante búsqueda
+  const handlePageChange = (newPage) => {
+    if (searchQuery.trim()) {
+      // Si hay búsqueda activa, buscar en la nueva página
+      handleSearch(searchQuery.trim(), newPage, flashcardManager.rowsPerPage);
+    } else {
+      // Si no hay búsqueda, cargar normalmente
+      loadDeckAndCards(newPage, flashcardManager.rowsPerPage);
+    }
+  };
+
+  // Función para limpiar la búsqueda
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setSearchTotal(0);
+    loadDeckAndCards(flashcardManager.page, flashcardManager.rowsPerPage);
+  };
+
   const handleCreateCard = async () => {
     const createData = {
       ...flashcardManager.newCard,
@@ -217,6 +256,15 @@ const DeckPage = () => {
     flashcardManager.openReviewDialog(card);
   };
 
+  // Limpiar timeout de búsqueda cuando el componente se desmonte
+  useEffect(() => {
+    return () => {
+      if (window.searchTimeout) {
+        clearTimeout(window.searchTimeout);
+      }
+    };
+  }, []);
+
   const _getDifficultyColor = (d) =>
     d === 1 ? 'success' : d === 2 ? 'warning' : d === 3 ? 'error' : 'default';
   const _getDifficultyLabel = (d) =>
@@ -279,7 +327,28 @@ const DeckPage = () => {
           backgroundColor: muiTheme.palette.background.default
         }}
       >
-        {/* Buscador, info del deck, error, tabla, modales... */}
+        {/* Información del deck */}
+        {deck && (
+          <Box sx={{ mb: 1 }}>
+            <Typography variant="h4" component="h1" gutterBottom sx={{ fontFamily: muiTheme.fontFamily }}>
+              {deck.name}
+            </Typography>
+            {deck.description && (
+              <Typography variant="body1" color="text.secondary" sx={{ fontFamily: muiTheme.fontFamily }}>
+                descripción: {deck.description}
+              </Typography>
+            )}
+          </Box>
+        )}
+
+        {/* Error message */}
+        {_error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {_error}
+          </Alert>
+        )}
+
+
         {(themeName === 'kyoto' || themeName === 'tokyo') && (
           <Box
             sx={{
@@ -304,10 +373,13 @@ const DeckPage = () => {
           searchQuery={searchQuery}
           searchResults={searchResults}
           searchTotal={searchTotal}
+          searching={searching}
+          onSearchChange={handleSearchInputChange}
+          onClearSearch={handleClearSearch}
           openReviewDialog={openReviewDialog}
           openEditDialog={openEditDialog}
           handleDeleteCard={handleDeleteCard}
-          setPage={flashcardManager.setPage}
+          setPage={handlePageChange}
           flashcards={flashcards}
           setTags={setTags}
           loadDeckAndCards={loadDeckAndCards}
