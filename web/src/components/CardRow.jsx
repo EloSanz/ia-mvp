@@ -52,6 +52,9 @@ const CardRow = ({
         {card.front.length > 25 ? card.front.substring(0, 25) + '…' : card.front}
       </TableCell>
       <TableCell sx={{ py: 1.5 }}>
+        {/* Columna de búsqueda - vacía en las filas de datos */}
+      </TableCell>
+      <TableCell sx={{ py: 1.5 }}>
         <TagCrud
           card={card}
           tags={tags}

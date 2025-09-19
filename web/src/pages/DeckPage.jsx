@@ -10,18 +10,12 @@ import {
   useTheme as useMuiTheme,
   Fab,
   Tooltip,
-  TextField,
-  InputAdornment,
-  IconButton,
-  Typography,
-  Paper
+  Typography
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
   AddCard as AddCardIcon,
-  SmartToy as AIIcon,
-  Search as SearchIcon,
-  Clear as ClearIcon
+  SmartToy as AIIcon
 } from '@mui/icons-material';
 import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
@@ -354,65 +348,6 @@ const DeckPage = () => {
           </Alert>
         )}
 
-        {/* Componente de búsqueda */}
-        <Box sx={{ display: 'flex', justifyContent: 'left' }}>
-          <Paper
-            elevation={1}
-            sx={{
-              p: 1.5,
-              backgroundColor: muiTheme.palette.background.paper,
-              borderRadius: 2,
-              width: 400,
-              maxWidth: '20%'
-            }}
-          >
-            <TextField
-              size="small"
-              variant="outlined"
-              label="Buscar flashcards"
-              placeholder="Buscar..."
-              value={searchQuery}
-              onChange={handleSearchInputChange}
-              disabled={loading}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon color="action" fontSize="small" />
-                  </InputAdornment>
-                ),
-                endAdornment: searchQuery ? (
-                  <InputAdornment position="end">
-                    <IconButton
-                      size="small"
-                      onClick={handleClearSearch}
-                      disabled={loading}
-                      sx={{ mr: 0.5 }}
-                    >
-                      <ClearIcon fontSize="small" />
-                    </IconButton>
-                    {searching && <CircularProgress size={16} />}
-                  </InputAdornment>
-                ) : (
-                  searching && <CircularProgress size={16} />
-                )
-              }}
-              sx={{
-                '& .MuiInputBase-root': {
-                  fontFamily: muiTheme.fontFamily,
-                  fontSize: '0.875rem'
-                },
-                '& .MuiInputLabel-root': {
-                  fontFamily: muiTheme.fontFamily,
-                  fontSize: '0.8rem'
-                },
-                '& .MuiFormHelperText-root': {
-                  fontFamily: muiTheme.fontFamily,
-                  fontSize: '0.75rem'
-                }
-              }}
-            />
-          </Paper>
-        </Box>
 
         {(themeName === 'kyoto' || themeName === 'tokyo') && (
           <Box
@@ -438,6 +373,9 @@ const DeckPage = () => {
           searchQuery={searchQuery}
           searchResults={searchResults}
           searchTotal={searchTotal}
+          searching={searching}
+          onSearchChange={handleSearchInputChange}
+          onClearSearch={handleClearSearch}
           openReviewDialog={openReviewDialog}
           openEditDialog={openEditDialog}
           handleDeleteCard={handleDeleteCard}
