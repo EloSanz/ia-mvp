@@ -11,7 +11,7 @@ export const RegisterPage = () => {
         <Typography variant="body2">
           ¿Ya tienes una cuenta?{' '}
           <Link component={RouterLink} to="/login">
-            Inicia sesión aquíIIIIIIIII
+            Inicia sesión aquí
           </Link>
         </Typography>
       </Box>

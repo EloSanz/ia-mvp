@@ -200,20 +200,6 @@ const HomePage = () => {
             </Typography>
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
-            <Tooltip title="Versión Beta" placement="bottom">
-              <Typography
-                variant="caption"
-                sx={{
-                  color: 'grey.500',
-                  bgcolor: 'grey.800',
-                  px: 1,
-                  py: 0.5,
-                  borderRadius: 1
-                }}
-              >
-                Beta
-              </Typography>
-            </Tooltip>
             <Tooltip title="Repositorio en GitHub" placement="bottom">
               <IconButton
                 size="small"
