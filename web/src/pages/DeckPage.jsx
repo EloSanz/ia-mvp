@@ -335,13 +335,13 @@ const DeckPage = () => {
       >
         {/* Información del deck */}
         {deck && (
-          <Box sx={{ mb: 3 }}>
+          <Box sx={{ mb: 1 }}>
             <Typography variant="h4" component="h1" gutterBottom sx={{ fontFamily: muiTheme.fontFamily }}>
               {deck.name}
             </Typography>
             {deck.description && (
               <Typography variant="body1" color="text.secondary" sx={{ fontFamily: muiTheme.fontFamily }}>
-                {deck.description}
+                descripción: {deck.description}
               </Typography>
             )}
           </Box>
@@ -355,7 +355,7 @@ const DeckPage = () => {
         )}
 
         {/* Componente de búsqueda */}
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'left' }}>
           <Paper
             elevation={1}
             sx={{
@@ -363,7 +363,7 @@ const DeckPage = () => {
               backgroundColor: muiTheme.palette.background.paper,
               borderRadius: 2,
               width: 400,
-              maxWidth: '90%'
+              maxWidth: '20%'
             }}
           >
             <TextField
