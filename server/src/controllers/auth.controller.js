@@ -1,11 +1,9 @@
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../config/database.js';
 import { generateToken } from '../middlewares/auth.middleware.js';
 import { ValidationError } from '../utils/custom.errors.js';
 import { asyncHandler } from '../middlewares/error.middleware.js';
 import { BaseController } from './base.controller.js';
-
-const prisma = new PrismaClient();
 
 export const AuthController = {
   /**
