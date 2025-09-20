@@ -95,9 +95,8 @@ const StudySessionPage = () => {
       await reviewCard(difficulty);
 
       // Intentar obtener la siguiente card
-      try {
-        await nextCard();
-      } catch (nextErr) {
+      const nextCardResult = await nextCard();
+      if (nextCardResult === null) {
         // Si no hay más cards, mostrar diálogo de finalización
         setShowFinishDialog(true);
       }
@@ -112,14 +111,23 @@ const StudySessionPage = () => {
 
   const handleSkip = async () => {
     try {
-      await nextCard();
+      const nextCardResult = await nextCard();
+      if (nextCardResult === null) {
+        // Si no hay más cards, mostrar diálogo de finalización
+        setShowFinishDialog(true);
+      } else {
+        setSnackbar({
+          open: true,
+          message: 'Tarjeta saltada',
+          severity: 'info'
+        });
+      }
+    } catch (err) {
       setSnackbar({
         open: true,
-        message: 'Tarjeta saltada',
-        severity: 'info'
+        message: err.message || 'Error al saltar la tarjeta',
+        severity: 'error'
       });
-    } catch (err) {
-      setShowFinishDialog(true);
     }
   };
 
@@ -316,7 +324,14 @@ const StudySessionPage = () => {
         {/* Estadísticas */}
         <StudyStats
           session={session}
-          stats={sessionStats}
+          stats={sessionStats || {
+            cardsReviewed: 0,
+            easyCount: 0,
+            normalCount: 0,
+            hardCount: 0,
+            timeSpent: 0,
+            averageResponseTime: 0
+          }}
           progress={getProgress()}
           formatTime={formatTime}
           compact={true}

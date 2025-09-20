@@ -31,9 +31,19 @@ const StudyStats = ({
   formatTime,
   compact = false
 }) => {
-  if (!session || !stats) {
+  if (!session) {
     return null;
   }
+
+  // Asegurar que stats tenga valores por defecto
+  const safeStats = stats || {
+    cardsReviewed: 0,
+    easyCount: 0,
+    normalCount: 0,
+    hardCount: 0,
+    timeSpent: 0,
+    averageResponseTime: 0
+  };
 
   const StatItem = ({ icon: IconComponent, label, value, color = 'primary' }) => (
     <Box display="flex" alignItems="center" gap={1}>
@@ -72,7 +82,7 @@ const StudyStats = ({
               <StatItem
                 icon={TimeIcon}
                 label="Tiempo"
-                value={formatTime(stats.timeSpent * 1000)}
+                value={formatTime(safeStats.timeSpent * 1000)}
               />
             </Box>
           </Box>
@@ -147,7 +157,7 @@ const StudyStats = ({
                   <Typography variant="body2">Fácil</Typography>
                 </Box>
                 <Typography variant="body1" fontWeight={500}>
-                  {stats.easyCount}
+                  {safeStats.easyCount}
                 </Typography>
               </Box>
 
@@ -157,7 +167,7 @@ const StudyStats = ({
                   <Typography variant="body2">Normal</Typography>
                 </Box>
                 <Typography variant="body1" fontWeight={500}>
-                  {stats.normalCount}
+                  {safeStats.normalCount}
                 </Typography>
               </Box>
 
@@ -167,7 +177,7 @@ const StudyStats = ({
                   <Typography variant="body2">Difícil</Typography>
                 </Box>
                 <Typography variant="body1" fontWeight={500}>
-                  {stats.hardCount}
+                  {safeStats.hardCount}
                 </Typography>
               </Box>
             </Box>
@@ -182,17 +192,17 @@ const StudyStats = ({
               <StatItem
                 icon={CheckIcon}
                 label="Tarjetas Revisadas"
-                value={stats.cardsReviewed}
+                value={safeStats.cardsReviewed}
               />
               <StatItem
                 icon={TimeIcon}
                 label="Tiempo Total"
-                value={formatTime(stats.timeSpent * 1000)}
+                value={formatTime(safeStats.timeSpent * 1000)}
               />
               <StatItem
                 icon={TrendingIcon}
                 label="Tiempo Promedio"
-                value={stats.averageResponseTime > 0 ? `${stats.averageResponseTime}s` : '--'}
+                value={safeStats.averageResponseTime > 0 ? `${safeStats.averageResponseTime}s` : '--'}
               />
             </Box>
           </Grid>
