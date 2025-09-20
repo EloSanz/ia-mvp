@@ -1,8 +1,12 @@
+-- Crear usuario de prueba (password: 'password')
+INSERT INTO "User" (username, password) VALUES
+  ('testuser', '$2b$10$J5Xs/sflseV23CZgpH/rOuY4S5nUq0l2mvyBFxkYggyRD6g29Q/9m');
+
 -- Crear algunos mazos de ejemplo
-INSERT INTO "Deck" (name, description) VALUES
-  ('Español-Inglés Básico', 'Vocabulario básico para principiantes'),
-  ('Programación JavaScript', 'Conceptos fundamentales de JS'),
-  ('Capitales del Mundo', 'Principales capitales y sus países');
+INSERT INTO "Deck" (name, description, "userId") VALUES
+  ('Español-Inglés Básico', 'Vocabulario básico para principiantes', 1),
+  ('Programación JavaScript', 'Conceptos fundamentales de JS', 1),
+  ('Capitales del Mundo', 'Principales capitales y sus países', 1);
 
 -- Crear flashcards para el mazo Español-Inglés
 INSERT INTO "Flashcard" (front, back, "deckId") VALUES
