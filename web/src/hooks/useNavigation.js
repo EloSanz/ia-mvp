@@ -5,35 +5,17 @@
  * Detecta rutas específicas y proporciona navegación contextual
  */
 
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useLastDeck } from './useLastDeck';
+import { useRouteDetection } from './useRouteDetection';
 
 export const useNavigation = () => {
-  const location = useLocation();
   const navigate = useNavigate();
   const { lastDeckId, hasLastDeck, clearLastDeck } = useLastDeck();
+  const routeInfo = useRouteDetection();
 
-  // Detectar si estamos en una ruta específica
-  const isOnDeckPage = location.pathname.startsWith('/decks/');
-  const isOnStudyPage = location.pathname.startsWith('/study');
-  const isOnHome = location.pathname === '/';
-
-  // Extraer información de la ruta actual
-  const getCurrentDeckId = () => {
-    if (isOnDeckPage) {
-      const match = location.pathname.match(/^\/decks\/(\d+)$/);
-      return match ? parseInt(match[1]) : null;
-    }
-    return null;
-  };
-
-  const getCurrentStudySessionId = () => {
-    if (location.pathname.startsWith('/study/session/')) {
-      const match = location.pathname.match(/^\/study\/session\/([^/]+)$/);
-      return match ? match[1] : null;
-    }
-    return null;
-  };
+  // Extraer información de la ruta usando el hook separado
+  const { isOnDeckPage, isOnStudyPage, isOnHome, currentDeckId, currentSessionId, currentPath, canGoBack } = routeInfo;
 
   // Funciones de navegación inteligente
   const goToDecks = () => {
@@ -135,8 +117,8 @@ export const useNavigation = () => {
     isOnDeckPage,
     isOnStudyPage,
     isOnHome,
-    currentDeckId: getCurrentDeckId(),
-    currentSessionId: getCurrentStudySessionId(),
+    currentDeckId,
+    currentSessionId,
     lastDeckId,
     hasLastDeck,
 
@@ -160,7 +142,7 @@ export const useNavigation = () => {
     navigationButtonAction: getNavigationButtonAction(),
 
     // Utilidades
-    currentPath: location.pathname,
-    canGoBack: !isOnHome
+    currentPath,
+    canGoBack
   };
 };

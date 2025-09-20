@@ -6,12 +6,12 @@
  */
 
 import { useEffect } from 'react';
-import { useNavigation } from './useNavigation';
+import { useRouteDetection } from './useRouteDetection';
 
 const LAST_DECK_KEY = 'lastVisitedDeck';
 
 export const useLastDeck = () => {
-  const { currentDeckId, isOnDeckPage } = useNavigation();
+  const { currentDeckId, isOnDeckPage } = useRouteDetection();
 
   // Guardar el último deck visitado
   useEffect(() => {
