@@ -21,7 +21,7 @@ export class StudyService {
       // Validar que el usuario tenga acceso al deck
       const deck = await this.validateDeckAccess(userId, deckId);
       if (!deck) {
-        throw new Error('Deck no encontrado o sin permisos de acceso');
+        throw new Error(`Deck no encontrado o sin permisos de acceso (userId: ${userId}, deckId: ${deckId})`);
       }
 
       // Obtener todas las flashcards del deck que pueden ser estudiadas
@@ -32,7 +32,7 @@ export class StudyService {
       const studyCards = allCards.slice(0, limit);
 
       if (studyCards.length === 0) {
-        throw new Error('No hay flashcards disponibles para estudiar en este deck');
+        throw new Error(`No hay flashcards disponibles para estudiar en este deck (deckId: ${deckId}, cards found: ${allCards.length})`);
       }
 
       // Crear sesión
@@ -204,13 +204,19 @@ export class StudyService {
    * Valida que el usuario tenga acceso al deck
    */
   static async validateDeckAccess(userId, deckId) {
-    // Aquí implementaríamos la validación real
-    // Por ahora, asumimos que si el deck existe, el usuario tiene acceso
     try {
       const Deck = (await import('../models/deck.js')).Deck;
-      return await Deck.findById(deckId);
+      const deck = await Deck.findById(deckId);
+
+      // Validar que el deck existe y pertenece al usuario
+      if (!deck || deck.userId !== parseInt(userId)) {
+        return null;
+      }
+
+      return deck;
     } catch (error) {
-      return null;
+      console.error('Error al validar acceso al deck:', error);
+      throw new Error(`Error al validar acceso al deck: ${error.message}`);
     }
   }
 
