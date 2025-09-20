@@ -97,10 +97,15 @@ const StudyPage = () => {
   const getDeckStats = (deck) => {
     // Aquí podríamos calcular estadísticas del deck
     // Por ahora, datos mock
+    const totalCards = deck.cardCount || 0;
+    const dueCards = totalCards > 0 ? Math.floor(Math.random() * totalCards) : 0;
+    const reviewedCards = totalCards > 0 ? Math.floor(Math.random() * (totalCards - dueCards)) : 0;
+    const newCards = totalCards - dueCards - reviewedCards;
+
     return {
-      totalCards: deck.cardCount || 0,
-      dueCards: Math.floor(Math.random() * deck.cardCount) || 0,
-      newCards: deck.cardCount - (Math.floor(Math.random() * deck.cardCount) || 0)
+      totalCards,
+      dueCards,
+      newCards: Math.max(0, newCards) // Asegurar que no sea negativo
     };
   };
 

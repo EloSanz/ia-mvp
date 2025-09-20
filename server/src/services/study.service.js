@@ -25,7 +25,8 @@ export class StudyService {
       }
 
       // Obtener todas las flashcards del deck que pueden ser estudiadas
-      const allCards = await Flashcard.findByDeckId(deckId);
+      const allCardsResult = await Flashcard.findByDeckId(deckId);
+      const allCards = allCardsResult.items || [];
 
       // Limitar la cantidad de cards por sesión
       const studyCards = allCards.slice(0, limit);
