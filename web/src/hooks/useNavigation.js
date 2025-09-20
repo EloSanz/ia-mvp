@@ -62,24 +62,24 @@ export const useNavigation = () => {
     const items = [];
 
     if (isOnDeckPage) {
-      const deckId = getCurrentDeckId();
+      const deckId = currentDeckId;
       items.push(
         { label: 'Mis Decks', path: '/', onClick: goToDecks },
         { label: `Deck ${deckId}`, path: `/decks/${deckId}`, onClick: () => goToDeck(deckId) }
       );
-    } else if (location.pathname === '/study') {
+    } else if (currentPath === '/study') {
       items.push(
         { label: 'Mis Decks', path: '/', onClick: goToDecks },
         { label: 'Estudiar', path: '/study', onClick: goToStudy }
       );
-    } else if (location.pathname.startsWith('/study/session/')) {
-      const sessionId = getCurrentStudySessionId();
+    } else if (currentPath.startsWith('/study/session/')) {
+      const sessionId = currentSessionId;
       items.push(
         { label: 'Mis Decks', path: '/', onClick: goToDecks },
         { label: 'Estudiar', path: '/study', onClick: goToStudy },
-        { label: `Sesión ${sessionId}`, path: location.pathname }
+        { label: `Sesión ${sessionId}`, path: currentPath }
       );
-    } else if (location.pathname === '/') {
+    } else if (currentPath === '/') {
       items.push({ label: 'Mis Decks', path: '/' });
     }
 
