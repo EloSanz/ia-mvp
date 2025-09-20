@@ -82,3 +82,4 @@ npm-shrinkwrap.json
 # OS specific
 .DS_Store
 Thumbs.db
+.github/prompts/ia-mvp.code-workspace
