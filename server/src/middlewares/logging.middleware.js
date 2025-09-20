@@ -7,19 +7,38 @@ import { performance } from 'perf_hooks';
 import { loggingConfig, shouldLog, formatLogMessage, shouldExcludePath, truncateString } from '../config/logging.config.js';
 
 /**
- * Colores para los logs en consola (usando configuración centralizada)
+ * Función para obtener colores dinámicamente (evita problemas de orden de inicialización)
  */
-const colors = loggingConfig?.colors?.themes || {
-  reset: '\x1b[0m',
-  bright: '\x1b[1m',
-  red: '\x1b[31m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  magenta: '\x1b[35m',
-  cyan: '\x1b[36m',
-  white: '\x1b[37m',
-  gray: '\x1b[90m'
+const getColors = () => {
+  const colorsEnabled = process.env.LOG_COLORS_ENABLED !== 'false';
+
+  if (!colorsEnabled) {
+    return {
+      reset: '',
+      bright: '',
+      red: '',
+      green: '',
+      yellow: '',
+      blue: '',
+      magenta: '',
+      cyan: '',
+      white: '',
+      gray: ''
+    };
+  }
+
+  return {
+    reset: '\x1b[0m',
+    bright: '\x1b[1m',
+    red: '\x1b[31m',
+    green: '\x1b[32m',
+    yellow: '\x1b[33m',
+    blue: '\x1b[34m',
+    magenta: '\x1b[35m',
+    cyan: '\x1b[36m',
+    white: '\x1b[37m',
+    gray: '\x1b[90m'
+  };
 };
 
 /**
@@ -70,6 +89,7 @@ const formatResponseLog = (res, startTime) => {
  * Obtiene el color apropiado para el código de estado HTTP
  */
 const getStatusColor = (statusCode) => {
+  const colors = getColors();
   if (statusCode >= 200 && statusCode < 300) return colors.green;
   if (statusCode >= 300 && statusCode < 400) return colors.yellow;
   if (statusCode >= 400 && statusCode < 500) return colors.red;
@@ -108,6 +128,7 @@ export const requestLogger = (req, res, next) => {
 
     if (shouldLogRequest && loggingConfig?.http?.enabled && shouldLog('info')) {
       // Log mínimo: método URL status
+      const colors = getColors();
       const statusColor = statusCode >= 400 ? colors.red :
                          statusCode >= 300 ? colors.yellow : colors.green;
 
@@ -138,6 +159,7 @@ export const apiLogger = (req, res, next) => {
       const statusCode = res.statusCode;
       const method = req.method;
       const url = req.originalUrl || req.url;
+      const colors = getColors();
 
       console.log(`${colors.red}API ERROR${colors.reset} ${method} ${url} ${statusCode} - ${data.message || 'Unknown error'}`);
     }
@@ -160,6 +182,7 @@ export const errorLogger = (error, req, res, next) => {
   const method = req.method;
   const url = req.originalUrl || req.url;
   const ip = req.ip || req.connection.remoteAddress || 'Unknown';
+  const colors = getColors();
 
   console.error(`${colors.red}ERROR${colors.reset} ${method} ${url} ${ip} - ${error.message}`);
 
@@ -176,6 +199,7 @@ export const errorLogger = (error, req, res, next) => {
  */
 export const customLogger = {
   info: (message, data = null) => {
+    const colors = getColors();
     if (data) {
       console.log(`${colors.blue}INFO${colors.reset} ${message} - ${JSON.stringify(data)}`);
     } else {
@@ -184,6 +208,7 @@ export const customLogger = {
   },
 
   warn: (message, data = null) => {
+    const colors = getColors();
     if (data) {
       console.log(`${colors.yellow}WARN${colors.reset} ${message} - ${JSON.stringify(data)}`);
     } else {
@@ -192,6 +217,7 @@ export const customLogger = {
   },
 
   error: (message, error = null) => {
+    const colors = getColors();
     if (error instanceof Error) {
       console.error(`${colors.red}ERROR${colors.reset} ${message} - ${error.message}`);
     } else if (error) {
@@ -203,6 +229,7 @@ export const customLogger = {
 
   debug: (message, data = null) => {
     if (process.env.NODE_ENV === 'development') {
+      const colors = getColors();
       if (data) {
         console.log(`${colors.magenta}DEBUG${colors.reset} ${message} - ${JSON.stringify(data)}`);
       } else {
