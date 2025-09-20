@@ -152,6 +152,11 @@ export const useStudySession = () => {
       const response = await study.getNextCard(session.id);
       const nextData = response.data.data;
 
+      // Si la sesión terminó, devolver null para indicar fin
+      if (nextData.sessionFinished) {
+        return null;
+      }
+
       setCurrentCard(nextData.currentCard);
       setSessionStats(nextData.sessionStats);
       setShowingAnswer(false);
@@ -169,12 +174,6 @@ export const useStudySession = () => {
 
       return nextData;
     } catch (err) {
-      // Si no hay más cards, terminar la sesión automáticamente
-      if (err.response?.status === 400 && err.response?.data?.message?.includes('No hay más')) {
-        await finishSession();
-        return null;
-      }
-
       setError(err.response?.data?.message || 'Error al obtener siguiente card');
       throw err;
     } finally {
@@ -256,7 +255,7 @@ export const useStudySession = () => {
    * Calcular progreso de la sesión
    */
   const getProgress = useCallback(() => {
-    if (!session?.totalCards) return { current: 0, total: 0, percentage: 0 };
+    if (!session?.totalCards || !sessionStats) return { current: 0, total: 0, percentage: 0 };
 
     const current = sessionStats.cardsReviewed;
     const total = session.totalCards;
@@ -298,7 +297,14 @@ export const useStudySession = () => {
     error,
     showingAnswer,
     responseTime,
-    sessionStats,
+    sessionStats: sessionStats || {
+      cardsReviewed: 0,
+      easyCount: 0,
+      normalCount: 0,
+      hardCount: 0,
+      timeSpent: 0,
+      averageResponseTime: 0
+    },
 
     // Acciones
     startSession,

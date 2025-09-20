@@ -29,7 +29,8 @@ export class StudyService {
       const allCards = allCardsResult.items || [];
 
       // Limitar la cantidad de cards por sesión
-      const studyCards = allCards.slice(0, limit);
+      const actualLimit = limit || MAX_CARDS_PER_SESSION;
+      const studyCards = allCards.slice(0, actualLimit);
 
       if (studyCards.length === 0) {
         throw new Error(`No hay flashcards disponibles para estudiar en este deck (deckId: ${deckId}, cards found: ${allCards.length})`);
@@ -92,7 +93,12 @@ export class StudyService {
     }
 
     if (!session.queue.hasNext()) {
-      throw new Error('No hay más cards en esta sesión');
+      // En lugar de error, devolver indicador de fin de sesión
+      return {
+        sessionFinished: true,
+        message: 'No hay más cards en esta sesión',
+        finalStats: session.stats
+      };
     }
 
     const nextCard = session.queue.next();

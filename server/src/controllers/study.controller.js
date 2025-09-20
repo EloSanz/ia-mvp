@@ -15,17 +15,21 @@ export const StudyController = {
     const { userId } = req;
     const { deckId, limit } = req.body;
 
+
     // Validaciones
     if (!deckId) {
       return BaseController.error(res, 'El deckId es requerido', 400);
     }
 
-    if (limit && (limit < 1 || limit > 50)) {
+    // Si limit es null/undefined, usar valor por defecto
+    const actualLimit = limit || undefined;
+
+    if (actualLimit && (actualLimit < 1 || actualLimit > 50)) {
       return BaseController.error(res, 'El límite debe estar entre 1 y 50 cards', 400);
     }
 
     try {
-      const result = await StudyService.startStudySession(userId, deckId, limit);
+      const result = await StudyService.startStudySession(userId, deckId, actualLimit);
 
       BaseController.success(res, {
         sessionId: result.sessionId,
@@ -55,6 +59,15 @@ export const StudyController = {
 
     try {
       const result = await StudyService.getNextCard(sessionId);
+
+      // Si la sesión terminó, devolver respuesta especial
+      if (result.sessionFinished) {
+        return BaseController.success(res, {
+          sessionFinished: true,
+          message: result.message,
+          finalStats: result.finalStats
+        }, 'Sesión completada');
+      }
 
       BaseController.success(res, {
         currentCard: result.currentCard,
