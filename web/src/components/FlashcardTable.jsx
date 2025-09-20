@@ -8,8 +8,17 @@ import {
   TablePagination,
   TableContainer,
   Typography,
-  Box
+  Box,
+  IconButton,
+  Stack,
+  Tooltip
 } from '@mui/material';
+import {
+  FirstPage as FirstPageIcon,
+  LastPage as LastPageIcon,
+  RestartAlt as RestartAltIcon,
+  ClearAll as ClearAllIcon
+} from '@mui/icons-material';
 import CardRow from './CardRow';
 import SearchBar from './SearchBar';
 
@@ -34,7 +43,8 @@ const FlashcardTable = ({
   setTags,
   tagsService,
   onCardTagUpdated,
-  loadDeckAndCards
+  loadDeckAndCards,
+  setRowsPerPage
 }) => {
   // Verificaciones defensivas
   const safeMuiTheme = muiTheme || {};
@@ -43,6 +53,27 @@ const FlashcardTable = ({
   const safeSearchResults = Array.isArray(searchResults) ? searchResults : [];
 
   const displayCards = searchQuery ? safeSearchResults : safeCards;
+
+  // Helpers para los controles
+  const goToFirstPage = () => {
+    setPage(null, 0);
+  };
+
+  const goToLastPage = () => {
+    const total = searchQuery.trim() ? searchTotal : totalCards;
+    const lastPage = Math.max(0, Math.ceil(total / rowsPerPage) - 1);
+    setPage(null, lastPage);
+  };
+
+  const resetRowsPerPage = () => {
+    // Simula el evento del paginador de MUI
+    setRowsPerPage({ target: { value: 15 } });
+  };
+
+  const clearTable = () => {
+    onClearSearch && onClearSearch();
+    setPage(null, 0);
+  };
 
   // Debug logging (remover después de solucionar)
   // console.log('FlashcardTable props:', {
@@ -151,16 +182,56 @@ const FlashcardTable = ({
             )}
           </TableBody>
         </Table>
-        <TablePagination
-          rowsPerPageOptions={[15]}
-          component="div"
-          count={searchQuery ? searchTotal || 0 : totalCards || 0}
-          rowsPerPage={rowsPerPage || 15}
-          page={page || 0}
-          onPageChange={(e, newPage) => setPage && setPage(newPage)}
-          onRowsPerPageChange={() => {}}
-          labelRowsPerPage="Flashcards por página"
-        />
+        {/* Controles y paginador en la misma fila */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1, mb: 2 }}>
+          <Stack direction="row" spacing={1}>
+            <Tooltip title="Ir al principio">
+              <span>
+                <IconButton onClick={goToFirstPage} disabled={page === 0}>
+                  <FirstPageIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title="Ir al final">
+              <span>
+                <IconButton
+                  onClick={goToLastPage}
+                  disabled={
+                    (searchQuery.trim()
+                      ? page >= Math.ceil((searchTotal || 0) / rowsPerPage) - 1
+                      : page >= Math.ceil((totalCards || 0) / rowsPerPage) - 1)
+                  }
+                >
+                  <LastPageIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title="Restablecer filas por página a 15">
+              <span>
+                <IconButton onClick={resetRowsPerPage} disabled={rowsPerPage === 15}>
+                  <RestartAltIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title="Limpiar búsqueda y volver al inicio">
+              <span>
+                <IconButton onClick={clearTable}>
+                  <ClearAllIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Stack>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 15, 20, 30, 50, 100]}
+            component="div"
+            count={searchQuery ? searchTotal || 0 : totalCards || 0}
+            rowsPerPage={rowsPerPage || 15}
+            page={page || 0}
+            onPageChange={setPage}
+            onRowsPerPageChange={setRowsPerPage}
+            labelRowsPerPage="Flashcards por página"
+          />
+        </Box>
       </TableContainer>
     );
   } catch (error) {

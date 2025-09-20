@@ -10,12 +10,18 @@ import {
   useTheme as useMuiTheme,
   Fab,
   Tooltip,
-  Typography
+  Typography,
+  IconButton,
+  Stack
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
   AddCard as AddCardIcon,
-  SmartToy as AIIcon
+  SmartToy as AIIcon,
+  FirstPage as FirstPageIcon,
+  LastPage as LastPageIcon,
+  RestartAlt as RestartAltIcon,
+  ClearAll as ClearAllIcon
 } from '@mui/icons-material';
 import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
@@ -57,6 +63,14 @@ const DeckPage = () => {
   // Hook personalizado para manejar flashcards
   const flashcardManager = useFlashcardManager(deckId);
 
+  // Estado local para paginación
+  const getInitialRowsPerPage = () => {
+    const stored = localStorage.getItem('deck_rows_per_page');
+    return stored ? parseInt(stored, 10) : 15;
+  };
+  const [rowsPerPage, setRowsPerPageState] = useState(getInitialRowsPerPage);
+  const [page, setPage] = useState(0);
+
   // Carga inicial y al cambiar filtros y tags
   useEffect(() => {
     // Cargar tags protegidas por token
@@ -79,12 +93,12 @@ const DeckPage = () => {
     }
     // Cargar deck/cards según búsqueda y paginación
     if (!searchQuery) {
-      loadDeckAndCards(flashcardManager.page, flashcardManager.rowsPerPage);
+      loadDeckAndCards( flashcardManager.page, rowsPerPage);
     } else {
-      handleSearch(searchQuery, flashcardManager.page, flashcardManager.rowsPerPage);
+      handleSearch(searchQuery,  flashcardManager.page, rowsPerPage);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deckId, flashcardManager.page, flashcardManager.rowsPerPage, searchQuery, token]);
+  }, [deckId,  flashcardManager.page, rowsPerPage, searchQuery, token]);
 
   const loadDeckAndCards = async (p = 0, pageSize = 15) => {
     try {
@@ -117,8 +131,8 @@ const DeckPage = () => {
 
   const handleSearch = async (
     query,
-    p = flashcardManager.page,
-    pageSize = flashcardManager.rowsPerPage
+    p =  flashcardManager.page,
+    pageSize = rowsPerPage
   ) => {
     try {
       setSearching(true);
@@ -143,26 +157,38 @@ const DeckPage = () => {
 
     // Si el query está vacío, volver a cargar todas las cards
     if (!query.trim()) {
-      loadDeckAndCards(flashcardManager.page, flashcardManager.rowsPerPage);
+      loadDeckAndCards( flashcardManager.page, rowsPerPage);
     } else {
       // Debounced search - esperar 300ms antes de buscar
       clearTimeout(window.searchTimeout);
       window.searchTimeout = setTimeout(() => {
         if (query.trim()) {
-          handleSearch(query.trim(), 0, flashcardManager.rowsPerPage);
+          handleSearch(query.trim(), 0, rowsPerPage);
         }
       }, 300);
     }
   };
 
-  // Función para manejar cambios de página durante búsqueda
-  const handlePageChange = (newPage) => {
+  // Función para manejar cambios de página durante búsqueda o listado normal
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage);
     if (searchQuery.trim()) {
-      // Si hay búsqueda activa, buscar en la nueva página
-      handleSearch(searchQuery.trim(), newPage, flashcardManager.rowsPerPage);
+      handleSearch(searchQuery.trim(), newPage, rowsPerPage);
     } else {
-      // Si no hay búsqueda, cargar normalmente
-      loadDeckAndCards(newPage, flashcardManager.rowsPerPage);
+      loadDeckAndCards(newPage, rowsPerPage);
+    }
+  };
+
+  // Función para manejar cambios en la cantidad de filas por página
+  const setRowsPerPage = (event) => {
+    const newRowsPerPage = parseInt(event.target.value, 10);
+    setRowsPerPageState(newRowsPerPage);
+    localStorage.setItem('deck_rows_per_page', newRowsPerPage);
+    setPage(0);
+    if (searchQuery.trim()) {
+      handleSearch(searchQuery.trim(), 0, newRowsPerPage);
+    } else {
+      loadDeckAndCards(0, newRowsPerPage);
     }
   };
 
@@ -171,7 +197,8 @@ const DeckPage = () => {
     setSearchQuery('');
     setSearchResults([]);
     setSearchTotal(0);
-    loadDeckAndCards(flashcardManager.page, flashcardManager.rowsPerPage);
+    setPage(0);
+    loadDeckAndCards( flashcardManager.page, rowsPerPage);
   };
 
   const handleCreateCard = async () => {
@@ -187,7 +214,8 @@ const DeckPage = () => {
 
     await flashcardManager.createCard(() => {
       setNewCardTagId('');
-      loadDeckAndCards(flashcardManager.page, flashcardManager.rowsPerPage);
+      setPage(0); // <-- vuelve a la primera página
+      loadDeckAndCards(0, rowsPerPage); // <-- usa el valor actual de rowsPerPage
     });
   };
 
@@ -199,7 +227,8 @@ const DeckPage = () => {
           deckId: deckId
         }))
       });
-      loadDeckAndCards(flashcardManager.page, flashcardManager.rowsPerPage);
+      setPage(0); // <-- vuelve a la primera página
+      loadDeckAndCards(0, rowsPerPage); // <-- usa el valor actual de rowsPerPage
     } catch (err) {
       console.error('❌ Error creating generated flashcards:', err);
     }
@@ -348,7 +377,6 @@ const DeckPage = () => {
           </Alert>
         )}
 
-
         {(themeName === 'kyoto' || themeName === 'tokyo') && (
           <Box
             sx={{
@@ -363,12 +391,13 @@ const DeckPage = () => {
             }}
           />
         )}
+
         <FlashcardTable
           cards={cards}
           tags={tags}
           muiTheme={muiTheme}
-          page={flashcardManager.page}
-          rowsPerPage={flashcardManager.rowsPerPage}
+          page={page}
+          rowsPerPage={rowsPerPage}
           totalCards={totalCards}
           searchQuery={searchQuery}
           searchResults={searchResults}
@@ -380,13 +409,13 @@ const DeckPage = () => {
           openEditDialog={openEditDialog}
           handleDeleteCard={handleDeleteCard}
           setPage={handlePageChange}
+          setRowsPerPage={setRowsPerPage}
           flashcards={flashcards}
           setTags={setTags}
           loadDeckAndCards={loadDeckAndCards}
           tagsService={tagsService}
           onCardTagUpdated={onCardTagUpdated}
-        />
-
+        />  
         {/* Modal de revisión de flashcards */}
         <ReviewFlashcardModal
           open={flashcardManager.reviewDialogOpen}
