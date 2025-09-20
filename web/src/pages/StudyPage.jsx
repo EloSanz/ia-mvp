@@ -63,7 +63,7 @@ const StudyPage = () => {
     try {
       setLoading(true);
       const response = await decks.getAll();
-      setAvailableDecks(response.data || []);
+      setAvailableDecks(response.data.data || []);
     } catch (err) {
       setError('Error al cargar los decks disponibles');
       console.error('Error loading decks:', err);
