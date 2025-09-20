@@ -23,6 +23,7 @@ import {
 } from '@mui/material';
 
 import Navigation from '../components/Navigation';
+import Breadcrumbs from '../components/Breadcrumbs';
 import StudyCard from '../components/StudyCard';
 import StudyStats from '../components/StudyStats';
 import StudyControls from '../components/StudyControls';
@@ -302,6 +303,9 @@ const StudySessionPage = () => {
     <>
       <Navigation />
       <Container maxWidth="lg" sx={{ mt: 4, mb: 12 }}>
+        {/* Breadcrumbs para navegación contextual */}
+        <Breadcrumbs />
+
         {/* Error Alert */}
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>

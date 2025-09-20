@@ -26,6 +26,7 @@ import {
 } from '@mui/icons-material';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigation } from '../hooks/useNavigation';
 
 const Navigation = () => {
   const navigate = useNavigate();
@@ -45,7 +46,12 @@ const Navigation = () => {
   };
   const { user, logout } = useAuth();
 
-  const isHome = location.pathname === '/';
+  // Usar el hook de navegación inteligente
+  const {
+    isOnHome,
+    navigationButtonText,
+    navigationButtonAction
+  } = useNavigation();
 
   return (
     <AppBar position="static" elevation={1}>
@@ -59,14 +65,14 @@ const Navigation = () => {
         </Box>
 
         <Box>
-          {!isHome && (
+          {!isOnHome && (
             <Button
               color="inherit"
               startIcon={<HomeIcon />}
-              onClick={() => navigate('/')}
+              onClick={navigationButtonAction}
               sx={{ mr: 2 }}
             >
-              Inicio
+              {navigationButtonText}
             </Button>
           )}
 

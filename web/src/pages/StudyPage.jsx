@@ -37,6 +37,7 @@ import {
 } from '@mui/icons-material';
 
 import Navigation from '../components/Navigation';
+import Breadcrumbs from '../components/Breadcrumbs';
 import { useApi } from '../contexts/ApiContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -221,6 +222,9 @@ const StudyPage = () => {
     <>
       <Navigation />
       <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+        {/* Breadcrumbs para navegación contextual */}
+        <Breadcrumbs />
+
         {/* Header */}
         <Box textAlign="center" mb={4}>
           <Typography variant="h3" component="h1" fontWeight={700} gutterBottom>
