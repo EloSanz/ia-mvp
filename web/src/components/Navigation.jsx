@@ -21,7 +21,8 @@ import {
   LightMode as LightModeIcon,
   Logout as LogoutIcon,
   Person as PersonIcon,
-  Code as GithubIcon
+  Code as GithubIcon,
+  Psychology as StudyIcon
 } from '@mui/icons-material';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -78,6 +79,15 @@ const Navigation = () => {
             }}
           >
             Sincronizar
+          </Button>
+
+          <Button
+            color="inherit"
+            startIcon={<StudyIcon />}
+            onClick={() => navigate('/study')}
+            sx={{ mr: 2 }}
+          >
+            Estudiar
           </Button>
 
           <Tooltip title="Seleccionar tema">

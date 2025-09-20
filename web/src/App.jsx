@@ -7,6 +7,8 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import DeckPage from './pages/DeckPage';
+import StudyPage from './pages/StudyPage';
+import StudySessionPage from './pages/StudySessionPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 
@@ -55,6 +57,22 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <DeckPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/study"
+                element={
+                  <ProtectedRoute>
+                    <StudyPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/study/session/:deckId"
+                element={
+                  <ProtectedRoute>
+                    <StudySessionPage />
                   </ProtectedRoute>
                 }
               />
