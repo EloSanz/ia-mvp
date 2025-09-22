@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../config/database.js';
 import { TagEntity } from '../entities/tag.entity.js';
-
-const prisma = new PrismaClient();
 
 export class TagRepository {
   static async findAll() {

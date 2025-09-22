@@ -1,9 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../config/database.js';
 import { cacheAdapter } from '../adapters/cache.adapter.js';
 import { CACHE_TTL_FLASHCARDS } from '../config/constants.js';
 import { FlashcardEntity } from '../entities/flashcard.entity.js';
-
-const prisma = new PrismaClient();
 
 /**
  * FlashcardRepository - Repositorio para operaciones de persistencia

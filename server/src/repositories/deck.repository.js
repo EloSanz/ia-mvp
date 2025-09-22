@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../config/database.js';
 import { DeckEntity } from '../entities/deck.entity.js';
-
-const prisma = new PrismaClient();
 
 /**
  * DeckRepository - Repositorio para operaciones de persistencia
