@@ -47,7 +47,7 @@ const HomePage = () => {
   const { themeName } = useAppTheme();
   const navigate = useNavigate();
   const { decks } = useApi();
-  const { lastDeckId, hasLastDeck, goToLastDeck } = useNavigation();
+  const { lastDeckId, hasLastDeck, lastDeckExists, goToLastDeck } = useNavigation();
   const [decksList, setDecksList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -127,6 +127,13 @@ const HomePage = () => {
 
     try {
       await decks.delete(deckToDelete.id);
+
+      // Si el deck eliminado era el último visitado, limpiarlo del localStorage
+      if (lastDeckId === deckToDelete.id) {
+        // Esto se maneja automáticamente por el hook useNavigation que valida la existencia del deck
+        console.log(`Deck ${deckToDelete.id} eliminado, localStorage será limpiado automáticamente`);
+      }
+
       loadDecks();
     } catch (err) {
       console.error('Error deleting deck:', err);
@@ -163,7 +170,7 @@ const HomePage = () => {
         <Breadcrumbs showOnHome={true} />
 
         {/* Sección de "Continuar donde dejaste" */}
-        {hasLastDeck && (
+        {lastDeckExists === true && (
           <Box sx={{ mb: 3 }}>
             <Alert
               severity="info"
@@ -179,8 +186,8 @@ const HomePage = () => {
                 </Button>
               }
             >
-              <AlertTitle>Continuar donde dejaste</AlertTitle>
-              Estabas viendo el deck #{lastDeckId}. Haz clic en "Continuar" para volver a él.
+              <AlertTitle>Continuar estudiando</AlertTitle>
+              Estabas estudiando el deck #{lastDeckId}. Haz clic en "Continuar" para retomar tu sesión.
             </Alert>
           </Box>
         )}

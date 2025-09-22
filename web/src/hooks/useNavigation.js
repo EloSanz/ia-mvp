@@ -8,11 +8,41 @@
 import { useNavigate } from 'react-router-dom';
 import { useLastDeck } from './useLastDeck';
 import { useRouteDetection } from './useRouteDetection';
+import { useApi } from '../contexts/ApiContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useState, useEffect } from 'react';
 
 export const useNavigation = () => {
   const navigate = useNavigate();
+  const { decks } = useApi();
+  const { token } = useAuth();
   const { lastDeckId, hasLastDeck, clearLastDeck } = useLastDeck();
   const routeInfo = useRouteDetection();
+
+  // Estado para validar si el último deck existe
+  const [lastDeckExists, setLastDeckExists] = useState(null); // null = loading, true = exists, false = doesn't exist
+
+  // Validar si el último deck guardado aún existe
+  useEffect(() => {
+    const validateLastDeck = async () => {
+      if (lastDeckId && hasLastDeck && token) {
+        try {
+          await decks.getById(lastDeckId);
+          setLastDeckExists(true);
+        } catch (error) {
+          // Si el deck no existe, limpiarlo del localStorage
+          console.warn(`Deck ${lastDeckId} no encontrado, limpiando localStorage`);
+          clearLastDeck();
+          setLastDeckExists(false);
+        }
+      } else if (!lastDeckId || !hasLastDeck) {
+        setLastDeckExists(false);
+      }
+      // Si no hay token, mantener el estado en loading (null)
+    };
+
+    validateLastDeck();
+  }, [lastDeckId, hasLastDeck, decks, clearLastDeck, token]);
 
   // Extraer información de la ruta usando el hook separado
   const { isOnDeckPage, isOnStudyPage, isOnHome, currentDeckId, currentSessionId, currentPath, canGoBack } = routeInfo;
@@ -27,8 +57,9 @@ export const useNavigation = () => {
   };
 
   const goToLastDeck = () => {
-    if (lastDeckId) {
-      navigate(`/decks/${lastDeckId}`);
+    if (lastDeckId && lastDeckExists) {
+      // Llevar directamente a una sesión de estudio del último deck
+      navigate(`/study/session/${lastDeckId}`);
     } else {
       goToDecks();
     }
@@ -103,8 +134,8 @@ export const useNavigation = () => {
       // Si estamos en páginas específicas, ir a la lista de decks
       return goToDecks;
     } else {
-      // Si estamos en home y tenemos un último deck visitado, ir directamente a ese deck
-      if (hasLastDeck) {
+      // Si estamos en home y tenemos un último deck visitado que existe, ir directamente a ese deck
+      if (lastDeckExists) {
         return goToLastDeck;
       } else {
         return goToDecks;
@@ -121,6 +152,7 @@ export const useNavigation = () => {
     currentSessionId,
     lastDeckId,
     hasLastDeck,
+    lastDeckExists,
 
     // Funciones de navegación
     goToDecks,

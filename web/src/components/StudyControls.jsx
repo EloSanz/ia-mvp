@@ -100,7 +100,7 @@ const StudyControls = ({
                 onClick={paused ? onResume : onPause}
                 disabled={loading}
                 color={paused ? "primary" : "default"}
-                size="large"
+                size="medium"
               >
                 {paused ? <PlayIcon /> : <PauseIcon />}
               </IconButton>
@@ -113,7 +113,7 @@ const StudyControls = ({
                   onClick={onSkip}
                   disabled={loading || paused}
                   color="default"
-                  size="large"
+                  size="medium"
                 >
                   <SkipIcon />
                 </IconButton>
@@ -121,7 +121,7 @@ const StudyControls = ({
             )}
 
             {/* Separador */}
-            <Box sx={{ width: 1, height: 32, bgcolor: 'divider', mx: 1 }} />
+            <Box sx={{ width: '1px', height: 28, bgcolor: 'divider', mx: 1.5 }} />
 
             {/* Botón Reiniciar */}
             <Tooltip title="Reiniciar sesión">
@@ -129,7 +129,7 @@ const StudyControls = ({
                 onClick={onRestart}
                 disabled={loading}
                 color="default"
-                size="large"
+                size="medium"
               >
                 <RefreshIcon />
               </IconButton>

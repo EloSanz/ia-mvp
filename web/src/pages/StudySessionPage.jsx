@@ -28,12 +28,14 @@ import StudyCard from '../components/StudyCard';
 import StudyStats from '../components/StudyStats';
 import StudyControls from '../components/StudyControls';
 import { useStudySession } from '../hooks/useStudySession';
+import { useLastDeck } from '../hooks/useLastDeck';
 
 const StudySessionPage = () => {
   const { deckId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const studyOptions = location.state || {};
+  const { clearLastDeck } = useLastDeck();
 
   const {
     session,
@@ -137,6 +139,9 @@ const StudySessionPage = () => {
       setFinalStats(result.finalStats);
       setSessionFinished(true);
       setShowFinishDialog(false);
+
+      // Limpiar el último deck guardado cuando se termina la sesión
+      clearLastDeck();
 
       setSnackbar({
         open: true,
