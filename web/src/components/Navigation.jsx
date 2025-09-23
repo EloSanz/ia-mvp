@@ -21,10 +21,12 @@ import {
   LightMode as LightModeIcon,
   Logout as LogoutIcon,
   Person as PersonIcon,
-  Code as GithubIcon
+  Code as GithubIcon,
+  Psychology as StudyIcon
 } from '@mui/icons-material';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigation } from '../hooks/useNavigation';
 
 const Navigation = () => {
   const navigate = useNavigate();
@@ -44,7 +46,12 @@ const Navigation = () => {
   };
   const { user, logout } = useAuth();
 
-  const isHome = location.pathname === '/';
+  // Usar el hook de navegación inteligente
+  const {
+    isOnHome,
+    navigationButtonText,
+    navigationButtonAction
+  } = useNavigation();
 
   return (
     <AppBar position="static" elevation={1}>
@@ -58,14 +65,14 @@ const Navigation = () => {
         </Box>
 
         <Box>
-          {!isHome && (
+          {!isOnHome && (
             <Button
               color="inherit"
               startIcon={<HomeIcon />}
-              onClick={() => navigate('/')}
+              onClick={navigationButtonAction}
               sx={{ mr: 2 }}
             >
-              Inicio
+              {navigationButtonText}
             </Button>
           )}
 
@@ -78,6 +85,15 @@ const Navigation = () => {
             }}
           >
             Sincronizar
+          </Button>
+
+          <Button
+            color="inherit"
+            startIcon={<StudyIcon />}
+            onClick={() => navigate('/study')}
+            sx={{ mr: 2 }}
+          >
+            Estudiar
           </Button>
 
           <Tooltip title="Seleccionar tema">

@@ -140,11 +140,43 @@ export const ApiProvider = ({ children }) => {
     getStats: () => api.get('/api/sync/stats')
   };
 
+  // Study API - Sistema de repetición espaciada
+  const study = {
+    // Iniciar sesión de estudio
+    startSession: (deckId, limit) =>
+      api.post('/api/study/start', { deckId, limit }),
+
+    // Obtener siguiente card
+    getNextCard: (sessionId) =>
+      api.get(`/api/study/${sessionId}/next`),
+
+    // Revisar card
+    reviewCard: (sessionId, cardId, difficulty, responseTime) =>
+      api.post(`/api/study/${sessionId}/review`, {
+        cardId,
+        difficulty,
+        responseTime
+      }),
+
+    // Obtener estado de sesión
+    getSessionStatus: (sessionId) =>
+      api.get(`/api/study/${sessionId}/status`),
+
+    // Finalizar sesión
+    finishSession: (sessionId) =>
+      api.post(`/api/study/${sessionId}/finish`),
+
+    // Estadísticas globales (admin)
+    getGlobalStats: () =>
+      api.get('/api/study/stats')
+  };
+
   const value = {
     decks,
     flashcards,
     tags,
-    sync
+    sync,
+    study
   };
 
   return <ApiContext.Provider value={value}>{children}</ApiContext.Provider>;

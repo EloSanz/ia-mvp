@@ -10,7 +10,7 @@ class CacheAdapter {
 
   set(key, value, ttl = 60) {
     this.store.set(key, value);
-    if (ttl > 0) {
+    if (ttl > 0 && process.env.NODE_ENV !== 'test') {
       setTimeout(() => this.store.delete(key), ttl * 1000);
     }
   }

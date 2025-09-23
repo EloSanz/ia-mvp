@@ -11,6 +11,7 @@ import {
   DialogActions,
   TextField,
   Alert,
+  AlertTitle,
   CircularProgress,
   Box,
   Paper,
@@ -30,11 +31,14 @@ import {
   Edit as EditIcon,
   GitHub as GitHubIcon,
   Email as EmailIcon,
-  Info as InfoIcon
+  Info as InfoIcon,
+  ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
 import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
+import Breadcrumbs from '../components/Breadcrumbs';
+import { useNavigation } from '../hooks/useNavigation';
 
 import { useTheme as useMuiTheme } from '@mui/material';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
@@ -43,6 +47,7 @@ const HomePage = () => {
   const { themeName } = useAppTheme();
   const navigate = useNavigate();
   const { decks } = useApi();
+  const { lastDeckId, hasLastDeck, lastDeckExists, goToLastDeck } = useNavigation();
   const [decksList, setDecksList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -122,6 +127,13 @@ const HomePage = () => {
 
     try {
       await decks.delete(deckToDelete.id);
+
+      // Si el deck eliminado era el último visitado, limpiarlo del localStorage
+      if (lastDeckId === deckToDelete.id) {
+        // Esto se maneja automáticamente por el hook useNavigation que valida la existencia del deck
+        console.log(`Deck ${deckToDelete.id} eliminado, localStorage será limpiado automáticamente`);
+      }
+
       loadDecks();
     } catch (err) {
       console.error('Error deleting deck:', err);
@@ -154,6 +166,31 @@ const HomePage = () => {
           fontFamily: muiTheme.fontFamily
         }}
       >
+        {/* Breadcrumbs para navegación contextual */}
+        <Breadcrumbs showOnHome={true} />
+
+        {/* Sección de "Continuar donde dejaste" */}
+        {lastDeckExists === true && (
+          <Box sx={{ mb: 3 }}>
+            <Alert
+              severity="info"
+              icon={<SchoolIcon />}
+              action={
+                <Button
+                  color="inherit"
+                  size="small"
+                  onClick={goToLastDeck}
+                  startIcon={<ArrowForwardIcon />}
+                >
+                  Continuar
+                </Button>
+              }
+            >
+              <AlertTitle>Continuar estudiando</AlertTitle>
+              Estabas estudiando el deck #{lastDeckId}. Haz clic en "Continuar" para retomar tu sesión.
+            </Alert>
+          </Box>
+        )}
         {(themeName === 'kyoto' || themeName === 'tokyo') && (
           <Box
             sx={{

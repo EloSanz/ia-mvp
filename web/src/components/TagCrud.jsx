@@ -32,9 +32,9 @@ const TagCrud = ({
     setSelectedTagId(card.tagId ?? '');
   }, [card.tagId]);
 
-  const displayName =
-    tags.find((t) => t.id === selectedTagId)?.name ||
-    (card.tagId ? tags.find((t) => t.id === card.tagId)?.name || 'Sin tag' : 'Sin tag');
+  const displayName = card.tagId
+    ? tags.find((t) => t.id === card.tagId)?.name || 'Sin tag'
+    : 'Sin tag';
 
   const updateTag = async (tagId) => {
     setSelectedTagId(tagId);

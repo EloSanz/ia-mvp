@@ -28,7 +28,8 @@ export class FlashcardRepository {
           include: {
             deck: {
               select: { id: true, name: true }
-            }
+            },
+            tag: true
           },
           orderBy: { createdAt: 'desc' },
           skip,
@@ -56,7 +57,8 @@ export class FlashcardRepository {
               id: true,
               name: true
             }
-          }
+          },
+          tag: true
         },
         orderBy: { createdAt: 'desc' }
       });
@@ -79,7 +81,8 @@ export class FlashcardRepository {
               id: true,
               name: true
             }
-          }
+          },
+          tag: true
         }
       });
       return flashcard ? FlashcardEntity.fromPrisma(flashcard) : null;
@@ -111,7 +114,8 @@ export class FlashcardRepository {
                 id: true,
                 name: true
               }
-            }
+            },
+            tag: true
           },
           orderBy: { createdAt: 'desc' },
           skip,
@@ -157,7 +161,8 @@ export class FlashcardRepository {
               id: true,
               name: true
             }
-          }
+          },
+          tag: true
         },
         orderBy: { nextReview: 'asc' }
       });
@@ -316,7 +321,8 @@ export class FlashcardRepository {
               id: true,
               name: true
             }
-          }
+          },
+          tag: true
         },
         orderBy: { createdAt: 'desc' }
       });

@@ -7,6 +7,7 @@ import tagRoutes from './routes/tag.routes.js';
 import flashcardRoutes from './routes/flashcard.routes.js';
 import syncRoutes from './routes/sync.routes.js';
 import authRoutes from './routes/auth.routes.js';
+import studyRoutes from './routes/study.routes.js';
 import loggingRoutes from './routes/logging.routes.js';
 import { errorHandler } from './middlewares/error.middleware.js';
 import { authMiddleware } from './middlewares/auth.middleware.js';
@@ -68,6 +69,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/decks', deckRoutes);
 app.use('/api/flashcards', flashcardRoutes);
 app.use('/api/sync', syncRoutes);
+app.use('/api/study', studyRoutes);
 app.use('/api/logging', loggingRoutes);
 
 // Middleware de logging de errores

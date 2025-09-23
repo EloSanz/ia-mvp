@@ -25,6 +25,7 @@ import {
 } from '@mui/icons-material';
 import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
+import Breadcrumbs from '../components/Breadcrumbs';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
 import FlashcardTable from '../components/FlashcardTable';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
@@ -356,6 +357,9 @@ const DeckPage = () => {
           backgroundColor: muiTheme.palette.background.default
         }}
       >
+        {/* Breadcrumbs para navegación contextual */}
+        <Breadcrumbs />
+
         {/* Información del deck */}
         {deck && (
           <Box sx={{ mb: 1 }}>
