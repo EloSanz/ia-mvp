@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -27,12 +27,12 @@ import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
-import FlashcardTable from '../components/FlashcardTable';
-import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
-import AIFlashcardsGenerator from '../components/AIFlashcardsGenerator';
-import CreateFlashcardModal from '../components/CreateFlashcardModal';
-import EditFlashcardModal from '../components/EditFlashcardModal';
-import ReviewFlashcardModal from '../components/ReviewFlashcardModal';
+import FlashcardTable from '../components/deck/FlashcardTable';
+import ConfirmDeleteModal from '../components/deck/ConfirmDeleteModal';
+import AIFlashcardsGenerator from '../components/deck/AIFlashcardsGenerator';
+import CreateFlashcardModal from '../components/deck/CreateFlashcardModal';
+import EditFlashcardModal from '../components/deck/EditFlashcardModal';
+import ReviewFlashcardModal from '../components/deck/ReviewFlashcardModal';
 import { useFlashcardManager } from '../hooks/useFlashcardManager';
 
 const DeckPage = () => {
@@ -61,8 +61,17 @@ const DeckPage = () => {
   const [newCardTagId, setNewCardTagId] = useState('');
   const [_editingCardTagId, _setEditingCardTagId] = useState('');
 
+  // Ref para evitar múltiples llamadas al mismo deck
+  const fetchedDeckRef = useRef(new Set());
+
+  // Resetear el ref cuando cambie el deckId
+  useEffect(() => {
+    fetchedDeckRef.current.clear();
+  }, [deckId]);
+
   // Hook personalizado para manejar flashcards
   const flashcardManager = useFlashcardManager(deckId);
+  const currentPage = flashcardManager.page;
 
   // Estado local para paginación
   const getInitialRowsPerPage = () => {
@@ -94,21 +103,32 @@ const DeckPage = () => {
     }
     // Cargar deck/cards según búsqueda y paginación
     if (!searchQuery) {
-      loadDeckAndCards( flashcardManager.page, rowsPerPage);
+      loadDeckAndCards(currentPage, rowsPerPage);
     } else {
-      handleSearch(searchQuery,  flashcardManager.page, rowsPerPage);
+      handleSearch(searchQuery, currentPage, rowsPerPage);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deckId,  flashcardManager.page, rowsPerPage, searchQuery, token]);
+  }, [deckId, currentPage, rowsPerPage, searchQuery, token]);
 
   const loadDeckAndCards = async (p = 0, pageSize = 15) => {
     try {
       setLoading(true);
 
+      // Evitar múltiples llamadas al mismo deck
+      const deckKey = `${deckId}_${p}_${pageSize}`;
+      if (fetchedDeckRef.current.has(deckKey)) {
+        console.log('⚠️ Skipping duplicate deck fetch:', deckKey);
+        setLoading(false);
+        return;
+      }
+
       const [deckResponse, cardsResponse] = await Promise.all([
         decks.getById(deckId),
         flashcards.getByDeck(deckId, { page: p, pageSize })
       ]);
+
+      // Marcar como fetched
+      fetchedDeckRef.current.add(deckKey);
 
       // console.debug('✅ Loaded flashcards:', cardsResponse.data?.data?.length || 0);
 

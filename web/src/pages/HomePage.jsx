@@ -36,7 +36,7 @@ import {
 } from '@mui/icons-material';
 import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
-import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
+import ConfirmDeleteModal from '../components/deck/ConfirmDeleteModal';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { useNavigation } from '../hooks/useNavigation';
 

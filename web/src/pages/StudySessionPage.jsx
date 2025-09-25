@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Container, Box, Alert, Snackbar } from '@mui/material';
 
@@ -35,9 +35,20 @@ export default function StudySessionPage() {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [showFinishDialog, setShowFinishDialog] = useState(false);
 
+  // Ref para evitar múltiples inicializaciones de sesión
+  const initializedRef = useRef(new Set());
+
+  // Resetear ref cuando cambie el deckId
   useEffect(() => {
-    if (deckId && !hasActiveSession) initializeSession();
-  }, [deckId, hasActiveSession]);
+    initializedRef.current.clear();
+  }, [deckId]);
+
+  useEffect(() => {
+    if (deckId && !session?.id && !initializedRef.current.has(deckId)) {
+      initializedRef.current.add(deckId);
+      initializeSession();
+    }
+  }, [deckId, session?.id]);
 
   const initializeSession = async () => {
     try {
