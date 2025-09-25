@@ -1,5 +1,5 @@
 import React from 'react';
-import { LoginForm } from '../components/LoginForm';
+import { LoginForm } from '../components/loginPage/LoginForm';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Link, Typography } from '@mui/material';
 

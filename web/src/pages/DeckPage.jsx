@@ -27,12 +27,12 @@ import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
-import FlashcardTable from '../components/deck/FlashcardTable';
-import ConfirmDeleteModal from '../components/deck/ConfirmDeleteModal';
-import AIFlashcardsGenerator from '../components/deck/AIFlashcardsGenerator';
-import CreateFlashcardModal from '../components/deck/CreateFlashcardModal';
-import EditFlashcardModal from '../components/deck/EditFlashcardModal';
-import ReviewFlashcardModal from '../components/deck/ReviewFlashcardModal';
+import FlashcardTable from '../components/deckPage/FlashcardTable';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
+import AIFlashcardsGenerator from '../components/deckPage/AIFlashcardsGenerator';
+import CreateFlashcardModal from '../components/deckPage/CreateFlashcardModal';
+import EditFlashcardModal from '../components/deckPage/EditFlashcardModal';
+import ReviewFlashcardModal from '../components/deckPage/ReviewFlashcardModal';
 import { useFlashcardManager } from '../hooks/useFlashcardManager';
 
 const DeckPage = () => {
