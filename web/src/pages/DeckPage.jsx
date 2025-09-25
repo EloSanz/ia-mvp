@@ -74,22 +74,25 @@ const DeckPage = () => {
 
   // Carga inicial y al cambiar filtros y tags
   useEffect(() => {
-    // Cargar tags protegidas por token
+    // Cargar tags del deck específico
     const loadTags = async () => {
       try {
-        const response = await tagsService.getAll();
-        if (Array.isArray(response.data)) {
+        if (!deckId) return;
+        const response = await tagsService.getByDeckId(deckId);
+        if (response.data?.success && Array.isArray(response.data.data)) {
+          setTags(response.data.data);
+        } else if (Array.isArray(response.data)) {
           setTags(response.data);
         } else {
           setTags([]);
         }
       } catch (error) {
-        console.error('Error cargando tags:', error);
+        console.error('Error cargando tags del deck:', error);
         setTags([]);
       }
     };
 
-    if (token) {
+    if (token && deckId) {
       loadTags();
     }
     // Cargar deck/cards según búsqueda y paginación
@@ -419,6 +422,8 @@ const DeckPage = () => {
           loadDeckAndCards={loadDeckAndCards}
           tagsService={tagsService}
           onCardTagUpdated={onCardTagUpdated}
+          deckId={deckId}  // Pasar deckId a FlashcardTable
+          loadTags={loadTags}  // Pasar función para recargar tags
         />  
         {/* Modal de revisión de flashcards */}
         <ReviewFlashcardModal

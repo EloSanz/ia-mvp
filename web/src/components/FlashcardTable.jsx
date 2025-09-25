@@ -44,7 +44,9 @@ const FlashcardTable = ({
   tagsService,
   onCardTagUpdated,
   loadDeckAndCards,
-  setRowsPerPage
+  setRowsPerPage,
+  deckId,  // Nueva prop para pasar el deckId
+  loadTags  // Función para recargar tags
 }) => {
   // Verificaciones defensivas
   const safeMuiTheme = muiTheme || {};
@@ -162,6 +164,8 @@ const FlashcardTable = ({
                   loadDeckAndCards={loadDeckAndCards}
                   tagsService={tagsService}
                   onCardTagUpdated={onCardTagUpdated}
+                  deckId={deckId}  // Pasar deckId al CardRow
+                  loadTags={loadTags}  // Pasar función para recargar tags
                 />
               ))
             ) : (

@@ -63,14 +63,15 @@ app.get('/api/health/detailed', (req, res) => {
 });
 
 // API routes
-// Tags: solo requiere token válido, no filtra por usuario
-app.use('/api/tags', authMiddleware, tagRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/decks', deckRoutes);
+app.use('/api/decks', authMiddleware, deckRoutes); // Tags ahora están bajo /api/decks/:deckId/tags
+app.use('/api/decks', authMiddleware, tagRoutes);  // Tags integradas con decks
 app.use('/api/flashcards', flashcardRoutes);
 app.use('/api/sync', syncRoutes);
 app.use('/api/study', studyRoutes);
 app.use('/api/logging', loggingRoutes);
+// Tags legacy (deprecated)
+app.use('/api/tags', authMiddleware, tagRoutes);
 
 // Middleware de logging de errores
 app.use(errorLogger);

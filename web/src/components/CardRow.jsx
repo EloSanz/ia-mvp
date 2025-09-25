@@ -22,7 +22,9 @@ const CardRow = ({
   setTags,
   loadDeckAndCards,
   tagsService,
-  onCardTagUpdated
+  onCardTagUpdated,
+  deckId,  // Nueva prop para pasar al TagCrud
+  loadTags  // Función para recargar tags
 }) => {
   return (
     <TableRow
@@ -64,6 +66,8 @@ const CardRow = ({
           loadDeckAndCards={loadDeckAndCards}
           tagsService={tagsService}
           onCardTagUpdated={onCardTagUpdated}
+          deckId={deckId}  // Pasar deckId al TagCrud
+          loadTags={loadTags}  // Pasar función para recargar tags
         />
       </TableCell>
       <TableCell sx={{ py: 1.5 }}>

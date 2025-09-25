@@ -124,13 +124,20 @@ export const ApiProvider = ({ children }) => {
     generateWithAI: (text) => api.post('/api/flashcards/ai-generate', { text })
   };
 
-  // Tags API
+  // Tags API - Nuevos endpoints por deck
   const tags = {
+    // Nuevos métodos por deck
+    getByDeckId: (deckId) => api.get(`/api/decks/${deckId}/tags`),
+    getById: (deckId, tagId) => api.get(`/api/decks/${deckId}/tags/${tagId}`),
+    create: (deckId, data) => api.post(`/api/decks/${deckId}/tags`, data),
+    update: (deckId, tagId, data) => api.put(`/api/decks/${deckId}/tags/${tagId}`, data),
+    delete: (deckId, tagId) => api.delete(`/api/decks/${deckId}/tags/${tagId}`),
+    
+    // Métodos legacy (deprecated) - mantener por compatibilidad temporal
     getAll: () => api.get('/api/tags'),
-    getById: (id) => api.get(`/api/tags/${id}`),
-    create: (data) => api.post('/api/tags', data),
-    update: (id, data) => api.put(`/api/tags/${id}`, data),
-    delete: (id) => api.delete(`/api/tags/${id}`)
+    createLegacy: (data) => api.post('/api/tags', data),
+    updateLegacy: (id, data) => api.put(`/api/tags/${id}`, data),
+    deleteLegacy: (id) => api.delete(`/api/tags/${id}`)
   };
 
   // Sync API (para futuras integraciones)
