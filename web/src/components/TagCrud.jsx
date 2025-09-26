@@ -20,9 +20,7 @@ const TagCrud = ({
   setTags,
   loadDeckAndCards,
   tagsService,
-  onCardTagUpdated,
-  deckId,  // Nueva prop para usar los endpoints por deck
-  loadTags  // Función para recargar tags después de crear
+  onCardTagUpdated
 }) => {
   const [open, setOpen] = useState(false);
   const [newTagName, setNewTagName] = useState('');
@@ -53,18 +51,14 @@ const TagCrud = ({
   };
 
   const createTag = async () => {
-    if (!newTagName.trim() || !deckId) return;
+    if (!newTagName.trim()) return;
     setCreatingTag(true);
     try {
-      const resp = await tagsService.create(deckId, { name: newTagName.trim() });
+      const resp = await tagsService.create({ name: newTagName.trim() });
       const created = resp?.data?.data || resp?.data || resp; // tolerante al shape
-      // Recargar todas las tags del deck desde el servidor
-      await loadTags();
+      setTags((prev) => [...prev, created]);
       await updateTag(created.id);
       setNewTagName('');
-    } catch (error) {
-      console.error('Error creando tag:', error);
-      alert(`Error al crear la tag: ${error.response?.data?.error || error.message}`);
     } finally {
       setCreatingTag(false);
     }
