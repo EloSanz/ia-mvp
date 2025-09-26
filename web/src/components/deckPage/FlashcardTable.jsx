@@ -19,8 +19,8 @@ import {
   RestartAlt as RestartAltIcon,
   ClearAll as ClearAllIcon
 } from '@mui/icons-material';
-import CardRow from './CardRow';
-import SearchBar from './SearchBar';
+import CardRow from '../CardRow';
+import SearchBar from '../SearchBar';
 
 const FlashcardTable = ({
   cards,

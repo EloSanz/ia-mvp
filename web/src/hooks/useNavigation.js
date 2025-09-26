@@ -10,7 +10,7 @@ import { useLastDeck } from './useLastDeck';
 import { useRouteDetection } from './useRouteDetection';
 import { useApi } from '../contexts/ApiContext';
 import { useAuth } from '../contexts/AuthContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export const useNavigation = () => {
   const navigate = useNavigate();
@@ -22,10 +22,19 @@ export const useNavigation = () => {
   // Estado para validar si el último deck existe
   const [lastDeckExists, setLastDeckExists] = useState(null); // null = loading, true = exists, false = doesn't exist
 
+  // Ref para evitar múltiples validaciones del mismo deck
+  const validatedDecksRef = useRef(new Set());
+
+  // Resetear ref cuando cambie lastDeckId
+  useEffect(() => {
+    validatedDecksRef.current.clear();
+  }, [lastDeckId]);
+
   // Validar si el último deck guardado aún existe
   useEffect(() => {
     const validateLastDeck = async () => {
-      if (lastDeckId && hasLastDeck && token) {
+      if (lastDeckId && hasLastDeck && token && !validatedDecksRef.current.has(lastDeckId)) {
+        validatedDecksRef.current.add(lastDeckId);
         try {
           await decks.getById(lastDeckId);
           setLastDeckExists(true);
@@ -42,7 +51,7 @@ export const useNavigation = () => {
     };
 
     validateLastDeck();
-  }, [lastDeckId, hasLastDeck, decks, clearLastDeck, token]);
+  }, [lastDeckId, hasLastDeck, token]);
 
   // Extraer información de la ruta usando el hook separado
   const { isOnDeckPage, isOnStudyPage, isOnHome, currentDeckId, currentSessionId, currentPath, canGoBack } = routeInfo;
