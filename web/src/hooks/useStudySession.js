@@ -64,7 +64,7 @@ export const useStudySession = () => {
         if (responseStartTime.current) {
           setResponseTime(Date.now() - responseStartTime.current);
         }
-      }, 100);
+      }, 300);
 
       return sessionData;
     } catch (err) {
@@ -170,7 +170,7 @@ export const useStudySession = () => {
         if (responseStartTime.current) {
           setResponseTime(Date.now() - responseStartTime.current);
         }
-      }, 100);
+      }, 300);
 
       return nextData;
     } catch (err) {
