@@ -31,7 +31,7 @@ model Deck {
   userId      Int
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   flashcards  Flashcard[]
-  tags        Tag[]    // Nueva relación: Deck tiene muchas Tags
+  tags        Tag[]
 }
 
 model Flashcard {
@@ -57,11 +57,11 @@ model Flashcard {
 model Tag {
   id        Int        @id @default(autoincrement())
   name      String     
-  deckId    Int        // Nueva FK: Tag pertenece a un Deck
+  deckId    Int        
   deck      Deck       @relation(fields: [deckId], references: [id], onDelete: Cascade)
   flashcards Flashcard[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   
-  @@unique([name, deckId]) // Nombre único POR DECK (no globalmente)
+  @@unique([name, deckId])
 }
