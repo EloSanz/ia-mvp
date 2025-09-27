@@ -5,7 +5,6 @@ import Breadcrumbs from '../components/Breadcrumbs';
 import StudyHeader from '../components/studyPage/StudyHeader';
 import StudyConfig from '../components/studyPage/StudyConfig';
 import DeckList from '../components/studyPage/DeckList';
-import StudyInfo from '../components/studyPage/StudyInfo';
 import LoadingState from '../components/studyPage/LoadingState';
 import { useNavigate } from 'react-router-dom';
 import { useApi } from '../contexts/ApiContext';
@@ -81,7 +80,6 @@ export default function StudyPage() {
           <EmptyState onGoHome={() => navigate('/')} />
         )}
 
-        <StudyInfo />
       </Container>
     </>
   );
