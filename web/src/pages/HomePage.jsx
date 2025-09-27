@@ -22,7 +22,9 @@ import {
   TableHead,
   TableRow,
   IconButton,
-  Tooltip
+  Tooltip,
+  Checkbox,
+  FormControlLabel
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -54,7 +56,7 @@ const HomePage = () => {
 
   // Modal para crear deck
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [newDeck, setNewDeck] = useState({ name: '', description: '' });
+  const [newDeck, setNewDeck] = useState({ name: '', description: '',generateCover: false });
   const [creating, setCreating] = useState(false);
 
   // Modal para editar deck
@@ -91,7 +93,7 @@ const HomePage = () => {
       setCreating(true);
       await decks.create(newDeck);
       setCreateDialogOpen(false);
-      setNewDeck({ name: '', description: '' });
+      setNewDeck({ name: '', description: '' ,generateCover: false});
       loadDecks(); // Recargar la lista
     } catch (err) {
       console.error('Error creating deck:', err);
@@ -542,6 +544,16 @@ const HomePage = () => {
               variant="outlined"
               value={newDeck.description}
               onChange={(e) => setNewDeck({ ...newDeck, description: e.target.value })}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={newDeck.generateCover}
+                  onChange={e => setNewDeck({ ...newDeck, generateCover: e.target.checked })}
+                  color="primary"
+                />
+              }
+              label="Generar portada automática por IA"
             />
           </DialogContent>
           <DialogActions>

@@ -30,7 +30,7 @@ export const DeckController = {
    * Crea un nuevo deck
    */
   createDeck: BaseController.wrap(async (req, res) => {
-    const { name, description } = req.body;
+  const { name, description, generateCover } = req.body;
     const userId = parseInt(req.userId);
 
     // Crear el deck sin portada
@@ -38,33 +38,34 @@ export const DeckController = {
       name,
       description,
       userId,
-      coverUrl: null // Se actualizará luego
+      coverUrl: null // Se actualizará luego si corresponde
     };
     try {
       const deck = await Deck.create(deckData);
 
-      // Generar portada con IA en segundo plano
-      (async () => {
-        try {
-          const { generateDeckCover } = await import('../services/aiImage.service.js');
-          const result = await generateDeckCover(name, description);
-          console.log("🚀 ~ result:", result)
-          if (result.url) {
-            await Deck.update(deck.id, { coverUrl: result.url });
-            console.log(`Portada IA generada y actualizada para deck ${deck.id}`);
-          } else {
-            console.error('Error al generar portada IA:', result.error);
+      // Solo generar portada si el usuario lo solicita
+      if (generateCover) {
+        (async () => {
+          try {
+            const { generateDeckCover } = await import('../services/aiImage.service.js');
+            const result = await generateDeckCover(name, description);
+            console.log("🚀 ~ result:", result)
+            if (result.url) {
+              await Deck.update(deck.id, { coverUrl: result.url });
+              console.log(`Portada IA generada y actualizada para deck ${deck.id}`);
+            } else {
+              console.error('Error al generar portada IA:', result.error);
+            }
+          } catch (err) {
+            console.error('Error al generar portada IA (async):', err);
           }
-        } catch (err) {
-          console.error('Error al generar portada IA (async):', err);
-        }
-      })(); 
-      
+        })();
+      }
       BaseController.success(res, deck, 'Deck creado exitosamente', 201);
     } catch (error) {
       console.error('Error creating deck:', error);
       throw error;
-    }  
+    }
   
   }),
 

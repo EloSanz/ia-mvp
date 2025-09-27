@@ -59,7 +59,6 @@ export class Deck {
    * Actualiza un deck existente
    */
   static async update(id, updateData) {
-    console.log("🚀 ~ Deck ~ update ~ updateData:", updateData)
     const existingDeck = await Deck.findById(id);
     if (!existingDeck) {
       throw new Error('Deck no encontrado');
@@ -72,7 +71,6 @@ export class Deck {
       updatedAt: new Date()
     });
     
-    console.log("🚀 ~ Deck ~ update ~ updatedDeck:", updatedDeck)
 
     updatedDeck.name = updatedDeck.name.trim();
     updatedDeck.description = updatedDeck.description.trim();
@@ -83,7 +81,6 @@ export class Deck {
 
     // Actualizar
     const savedEntity = await DeckRepository.update(id, entity);
-    console.log("🚀 ~ Deck ~ update ~ savedEntity:", savedEntity)
     return Deck.fromEntity(savedEntity);
   }
 
