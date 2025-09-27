@@ -30,13 +30,42 @@ export const DeckController = {
    * Crea un nuevo deck
    */
   createDeck: BaseController.wrap(async (req, res) => {
-    const deckData = {
-      ...req.body,
-      userId: parseInt(req.userId)
-    };
+    const { name, description } = req.body;
+    const userId = parseInt(req.userId);
 
-    const deck = await Deck.create(deckData);
-    BaseController.success(res, deck, 'Deck creado exitosamente', 201);
+    // Crear el deck sin portada
+    const deckData = {
+      name,
+      description,
+      userId,
+      coverUrl: null // Se actualizará luego
+    };
+    try {
+      const deck = await Deck.create(deckData);
+
+      // Generar portada con IA en segundo plano
+      (async () => {
+        try {
+          const { generateDeckCover } = await import('../services/aiImage.service.js');
+          const result = await generateDeckCover(name, description);
+          console.log("🚀 ~ result:", result)
+          if (result.url) {
+            await Deck.update(deck.id, { coverUrl: result.url });
+            console.log(`Portada IA generada y actualizada para deck ${deck.id}`);
+          } else {
+            console.error('Error al generar portada IA:', result.error);
+          }
+        } catch (err) {
+          console.error('Error al generar portada IA (async):', err);
+        }
+      })(); 
+      
+      BaseController.success(res, deck, 'Deck creado exitosamente', 201);
+    } catch (error) {
+      console.error('Error creating deck:', error);
+      throw error;
+    }  
+  
   }),
 
   /**
