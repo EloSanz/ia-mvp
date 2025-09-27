@@ -108,6 +108,7 @@ export class Flashcard {
    * Actualiza una flashcard existente
    */
   static async update(id, updateData) {
+    
     const existingFlashcard = await Flashcard.findById(id);
     if (!existingFlashcard) {
       throw new Error('Flashcard no encontrada');
@@ -176,7 +177,9 @@ export class Flashcard {
       nextReview: entity.nextReview,
       reviewCount: entity.reviewCount,
       createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt
+      updatedAt: entity.updatedAt,
+      tagId: entity.tagId,
+      tag: entity.tag
     });
   }
 
@@ -194,7 +197,9 @@ export class Flashcard {
       nextReview: this.nextReview,
       reviewCount: this.reviewCount,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
+      tagId: this.tagId,
+      tag: this.tag
     };
   }
 
