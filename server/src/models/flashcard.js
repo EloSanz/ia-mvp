@@ -108,6 +108,12 @@ export class Flashcard {
    * Actualiza una flashcard existente
    */
   static async update(id, updateData) {
+    
+    const existingFlashcard = await Flashcard.findById(id);
+    if (!existingFlashcard) {
+      throw new Error('Flashcard no encontrada');
+    }
+
     // Aplicar reglas de negocio
     const updatedFlashcard = new Flashcard({
       ...existingFlashcard,
