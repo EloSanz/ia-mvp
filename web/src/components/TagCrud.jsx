@@ -54,7 +54,7 @@ const TagCrud = ({
     if (!newTagName.trim()) return;
     setCreatingTag(true);
     try {
-      const resp = await tagsService.create({ name: newTagName.trim() });
+      const resp = await tagsService.create(card.deckId, { name: newTagName.trim() });
       const created = resp?.data?.data || resp?.data || resp; // tolerante al shape
       setTags((prev) => [...prev, created]);
       await updateTag(created.id);
