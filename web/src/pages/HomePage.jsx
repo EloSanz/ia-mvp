@@ -455,6 +455,27 @@ const HomePage = () => {
                           <DeleteIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
+                      <Tooltip title="Imagen portada deck" placement="top">
+                        {deck.coverUrl && (
+                          <IconButton
+                            onClick={(e) => e.stopPropagation()}
+                            size="small"
+                            component="a"
+                            href={deck.coverUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            sx={{
+                              color: 'grey.400',
+                              padding: 0.5,
+                              '&:hover': {
+                                color: 'error.main'
+                              }
+                            }}
+                          >
+                            <img src={deck.coverUrl} alt="Ir a portada" width={18} height={18} />
+                          </IconButton>
+                        )}
+                      </Tooltip>
                     </Box>
                   </TableCell>
                 </TableRow>

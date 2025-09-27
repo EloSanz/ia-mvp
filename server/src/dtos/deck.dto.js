@@ -7,6 +7,7 @@ export class DeckDto {
     this.id = data.id || null;
     this.name = data.name || '';
     this.description = data.description || '';
+    this.coverUrl = data.coverUrl || null;
     this.createdAt = data.createdAt || null;
     this.updatedAt = data.updatedAt || null;
   }
@@ -19,6 +20,7 @@ export class DeckDto {
       id: deckModel.id,
       name: deckModel.name,
       description: deckModel.description,
+      coverUrl: deckModel.coverUrl,
       createdAt: deckModel.createdAt,
       updatedAt: deckModel.updatedAt
     });
