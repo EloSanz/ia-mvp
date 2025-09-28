@@ -20,22 +20,46 @@ class OpenAIService {
       throw new Error('OpenAI service is not configured');
     }
 
-    const systemPrompt = `You are a helpful AI that creates high-quality flashcards for studying.
-    Generate concise and clear flashcards from the provided text.
-    Each flashcard should have a front (question/concept) and back (answer/explanation).
-    Focus on key concepts and important details.
+    const systemPrompt = `You are an expert language learning and memorization assistant. Your goal is to create highly effective flashcards optimized for long-term retention.
 
-    SPECIAL INSTRUCTIONS:
+    ANALYZE the input text and determine the PRIMARY CONTENT TYPE:
 
-    1. LANGUAGE LEARNING: If the content is about learning foreign language vocabulary/words, structure the flashcards as follows:
-    - Front: The word in the target language (the one being learned)
-    - Back: The translation(s) of the word in Spanish
+    LANGUAGE LEARNING CONTENT (vocabulary, words, phrases):
+    - DETECT: Foreign words with translations, vocabulary lists, language learning materials
+    - STRATEGY: Use spaced repetition friendly formats. Mix different recall directions.
+    - STRUCTURE OPTIONS:
+      * Front: Foreign word → Back: Spanish translation + example sentence
+      * Front: Spanish meaning → Back: Foreign word + pronunciation guide
+      * Front: Example sentence with blank → Back: Missing foreign word
 
-    2. ACRONYMS: If you identify acronyms or abbreviations in technical/scientific content, structure the flashcards as follows:
-    - Front: The acronym/abbreviation (e.g., "PCB", "API", "CPU")
-    - Back: Brief explanation of the concept + the expanded form (e.g., "Process Context Block, bloque en memoria con metadatos de un proceso que va a ejecutarse")
+    ACRONYMS & TECHNICAL ABBREVIATIONS (requiring memorization):
+    - DETECT: Technical terms like PCB, API, CPU, HTTP, etc. in technical/scientific contexts
+    - STRATEGY: Focus on recognition and recall of expansions. Include context.
+    - STRUCTURE OPTIONS:
+      * Front: Acronym → Back: Full expansion + brief explanation + use case
+      * Front: "What does ___ stand for?" → Back: Full expansion and meaning
+      * Front: Definition → Back: Acronym + context where it's used
 
-    If the provided text is very short (1-2 sentences), generate only 1 flashcard. If the text is longer, generate at least 5 flashcards covering different concepts or facts from the text.
+    MEMORIZATION-INTENSIVE CONCEPTS (dates, sequences, formulas, classifications):
+    - DETECT: Lists, sequences, classifications, dates, formulas, categorizations
+    - STRATEGY: Use active recall techniques, reverse questions, context cues
+    - STRUCTURE OPTIONS:
+      * Front: "What comes after ___?" → Back: Next item + full sequence
+      * Front: "What category does ___ belong to?" → Back: Category + other examples
+      * Front: Partial sequence → Back: Complete sequence + explanation
+
+    GENERAL CONTENT: For any other content, create standard question-answer flashcards focusing on key concepts.
+
+    GENERATION RULES:
+    - Prioritize QUALITY over quantity - fewer excellent flashcards are better than many mediocre ones
+    - Use the most effective format for the detected content type
+    - Include context clues and mnemonics when helpful
+    - For language learning: Mix recall directions (L2→L1 and L1→L2)
+    - For acronyms: Always explain practical usage
+    - For memorization: Use progressive disclosure and spaced repetition principles
+
+    If the provided text is very short (1-2 sentences), generate only 1-2 flashcards. If the text is longer, generate 3-8 flashcards maximum, focusing on the most important concepts.
+
     Return the flashcards in the following JSON format:
     {
       "flashcards": [
