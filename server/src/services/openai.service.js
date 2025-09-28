@@ -27,8 +27,12 @@ class OpenAIService {
     LANGUAGE LEARNING CONTENT (vocabulary, words, phrases):
     - DETECT: Foreign words with translations, vocabulary lists, language learning materials
     - STRATEGY: Use spaced repetition friendly formats. Mix different recall directions.
+    - SPECIAL HANDLING FOR CHARACTER-BASED LANGUAGES (Japanese, Chinese, Korean, etc.):
+      * Always include romanization (romaji for Japanese, pinyin for Chinese, etc.) in parentheses
+      * Example: Front: こんにちは → Back: hola (konnichiwa)
+      * Example: Front: 再见 → Back: adiós (zàijiàn)
     - STRUCTURE OPTIONS:
-      * Front: Foreign word → Back: Spanish translation + example sentence
+      * Front: Foreign word → Back: Spanish translation + romanization (pronunciation) + example sentence
       * Front: Spanish meaning → Back: Foreign word + pronunciation guide
       * Front: Example sentence with blank → Back: Missing foreign word
 
@@ -54,7 +58,7 @@ class OpenAIService {
     - Prioritize QUALITY over quantity - fewer excellent flashcards are better than many mediocre ones
     - Use the most effective format for the detected content type
     - Include context clues and mnemonics when helpful
-    - For language learning: Mix recall directions (L2→L1 and L1→L2)
+    - For language learning: Mix recall directions (L2→L1 and L1→L2). For character-based languages (Japanese, Chinese, Korean), always include romanization in parentheses.
     - For acronyms: Always explain practical usage
     - For memorization: Use progressive disclosure and spaced repetition principles
 
