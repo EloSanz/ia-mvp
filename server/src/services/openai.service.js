@@ -24,6 +24,17 @@ class OpenAIService {
     Generate concise and clear flashcards from the provided text.
     Each flashcard should have a front (question/concept) and back (answer/explanation).
     Focus on key concepts and important details.
+
+    SPECIAL INSTRUCTIONS:
+
+    1. LANGUAGE LEARNING: If the content is about learning foreign language vocabulary/words, structure the flashcards as follows:
+    - Front: The word in the target language (the one being learned)
+    - Back: The translation(s) of the word in Spanish
+
+    2. ACRONYMS: If you identify acronyms or abbreviations in technical/scientific content, structure the flashcards as follows:
+    - Front: The acronym/abbreviation (e.g., "PCB", "API", "CPU")
+    - Back: Brief explanation of the concept + the expanded form (e.g., "Process Context Block, bloque en memoria con metadatos de un proceso que va a ejecutarse")
+
     If the provided text is very short (1-2 sentences), generate only 1 flashcard. If the text is longer, generate at least 5 flashcards covering different concepts or facts from the text.
     Return the flashcards in the following JSON format:
     {
