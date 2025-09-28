@@ -17,6 +17,8 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+   // For debugging purposes
+   //console.log('➡️ API Request:', config.method?.toUpperCase(), config.url, config.data || config.params);
     return config;
   },
   (error) => Promise.reject(error)
@@ -24,7 +26,11 @@ api.interceptors.request.use(
 
 // Interceptor para manejar errores
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // For debugging purposes
+    //console.log('✅ API Response:', response.status, response.config?.url, response.data);
+    return response;
+  },
   (error) => {
     console.error('❌ API Error:', error.response?.status, error.config?.url, error.message);
 
@@ -124,13 +130,18 @@ export const ApiProvider = ({ children }) => {
     generateWithAI: (text) => api.post('/api/flashcards/ai-generate', { text })
   };
 
-  // Tags API
+  // Tags API (RESTful, anidadas bajo decks)
   const tags = {
-    getAll: () => api.get('/api/tags'),
-    getById: (id) => api.get(`/api/tags/${id}`),
-    create: (data) => api.post('/api/tags', data),
-    update: (id, data) => api.put(`/api/tags/${id}`, data),
-    delete: (id) => api.delete(`/api/tags/${id}`)
+    // Obtener todas las tags de un deck
+    getByDeckId: (deckId) => api.get(`/api/decks/${deckId}/tags`),
+    // Obtener una tag específica de un deck
+    getById: (deckId, tagId) => api.get(`/api/decks/${deckId}/tags/${tagId}`),
+    // Crear una tag en un deck
+    create: (deckId, data) => api.post(`/api/decks/${deckId}/tags`, data),
+    // Actualizar una tag de un deck
+    update: (deckId, tagId, data) => api.put(`/api/decks/${deckId}/tags/${tagId}`, data),
+    // Eliminar una tag de un deck
+    delete: (deckId, tagId) => api.delete(`/api/decks/${deckId}/tags/${tagId}`)
   };
 
   // Sync API (para futuras integraciones)

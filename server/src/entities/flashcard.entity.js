@@ -46,6 +46,10 @@ export class FlashcardEntity {
       front: prismaData.front,
       back: prismaData.back,
       deckId: prismaData.deckId,
+      tagId: prismaData.tagId ?? prismaData.tag?.id ?? null,
+      tag: prismaData.tag
+        ? { id: prismaData.tag.id, name: prismaData.tag.name }
+        : null,
       difficulty: prismaData.difficulty,
       lastReviewed: prismaData.lastReviewed,
       nextReview: prismaData.nextReview,

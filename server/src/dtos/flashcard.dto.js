@@ -151,6 +151,7 @@ export class FlashcardDto {
     if (data.back !== undefined) updateData.back = data.back.trim();
     if (data.deckId !== undefined) updateData.deckId = data.deckId;
     if (data.difficulty !== undefined) updateData.difficulty = data.difficulty;
+    if (data.tagId !== undefined) updateData.tagId = data.tagId;
 
     return new FlashcardDto(updateData);
   }
@@ -170,7 +171,9 @@ export class FlashcardDto {
       reviewCount: this.reviewCount,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
-      deck: this.deck
+      deck: this.deck,
+      tagId: this.tagId,
+      tag: this.tag
     };
   }
 
@@ -183,6 +186,7 @@ export class FlashcardDto {
       front: this.front,
       back: this.back,
       deckId: this.deckId,
+      tagId: this.tagId,
       difficulty: this.difficulty,
       lastReviewed: this.lastReviewed,
       nextReview: this.nextReview,
