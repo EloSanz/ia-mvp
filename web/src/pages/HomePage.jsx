@@ -59,7 +59,7 @@ const HomePage = () => {
 
   // Modal para crear deck
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [newDeck, setNewDeck] = useState({ name: '', description: '',generateCover: false });
+  const [newDeck, setNewDeck] = useState({ name: '', description: '', generateCover: false });
   const [creating, setCreating] = useState(false);
 
   // Modal para editar deck
@@ -96,7 +96,7 @@ const HomePage = () => {
       setCreating(true);
       await decks.create(newDeck);
       setCreateDialogOpen(false);
-      setNewDeck({ name: '', description: '' ,generateCover: false});
+      setNewDeck({ name: '', description: '', generateCover: false });
       loadDecks(); // Recargar la lista
     } catch (err) {
       console.error('Error creating deck:', err);
@@ -460,19 +460,36 @@ const HomePage = () => {
                           <DeleteIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
-              
-                      <Tooltip title="Imagen portada deck" placement="top">
-                       
-                        {deck.coverUrl ? (<Card>
-                          <CardMedia
-                            component="img"
-                            image={`data:image/png;base64,${deck.coverUrl}`}
+                      <Tooltip
+                        placement="right"
+                        title={
+                          <img
+                            src={`data:image/png;base64,${deck.coverUrl}`}
                             alt={deck.name}
-                            height={35}
-                            width="100%"
+                            style={{
+                              maxWidth: 200,
+                              maxHeight: 200,
+                              objectFit: 'contain', // se muestra completa en el preview
+                              borderRadius: 8
+                            }}
                           />
-                        </Card>) : (
-                          <Skeleton variant="rectangular" width={35}  height={35} />
+                        }
+                      >
+                        {deck.coverUrl ? (
+                          <Card sx={{ width: 35, height: 35 }}>
+                            <CardMedia
+                              component="img"
+                              image={`data:image/png;base64,${deck.coverUrl}`}
+                              alt={deck.name}
+                              sx={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain', // miniatura sin recortes
+                              }}
+                            />
+                          </Card>
+                        ) : (
+                          <Skeleton variant="rectangular" width={35} height={35} />
                         )}
                       </Tooltip>
                     </Box>
