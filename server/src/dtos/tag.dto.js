@@ -6,6 +6,8 @@ export class TagDto {
   constructor(data = {}) {
     this.id = data.id || null;
     this.name = data.name || '';
+    this.deckId = data.deckId || null;
+    this.flashcardCount = data.flashcards ? data.flashcards.length : 0;
     this.createdAt = data.createdAt || null;
     this.updatedAt = data.updatedAt || null;
   }
@@ -14,6 +16,8 @@ export class TagDto {
     return new TagDto({
       id: tagModel.id,
       name: tagModel.name,
+      deckId: tagModel.deckId,
+      flashcards: tagModel.flashcards,
       createdAt: tagModel.createdAt,
       updatedAt: tagModel.updatedAt
     });

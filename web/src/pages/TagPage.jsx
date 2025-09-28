@@ -37,7 +37,7 @@ export default function TagPage({ _token }) {
     setError(null);
 
     try {
-      const response = await tagsService.getAll();
+      const response = await tagsService.getByDeckId(deckId);
       console.log('Tags loaded:', response.data);
       setTags(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
@@ -65,7 +65,7 @@ export default function TagPage({ _token }) {
     setError(null);
 
     try {
-      const response = await tagsService.create({ name: newTagName.trim() });
+      const response = await tagsService.create(deckId, { name: newTagName.trim() });
       console.log('Tag created successfully:', response);
       setCreateOpen(false);
       setNewTagName('');
@@ -90,7 +90,7 @@ export default function TagPage({ _token }) {
     setError(null);
 
     try {
-      const response = await tagsService.update(editTag.id, { name: editTag.name.trim() });
+      const response = await tagsService.update(deckId, editTag.id, { name: editTag.name.trim() });
       console.log('Tag updated successfully:', response);
       setEditOpen(false);
       setEditTag(null);
@@ -114,7 +114,7 @@ export default function TagPage({ _token }) {
     setError(null);
 
     try {
-      await tagsService.delete(id);
+      await tagsService.delete(deckId, id);
       console.log('Tag deleted successfully');
       await fetchTags();
     } catch (err) {

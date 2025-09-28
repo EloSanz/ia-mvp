@@ -86,12 +86,13 @@ const DeckPage = () => {
     // Cargar tags protegidas por token
     const loadTags = async () => {
       try {
-        const response = await tagsService.getAll();
-        if (Array.isArray(response.data)) {
-          setTags(response.data);
-        } else {
-          setTags([]);
-        }
+        const response = await tagsService.getByDeckId(deckId);
+        const tagsList = Array.isArray(response.data)
+          ? response.data
+          : Array.isArray(response.data?.data)
+            ? response.data.data
+            : [];
+        setTags(tagsList);
       } catch (error) {
         console.error('Error cargando tags:', error);
         setTags([]);
@@ -114,13 +115,7 @@ const DeckPage = () => {
     try {
       setLoading(true);
 
-      // Evitar múltiples llamadas al mismo deck
       const deckKey = `${deckId}_${p}_${pageSize}`;
-      if (fetchedDeckRef.current.has(deckKey)) {
-        console.log('⚠️ Skipping duplicate deck fetch:', deckKey);
-        setLoading(false);
-        return;
-      }
 
       const [deckResponse, cardsResponse] = await Promise.all([
         decks.getById(deckId),
