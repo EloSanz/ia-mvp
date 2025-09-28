@@ -84,7 +84,7 @@ export const ApiProvider = ({ children }) => {
   const decks = {
     getAll: () => api.get('/api/decks'),
     getById: (id) => api.get(`/api/decks/${id}`),
-    create: (data) => api.post('/api/decks', data),
+    create: (data) => api.post('/api/decks', data, { timeout: 30000 }),
     update: (id, data) => api.put(`/api/decks/${id}`, data),
     delete: (id) => api.delete(`/api/decks/${id}`)
   };

@@ -24,7 +24,10 @@ import {
   IconButton,
   Tooltip,
   Checkbox,
-  FormControlLabel
+  FormControlLabel,
+  CardMedia,
+  Card,
+  Skeleton
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -457,25 +460,19 @@ const HomePage = () => {
                           <DeleteIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
+              
                       <Tooltip title="Imagen portada deck" placement="top">
-                        {deck.coverUrl && (
-                          <IconButton
-                            onClick={(e) => e.stopPropagation()}
-                            size="small"
-                            component="a"
-                            href={deck.coverUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            sx={{
-                              color: 'grey.400',
-                              padding: 0.5,
-                              '&:hover': {
-                                color: 'error.main'
-                              }
-                            }}
-                          >
-                            <img src={deck.coverUrl} alt="Ir a portada" width={18} height={18} />
-                          </IconButton>
+                       
+                        {deck.coverUrl ? (<Card>
+                          <CardMedia
+                            component="img"
+                            image={`data:image/png;base64,${deck.coverUrl}`}
+                            alt={deck.name}
+                            height={35}
+                            width="100%"
+                          />
+                        </Card>) : (
+                          <Skeleton variant="rectangular" width={35}  height={35} />
                         )}
                       </Tooltip>
                     </Box>

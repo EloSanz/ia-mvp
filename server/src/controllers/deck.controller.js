@@ -2,6 +2,8 @@ import { Deck } from '../models/deck.js';
 import { DeckDto } from '../dtos/deck.dto.js';
 import { BaseController } from './base.controller.js';
 import { ForbiddenError, NotFoundError } from '../utils/custom.errors.js';
+import fs from "fs";
+import { generateDeckCoverURL } from '../services/aiImage.service.js';
 
 export const DeckController = {
   /**
@@ -30,42 +32,36 @@ export const DeckController = {
    * Crea un nuevo deck
    */
   createDeck: BaseController.wrap(async (req, res) => {
-  const { name, description, generateCover } = req.body;
-    const userId = parseInt(req.userId);
 
-    // Crear el deck sin portada
-    const deckData = {
+  const { name, description, generateCover } = req.body;
+  const userId = parseInt(req.userId);
+
+  try {
+    let coverBase64 = null;
+
+    if (generateCover) {
+      const { generateDeckCoverBase64 } = await import("../services/aiImage.service.js");
+      const result = await generateDeckCoverBase64(name, description);
+
+      if (result.base64) {
+        coverBase64 = result.base64
+      } else {
+        console.error("❌ Error al generar portada IA:", result.error);
+      }
+    }
+
+    const deck = await Deck.create({
       name,
       description,
       userId,
-      coverUrl: null // Se actualizará luego si corresponde
-    };
-    try {
-      const deck = await Deck.create(deckData);
+      coverUrl: coverBase64 // 👈 aquí guardás el base64
+    });
 
-      // Solo generar portada si el usuario lo solicita
-      if (generateCover) {
-        (async () => {
-          try {
-            const { generateDeckCover } = await import('../services/aiImage.service.js');
-            const result = await generateDeckCover(name, description);
-            console.log("🚀 ~ result:", result)
-            if (result.url) {
-              await Deck.update(deck.id, { coverUrl: result.url });
-              console.log(`Portada IA generada y actualizada para deck ${deck.id}`);
-            } else {
-              console.error('Error al generar portada IA:', result.error);
-            }
-          } catch (err) {
-            console.error('Error al generar portada IA (async):', err);
-          }
-        })();
-      }
-      BaseController.success(res, deck, 'Deck creado exitosamente', 201);
-    } catch (error) {
-      console.error('Error creating deck:', error);
-      throw error;
-    }
+    BaseController.success(res, deck, "Deck creado exitosamente", 201);
+  } catch (error) {
+    console.error("Error creating deck:", error);
+    throw error;
+  }
   
   }),
 
