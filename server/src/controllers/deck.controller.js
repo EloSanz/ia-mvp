@@ -37,27 +37,35 @@ export const DeckController = {
   const userId = parseInt(req.userId);
 
   try {
-    let coverBase64 = null;
-
-    if (generateCover) {
-      const { generateDeckCoverBase64 } = await import("../services/aiImage.service.js");
-      const result = await generateDeckCoverBase64(name, description);
-
-      if (result.base64) {
-        coverBase64 = result.base64
-      } else {
-        console.error("❌ Error al generar portada IA:", result.error);
-      }
-    }
 
     const deck = await Deck.create({
       name,
       description,
       userId,
-      coverUrl: coverBase64 // 👈 aquí guardás el base64
+      coverUrl: null
     });
 
     BaseController.success(res, deck, "Deck creado exitosamente", 201);
+
+    let coverBase64 = null;
+
+    if (generateCover) {
+      (async () => {
+        const { generateDeckCoverBase64 } = await import("../services/aiImage.service.js");
+        const result = await generateDeckCoverBase64(name, description);
+
+        if (result.base64) {
+          coverBase64 = result.base64
+          await Deck.update(deck.id, { coverUrl: result.base64 });
+          // TODO: emitir evento con socket.io o notificación al front
+           BaseController.success(res, deck, "Portada de Deck creado exitosamente", 201);
+        } else {
+          console.error("❌ Error al generar portada IA:", result.error);
+        }
+      })();
+    }
+
+
   } catch (error) {
     console.error("Error creating deck:", error);
     throw error;
