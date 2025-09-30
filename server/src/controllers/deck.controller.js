@@ -58,7 +58,7 @@ export const DeckController = {
           coverBase64 = result.base64
           await Deck.update(deck.id, { coverUrl: result.base64 });
           // TODO: emitir evento con socket.io o notificación al front
-           BaseController.success(res, deck, "Portada de Deck creado exitosamente", 201);
+           console.log("Portada generada correctamente");
         } else {
           console.error("❌ Error al generar portada IA:", result.error);
         }

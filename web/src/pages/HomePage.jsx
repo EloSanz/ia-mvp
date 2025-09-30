@@ -71,6 +71,9 @@ const HomePage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deckToDelete, setDeckToDelete] = useState(null);
 
+  //Monitoreo de deck para portada IA
+  const [deckMonitory,setDeckMonitory] =useState(null);
+
   const loadDecks = useCallback(async () => {
     try {
       setLoading(true);
@@ -93,8 +96,15 @@ const HomePage = () => {
     if (!newDeck.name.trim()) return;
 
     try {
+      debugger
       setCreating(true);
-      await decks.create(newDeck);
+      const { data: createdDeck } =await decks.create(newDeck);
+      if(newDeck.generateCover && createdDeck && createdDeck.data.id){
+        console.log("Generando portada IA...:" ,createdDeck.data)
+          // monitorear solo este deck recién creado
+        setDeckMonitory(createdDeck.data); 
+      }
+
       setCreateDialogOpen(false);
       setNewDeck({ name: '', description: '', generateCover: false });
       loadDecks(); // Recargar la lista
@@ -104,6 +114,31 @@ const HomePage = () => {
       setCreating(false);
     }
   };
+
+  /***Interval para monitorisar la deck creada */
+  useEffect(() => {
+    let interval;
+    if (deckMonitory && !deckMonitory.coverUrl) {
+      interval = setInterval(async () => {
+        debugger
+        try {
+           const { data: updated }= await decks.getById(deckMonitory.id);
+          if (updated.data.coverUrl) {
+            setDecksList(prev =>
+              prev.map(d => (d.id === updated.data.id ? updated.data : d))
+            );
+            setDeckMonitory(null); // dejar de monitorear
+            // loadDecks();             // refresca lista completa
+            clearInterval(interval);
+          }
+        } catch (err) {
+          console.error("Error fetching deck update:", err);
+        }
+      }, 10000);//Por lo general suel tardar menos de 30 segundos
+    }
+    return () => clearInterval(interval);
+  }, [deckMonitory]);
+
 
   const handleEditDeck = async () => {
     if (!editingDeck?.name?.trim()) return;
