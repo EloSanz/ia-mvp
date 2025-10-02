@@ -35,10 +35,11 @@ export async function generateDeckCoverURL(title, description) {
  * @returns {Promise<{ base64: string|null, error: any|null }>}
  */
 export async function generateDeckCoverBase64(title, description) {
-  const prompt = `Minimalist flat icon representing to: ${title}.
-                  Style: emoji-like, flat design, 1-3 solid colors, clean outline.
-                  Concept: ${description}.
-                  No text, no letters, no background,no gradients. Centered composition.`;
+  const prompt = `Minimalist flat illustration for a deck titled "${title}". 
+Use only simple geometric shapes or abstract symbols inspired by the theme: ${description}. 
+No text, no letters, no words, no emoji. 
+Use clean lines, few solid colors, and flat style. 
+The design should look like a logo or icon, centered, with no background noise.`;
 
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
