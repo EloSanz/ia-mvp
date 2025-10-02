@@ -47,6 +47,7 @@ import { useNavigation } from '../hooks/useNavigation';
 
 import { useTheme as useMuiTheme } from '@mui/material';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
+import DecksGridCard from '../components/DecksGridCard';
 const HomePage = () => {
   const muiTheme = useMuiTheme();
   const { themeName } = useAppTheme();
@@ -545,7 +546,8 @@ const HomePage = () => {
             </Typography>
           </Box>
         )}
-
+        {decksList.length != 0 && !loading && (<DecksGridCard decks={decksList} deckMonitory={deckMonitory} /> 
+      )}
         {/* FAB para crear nuevo deck */}
         <Fab
           color="primary"
