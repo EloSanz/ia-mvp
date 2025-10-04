@@ -135,6 +135,94 @@ Aplicación de flashcards con integración de IA para generación automática de
        ```
      - Si usas Docker, asegúrate de que el archivo `.env` esté accesible dentro del contenedor
 
+# Errores comunes con Docker y Prisma
+
+## Error: The column `Deck.coverUrl` does not exist in the current database / Error: P3005
+
+**Mensaje:**
+```
+The column `Deck.coverUrl` does not exist in the current database.
+Error: P3005
+The database schema is not empty. Read more about how to baseline an existing production database: https://pris.ly/d/migrate-baseline
+```
+
+**¿Por qué ocurre?**
+- Prisma detecta que la base de datos ya tiene tablas/datos, pero nunca fue "baselined" para migraciones.
+- Esto sucede cuando empiezas a usar Prisma Migrate en una base de datos existente.
+
+**Solución 1:**
+1. Identifica el nombre de la primera migración en `server/prisma/migrations/` (ejemplo: `20230920123456_init`).
+2. Ejecuta en el contenedor backend:
+   ```sh
+   docker-compose exec backend npx prisma migrate resolve --applied <nombre_migracion>
+   ```
+3. Luego ejecuta:
+   ```sh
+   docker-compose exec backend npx prisma migrate deploy
+   ```
+
+**Importante:**
+- El baseline solo se ejecuta una vez por base de datos. No lo pongas en scripts de arranque ni Dockerfile.
+- Tus scripts de arranque deben usar solo:
+  - `npx prisma migrate deploy` (para aplicar migraciones nuevas)
+  - `npx prisma generate` (para generar el cliente)
+
+**Ejemplo de script recomendado en `package.json`:**
+```json
+"dockerStart": "npx prisma migrate deploy && npx prisma generate && node src/index.js"
+```
+
+**En tu `docker-compose.yml` para backend:**
+```yaml
+command: sh -c "npm run dockerStart"
+```
+Begin Patch
+
+# Reinicio completo del entorno Docker (desarrollo)
+
+Si tienes problemas con migraciones, datos corruptos o simplemente quieres empezar desde cero, sigue estos pasos para borrar **todos** los contenedores, imágenes y volúmenes de Docker relacionados con el proyecto:
+
+```bash
+# Detén y elimina todos los contenedores y volúmenes del proyecto
+docker-compose down -v
+
+# (Opcional) Borra todas las imágenes de Docker del proyecto
+docker image prune -a
+
+ (Opcional) Borra todos los volúmenes de Docker (¡esto borra datos de TODOS tus proyectos!)
+# docker volume prune
+
+
+Luego, reconstruye y levanta todo desde cero:
+
+```bash
+docker-compose up --build -d
+```
+
+Esto garantiza que la base de datos esté completamente vacía y que las migraciones de Prisma se apliquen correctamente.
+
+**Importante:**
+ Si usabas scripts SQL en `postgres/init`, coméntalos o elimínalos si ahora usas Prisma para gestionar la estructura y datos.
+ Usa el sistema de seed de Prisma para poblar datos de ejemplo.
+
+**Documentación oficial:**
+- https://www.prisma.io/docs/orm/migrate/troubleshooting#the-database-schema-is-not-empty
+- https://www.prisma.io/docs/orm/reference/prisma-cli-reference#resolve
+
+## Observaciones importantes sobre migraciones y sincronización
+
+1. **Sincronización de migraciones entre entornos:**
+   - Todos los entornos (local y Docker) deben tener exactamente los mismos archivos de migración en la carpeta `prisma/migrations` y aplicarlos en el mismo orden.
+   - Si alguien genera migraciones en otro entorno, debe hacer commit y push de esos archivos.
+   - Cuando otro desarrollador o el entorno Docker los reciba, debe aplicar esas migraciones en el mismo orden (Prisma lo hace automáticamente con `migrate deploy`).
+   - Si los archivos de migración son iguales y están en el mismo orden, la estructura de la base de datos será igual en todos los entornos.
+   ![alt text](image.png)
+
+2. **Evita scripts SQL manuales para tablas gestionadas por Prisma:**
+   - No uses scripts SQL en `postgres/init` para crear o poblar tablas que ahora gestiona Prisma.
+   - Deja que Prisma cree y migre la base de datos con sus migraciones.
+   - Si necesitas poblar datos de ejemplo, usa el sistema de seed de Prisma (`prisma/seed.js`).
+   
 ## Desarrollo
 
 - Los cambios en el código se reflejan automáticamente gracias a los volúmenes de Docker
