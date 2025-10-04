@@ -121,7 +121,6 @@ const HomePage = () => {
     let interval;
     if (deckMonitory && !deckMonitory.coverUrl) {
       interval = setInterval(async () => {
-        debugger
         try {
            const { data: updated }= await decks.getById(deckMonitory.id);
           if (updated.data.coverUrl) {
