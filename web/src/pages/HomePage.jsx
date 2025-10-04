@@ -22,7 +22,12 @@ import {
   TableHead,
   TableRow,
   IconButton,
-  Tooltip
+  Tooltip,
+  Checkbox,
+  FormControlLabel,
+  CardMedia,
+  Card,
+  Skeleton
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -42,6 +47,7 @@ import { useNavigation } from '../hooks/useNavigation';
 
 import { useTheme as useMuiTheme } from '@mui/material';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
+import DecksGridCard from '../components/DecksGridCard';
 const HomePage = () => {
   const muiTheme = useMuiTheme();
   const { themeName } = useAppTheme();
@@ -54,7 +60,7 @@ const HomePage = () => {
 
   // Modal para crear deck
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [newDeck, setNewDeck] = useState({ name: '', description: '' });
+  const [newDeck, setNewDeck] = useState({ name: '', description: '', generateCover: false });
   const [creating, setCreating] = useState(false);
 
   // Modal para editar deck
@@ -65,6 +71,9 @@ const HomePage = () => {
   // Modal para confirmar eliminación
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deckToDelete, setDeckToDelete] = useState(null);
+
+  //Monitoreo de deck para portada IA
+  const [deckMonitory,setDeckMonitory] =useState(null);
 
   const loadDecks = useCallback(async () => {
     try {
@@ -88,10 +97,17 @@ const HomePage = () => {
     if (!newDeck.name.trim()) return;
 
     try {
+      debugger
       setCreating(true);
-      await decks.create(newDeck);
+      const { data: createdDeck } =await decks.create(newDeck);
+      if(newDeck.generateCover && createdDeck && createdDeck.data.id){
+        console.log("Generando portada IA...:" ,createdDeck.data)
+          // monitorear solo este deck recién creado
+        setDeckMonitory(createdDeck.data); 
+      }
+
       setCreateDialogOpen(false);
-      setNewDeck({ name: '', description: '' });
+      setNewDeck({ name: '', description: '', generateCover: false });
       loadDecks(); // Recargar la lista
     } catch (err) {
       console.error('Error creating deck:', err);
@@ -99,6 +115,30 @@ const HomePage = () => {
       setCreating(false);
     }
   };
+
+  /***Interval para monitorisar la deck creada */
+  useEffect(() => {
+    let interval;
+    if (deckMonitory && !deckMonitory.coverUrl) {
+      interval = setInterval(async () => {
+        try {
+           const { data: updated }= await decks.getById(deckMonitory.id);
+          if (updated.data.coverUrl) {
+            setDecksList(prev =>
+              prev.map(d => (d.id === updated.data.id ? updated.data : d))
+            );
+            setDeckMonitory(null); // dejar de monitorear
+            // loadDecks();             // refresca lista completa
+            clearInterval(interval);
+          }
+        } catch (err) {
+          console.error("Error fetching deck update:", err);
+        }
+      }, 10000);//Por lo general suel tardar menos de 30 segundos
+    }
+    return () => clearInterval(interval);
+  }, [deckMonitory]);
+
 
   const handleEditDeck = async () => {
     if (!editingDeck?.name?.trim()) return;
@@ -270,199 +310,7 @@ const HomePage = () => {
           </Alert>
         )}
 
-        <TableContainer
-          component={Paper}
-          sx={{
-            backgroundColor: muiTheme.palette.background.paper,
-            borderRadius: 1,
-            boxShadow: muiTheme.shadows[1],
-            fontFamily: muiTheme.fontFamily,
-            '& .MuiTableCell-root': {
-              borderBottom: `1px solid ${muiTheme.palette.divider}`,
-              color: muiTheme.palette.text.primary,
-              fontFamily: muiTheme.fontFamily
-            }
-          }}
-        >
-          <Table sx={{ minWidth: 650 }}>
-            <TableHead>
-              <TableRow>
-                <TableCell
-                  sx={{
-                    color: muiTheme.palette.text.secondary,
-                    fontWeight: 'normal',
-                    fontSize: '0.875rem',
-                    py: 1.5
-                  }}
-                >
-                  Deck
-                </TableCell>
-                <TableCell
-                  align="right"
-                  sx={{
-                    color: muiTheme.palette.text.secondary,
-                    fontWeight: 'normal',
-                    fontSize: '0.875rem',
-                    py: 1.5
-                  }}
-                >
-                  New
-                </TableCell>
-                <TableCell
-                  align="right"
-                  sx={{
-                    color: muiTheme.palette.text.secondary,
-                    fontWeight: 'normal',
-                    fontSize: '0.875rem',
-                    py: 1.5
-                  }}
-                >
-                  Learn
-                </TableCell>
-                <TableCell
-                  align="right"
-                  sx={{
-                    color: muiTheme.palette.text.secondary,
-                    fontWeight: 'normal',
-                    fontSize: '0.875rem',
-                    py: 1.5
-                  }}
-                >
-                  Due
-                </TableCell>
-                <TableCell
-                  align="right"
-                  sx={{
-                    color: muiTheme.palette.text.secondary,
-                    fontWeight: 'normal',
-                    fontSize: '0.875rem',
-                    py: 1.5,
-                    width: '100px'
-                  }}
-                >
-                  Actions
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {decksList.map((deck) => (
-                <TableRow
-                  key={deck.id}
-                  hover
-                  onClick={() => navigate(`/decks/${deck.id}`)}
-                  sx={{
-                    cursor: 'pointer',
-                    backgroundColor: muiTheme.palette.background.paper,
-                    '&:hover': {
-                      backgroundColor: muiTheme.palette.action.hover,
-                      '& .action-icons': {
-                        opacity: 1
-                      }
-                    }
-                  }}
-                >
-                  <TableCell
-                    component="th"
-                    scope="row"
-                    sx={{
-                      color: muiTheme.palette.text.primary,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      py: 1.5,
-                      fontSize: '0.9rem'
-                    }}
-                  >
-                    <SchoolIcon
-                      sx={{
-                        color: muiTheme.palette.icon?.main || muiTheme.palette.primary.main,
-                        fontSize: '1.1rem'
-                      }}
-                    />
-                    {deck.name}
-                  </TableCell>
-                  <TableCell
-                    align="right"
-                    sx={{
-                      color: '#2196f3',
-                      py: 1.5,
-                      fontSize: '0.9rem'
-                    }}
-                  >
-                    0
-                  </TableCell>
-                  <TableCell
-                    align="right"
-                    sx={{
-                      color: '#ff9800',
-                      py: 1.5,
-                      fontSize: '0.9rem'
-                    }}
-                  >
-                    0
-                  </TableCell>
-                  <TableCell
-                    align="right"
-                    sx={{
-                      color: '#4caf50',
-                      py: 1.5,
-                      fontSize: '0.9rem'
-                    }}
-                  >
-                    0
-                  </TableCell>
-                  <TableCell align="right" sx={{ py: 1 }}>
-                    <Box
-                      className="action-icons"
-                      sx={{
-                        opacity: 0,
-                        transition: 'opacity 0.2s',
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        gap: 0.5
-                      }}
-                    >
-                      <Tooltip title="Editar deck" placement="top">
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openEditDialog(deck);
-                          }}
-                          sx={{
-                            color: 'grey.400',
-                            padding: 0.5
-                          }}
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Eliminar deck" placement="top">
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteDeck(deck.id);
-                          }}
-                          sx={{
-                            color: 'grey.400',
-                            padding: 0.5,
-                            '&:hover': {
-                              color: 'error.main'
-                            }
-                          }}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
+     
         {decksList.length === 0 && !loading && (
           <Box textAlign="center" mt={6}>
             <Typography variant="h6" sx={{ color: 'grey.400' }} gutterBottom>
@@ -473,7 +321,13 @@ const HomePage = () => {
             </Typography>
           </Box>
         )}
-
+        {decksList.length != 0 && !loading &&
+         (<DecksGridCard decks={decksList} deckMonitory={deckMonitory}
+            onEdit={openEditDialog}
+            onDelete={handleDeleteDeck}
+            onNavigate={id => navigate(`/decks/${id}`)}
+         /> 
+      )}
         {/* FAB para crear nuevo deck */}
         <Fab
           color="primary"
@@ -521,6 +375,16 @@ const HomePage = () => {
               variant="outlined"
               value={newDeck.description}
               onChange={(e) => setNewDeck({ ...newDeck, description: e.target.value })}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={newDeck.generateCover}
+                  onChange={e => setNewDeck({ ...newDeck, generateCover: e.target.checked })}
+                  color="primary"
+                />
+              }
+              label="Generar portada automática por IA"
             />
           </DialogContent>
           <DialogActions>
