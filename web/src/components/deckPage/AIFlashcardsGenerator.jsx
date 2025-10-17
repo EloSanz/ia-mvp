@@ -30,12 +30,23 @@ const AIFlashcardsGenerator = ({ open, onClose, onGenerate }) => {
       setError(null);
 
       // Real request to backend - usando servicio centralizado
-      const response = await flashcardsService.generateWithAI(text);
+      console.log('🚀 Iniciando generación de flashcards con IA...');
+      const response = await flashcardsService.generateWithAI(text, { timeout: 90000 });
+      console.log('✅ Respuesta recibida:', response);
       const generatedCards = response.data.flashcards;
+      console.log('📝 Flashcards generadas:', generatedCards);
       onGenerate(generatedCards);
       onClose();
     } catch (err) {
-      setError('Error al generar las flashcards');
+      let errorMessage = 'Error al generar las flashcards';
+      if (err.code === 'ECONNABORTED') {
+        errorMessage = 'Timeout: La generación tomó demasiado tiempo. Intenta con un texto más corto.';
+      } else if (err.response) {
+        errorMessage = `Error del servidor: ${err.response.status} - ${err.response.data?.error || 'Error desconocido'}`;
+      } else if (err.request) {
+        errorMessage = 'Error de conexión: No se pudo conectar al servidor';
+      }
+      setError(errorMessage);
       console.error('Error generating flashcards:', err);
     } finally {
       setGenerating(false);
@@ -58,6 +69,9 @@ const AIFlashcardsGenerator = ({ open, onClose, onGenerate }) => {
         <Typography variant="body1" gutterBottom sx={{ fontFamily: muiTheme.fontFamily }}>
           Ingresa el texto del que quieres generar flashcards. La IA analizará el contenido y creará
           preguntas y respuestas relevantes.
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: muiTheme.fontFamily, mb: 2 }}>
+          💡 <strong>Tip:</strong> Para mejores resultados, usa textos de 200-500 palabras. Textos muy largos pueden tardar más en procesarse.
         </Typography>
         <TextField
           autoFocus

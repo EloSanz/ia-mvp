@@ -127,7 +127,10 @@ export const ApiProvider = ({ children }) => {
       api.get(`/api/flashcards/deck/${deckId}/search`, {
         params: { q: consigna, page, pageSize }
       }),
-    generateWithAI: (text) => api.post('/api/flashcards/ai-generate', { text })
+    generateWithAI: (text, options = {}) => {
+      const { timeout = 90000, retries = 1 } = options;
+      return api.post('/api/flashcards/ai-generate', { text }, { timeout });
+    }
   };
 
   // Tags API (RESTful, anidadas bajo decks)
@@ -182,12 +185,19 @@ export const ApiProvider = ({ children }) => {
       api.get('/api/study/stats')
   };
 
+  // Health check
+  const health = {
+    check: () => api.get('/api/health'),
+    detailed: () => api.get('/api/health/detailed')
+  };
+
   const value = {
     decks,
     flashcards,
     tags,
     sync,
-    study
+    study,
+    health
   };
 
   return <ApiContext.Provider value={value}>{children}</ApiContext.Provider>;
