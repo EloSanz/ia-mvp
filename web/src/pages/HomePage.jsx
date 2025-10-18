@@ -73,7 +73,7 @@ const HomePage = () => {
   const [deckToDelete, setDeckToDelete] = useState(null);
 
   //Monitoreo de deck para portada IA
-  const [deckMonitory,setDeckMonitory] =useState(null);
+  const [deckMonitory, setDeckMonitory] = useState(null);
 
   const loadDecks = useCallback(async () => {
     try {
@@ -97,13 +97,13 @@ const HomePage = () => {
     if (!newDeck.name.trim()) return;
 
     try {
-      debugger
+      debugger;
       setCreating(true);
-      const { data: createdDeck } =await decks.create(newDeck);
-      if(newDeck.generateCover && createdDeck && createdDeck.data.id){
-        console.log("Generando portada IA...:" ,createdDeck.data)
-          // monitorear solo este deck recién creado
-        setDeckMonitory(createdDeck.data); 
+      const { data: createdDeck } = await decks.create(newDeck);
+      if (newDeck.generateCover && createdDeck && createdDeck.data.id) {
+        console.log('Generando portada IA...:', createdDeck.data);
+        // monitorear solo este deck recién creado
+        setDeckMonitory(createdDeck.data);
       }
 
       setCreateDialogOpen(false);
@@ -122,23 +122,20 @@ const HomePage = () => {
     if (deckMonitory && !deckMonitory.coverUrl) {
       interval = setInterval(async () => {
         try {
-           const { data: updated }= await decks.getById(deckMonitory.id);
+          const { data: updated } = await decks.getById(deckMonitory.id);
           if (updated.data.coverUrl) {
-            setDecksList(prev =>
-              prev.map(d => (d.id === updated.data.id ? updated.data : d))
-            );
+            setDecksList((prev) => prev.map((d) => (d.id === updated.data.id ? updated.data : d)));
             setDeckMonitory(null); // dejar de monitorear
             // loadDecks();             // refresca lista completa
             clearInterval(interval);
           }
         } catch (err) {
-          console.error("Error fetching deck update:", err);
+          console.error('Error fetching deck update:', err);
         }
-      }, 10000);//Por lo general suel tardar menos de 30 segundos
+      }, 10000); //Por lo general suel tardar menos de 30 segundos
     }
     return () => clearInterval(interval);
   }, [deckMonitory]);
-
 
   const handleEditDeck = async () => {
     if (!editingDeck?.name?.trim()) return;
@@ -171,7 +168,9 @@ const HomePage = () => {
       // Si el deck eliminado era el último visitado, limpiarlo del localStorage
       if (lastDeckId === deckToDelete.id) {
         // Esto se maneja automáticamente por el hook useNavigation que valida la existencia del deck
-        console.log(`Deck ${deckToDelete.id} eliminado, localStorage será limpiado automáticamente`);
+        console.log(
+          `Deck ${deckToDelete.id} eliminado, localStorage será limpiado automáticamente`
+        );
       }
 
       loadDecks();
@@ -227,7 +226,8 @@ const HomePage = () => {
               }
             >
               <AlertTitle>Continuar estudiando</AlertTitle>
-              Estabas estudiando el deck #{lastDeckId}. Haz clic en "Continuar" para retomar tu sesión.
+              Estabas estudiando el deck #{lastDeckId}. Haz clic en "Continuar" para retomar tu
+              sesión.
             </Alert>
           </Box>
         )}
@@ -310,7 +310,6 @@ const HomePage = () => {
           </Alert>
         )}
 
-     
         {decksList.length === 0 && !loading && (
           <Box textAlign="center" mt={6}>
             <Typography variant="h6" sx={{ color: 'grey.400' }} gutterBottom>
@@ -321,13 +320,15 @@ const HomePage = () => {
             </Typography>
           </Box>
         )}
-        {decksList.length != 0 && !loading &&
-         (<DecksGridCard decks={decksList} deckMonitory={deckMonitory}
+        {decksList.length != 0 && !loading && (
+          <DecksGridCard
+            decks={decksList}
+            deckMonitory={deckMonitory}
             onEdit={openEditDialog}
             onDelete={handleDeleteDeck}
-            onNavigate={id => navigate(`/decks/${id}`)}
-         /> 
-      )}
+            onNavigate={(id) => navigate(`/decks/${id}`)}
+          />
+        )}
         {/* FAB para crear nuevo deck */}
         <Fab
           color="primary"
@@ -380,7 +381,7 @@ const HomePage = () => {
               control={
                 <Checkbox
                   checked={newDeck.generateCover}
-                  onChange={e => setNewDeck({ ...newDeck, generateCover: e.target.checked })}
+                  onChange={(e) => setNewDeck({ ...newDeck, generateCover: e.target.checked })}
                   color="primary"
                 />
               }

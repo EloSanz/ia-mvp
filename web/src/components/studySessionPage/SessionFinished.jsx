@@ -16,7 +16,11 @@ export default function SessionFinished({ stats, formatTime, onRestart, onHome }
             </Typography>
 
             <Box display="flex" justifyContent="center" gap={4} flexWrap="wrap" sx={{ mt: 3 }}>
-              <StatBig label="Tarjetas Revisadas" value={stats.cardsReviewed} color="success.main" />
+              <StatBig
+                label="Tarjetas Revisadas"
+                value={stats.cardsReviewed}
+                color="success.main"
+              />
               {/* Eliminamos tiempo total y promedio: no se muestran */}
             </Box>
 
@@ -28,7 +32,12 @@ export default function SessionFinished({ stats, formatTime, onRestart, onHome }
           </Box>
 
           <Box sx={{ mt: 6 }}>
-            <Button variant="contained" size="large" onClick={onRestart} sx={{ mr: 2, textTransform: 'none' }}>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={onRestart}
+              sx={{ mr: 2, textTransform: 'none' }}
+            >
               Estudiar Otro Deck
             </Button>
             <Button variant="outlined" size="large" onClick={onHome} sx={{ textTransform: 'none' }}>
@@ -44,15 +53,21 @@ export default function SessionFinished({ stats, formatTime, onRestart, onHome }
 function StatBig({ label, value, color }) {
   return (
     <Box textAlign="center">
-      <Typography variant="h3" fontWeight={700} sx={{ color }}>{value}</Typography>
-      <Typography variant="body1" color="text.secondary">{label}</Typography>
+      <Typography variant="h3" fontWeight={700} sx={{ color }}>
+        {value}
+      </Typography>
+      <Typography variant="body1" color="text.secondary">
+        {label}
+      </Typography>
     </Box>
   );
 }
 function Stat({ label, value, color }) {
   return (
     <Box textAlign="center">
-      <Typography variant="h5" sx={{ color }}>{value} {label}</Typography>
+      <Typography variant="h5" sx={{ color }}>
+        {value} {label}
+      </Typography>
     </Box>
   );
 }

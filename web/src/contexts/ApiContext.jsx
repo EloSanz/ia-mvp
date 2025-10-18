@@ -17,8 +17,8 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-   // For debugging purposes
-   //console.log('➡️ API Request:', config.method?.toUpperCase(), config.url, config.data || config.params);
+    // For debugging purposes
+    //console.log('➡️ API Request:', config.method?.toUpperCase(), config.url, config.data || config.params);
     return config;
   },
   (error) => Promise.reject(error)
@@ -157,12 +157,10 @@ export const ApiProvider = ({ children }) => {
   // Study API - Sistema de repetición espaciada
   const study = {
     // Iniciar sesión de estudio
-    startSession: (deckId, limit) =>
-      api.post('/api/study/start', { deckId, limit }),
+    startSession: (deckId, limit) => api.post('/api/study/start', { deckId, limit }),
 
     // Obtener siguiente card
-    getNextCard: (sessionId) =>
-      api.get(`/api/study/${sessionId}/next`),
+    getNextCard: (sessionId) => api.get(`/api/study/${sessionId}/next`),
 
     // Revisar card
     reviewCard: (sessionId, cardId, difficulty, responseTime) =>
@@ -173,16 +171,13 @@ export const ApiProvider = ({ children }) => {
       }),
 
     // Obtener estado de sesión
-    getSessionStatus: (sessionId) =>
-      api.get(`/api/study/${sessionId}/status`),
+    getSessionStatus: (sessionId) => api.get(`/api/study/${sessionId}/status`),
 
     // Finalizar sesión
-    finishSession: (sessionId) =>
-      api.post(`/api/study/${sessionId}/finish`),
+    finishSession: (sessionId) => api.post(`/api/study/${sessionId}/finish`),
 
     // Estadísticas globales (admin)
-    getGlobalStats: () =>
-      api.get('/api/study/stats')
+    getGlobalStats: () => api.get('/api/study/stats')
   };
 
   // Health check

@@ -47,11 +47,7 @@ const Navigation = () => {
   const { user, logout } = useAuth();
 
   // Usar el hook de navegación inteligente
-  const {
-    isOnHome,
-    navigationButtonText,
-    navigationButtonAction
-  } = useNavigation();
+  const { isOnHome, navigationButtonText, navigationButtonAction } = useNavigation();
 
   return (
     <AppBar position="static" elevation={1}>

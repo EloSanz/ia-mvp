@@ -47,7 +47,14 @@ export default function DeckCard({ deck, selected, onSelect, onView }) {
       </CardContent>
 
       <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
-        <Button size="small" variant="outlined" onClick={(e) => { e.stopPropagation(); onView?.(); }}>
+        <Button
+          size="small"
+          variant="outlined"
+          onClick={(e) => {
+            e.stopPropagation();
+            onView?.();
+          }}
+        >
           Ver Deck
         </Button>
         {selected && <Chip label="Seleccionado" color="primary" size="small" icon={<PlayIcon />} />}
@@ -59,7 +66,9 @@ export default function DeckCard({ deck, selected, onSelect, onView }) {
 function Row({ label, value, icon, chipProps }) {
   return (
     <Box display="flex" justifyContent="space-between" alignItems="center">
-      <Typography variant="body2" color="text.secondary">{label}</Typography>
+      <Typography variant="body2" color="text.secondary">
+        {label}
+      </Typography>
       <Chip label={value} size="small" icon={icon} variant="outlined" {...chipProps} />
     </Box>
   );

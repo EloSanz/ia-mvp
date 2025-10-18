@@ -14,7 +14,9 @@ export default function StudyStatsLite({ stats, progress }) {
               Progreso
             </Typography>
             <LinearProgress variant="determinate" value={pct} />
-            <Typography variant="caption" color="text.secondary">{pct}%</Typography>
+            <Typography variant="caption" color="text.secondary">
+              {pct}%
+            </Typography>
           </Box>
 
           {/* Contadores por dificultad */}
@@ -32,8 +34,12 @@ export default function StudyStatsLite({ stats, progress }) {
 function Kpi({ label, value, color }) {
   return (
     <Box>
-      <Typography variant="h6" sx={{ color }}>{value}</Typography>
-      <Typography variant="caption" color="text.secondary">{label}</Typography>
+      <Typography variant="h6" sx={{ color }}>
+        {value}
+      </Typography>
+      <Typography variant="caption" color="text.secondary">
+        {label}
+      </Typography>
     </Box>
   );
 }

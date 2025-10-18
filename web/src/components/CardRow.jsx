@@ -4,9 +4,11 @@ import { TableRow, TableCell, Chip, IconButton, Tooltip, Box } from '@mui/materi
 import { PlayArrow as PlayIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import TagCrud from './TagCrud';
 
-const getDifficultyColor = (d) => (d === 1 ? 'success' : d === 2 ? 'warning' : d === 3 ? 'error' : 'default');
+const getDifficultyColor = (d) =>
+  d === 1 ? 'success' : d === 2 ? 'warning' : d === 3 ? 'error' : 'default';
 
-const getDifficultyLabel = (d) => (d === 1 ? 'Fácil' : d === 2 ? 'Normal' : d === 3 ? 'Difícil' : 'Sin dificultad');
+const getDifficultyLabel = (d) =>
+  d === 1 ? 'Fácil' : d === 2 ? 'Normal' : d === 3 ? 'Difícil' : 'Sin dificultad';
 
 const CardRow = ({
   card,
@@ -43,14 +45,19 @@ const CardRow = ({
       }}
     >
       {/* 1) Consigna */}
-      <TableCell sx={{ color: muiTheme?.palette?.text?.primary || '#000000', fontSize: '0.95rem', py: 1.5, verticalAlign: 'top' }}>
+      <TableCell
+        sx={{
+          color: muiTheme?.palette?.text?.primary || '#000000',
+          fontSize: '0.95rem',
+          py: 1.5,
+          verticalAlign: 'top'
+        }}
+      >
         {card.front.length > 45 ? card.front.substring(0, 45) + '…' : card.front}
       </TableCell>
 
       {/* 2) Columna de búsqueda - placeholder vacío para que el ancho del header coincida */}
-      <TableCell sx={{ py: 1.5, verticalAlign: 'top' }}>
-        {/* vacío intencional */}
-      </TableCell>
+      <TableCell sx={{ py: 1.5, verticalAlign: 'top' }}>{/* vacío intencional */}</TableCell>
 
       {/* 3) Tag (TagCrud) */}
       <TableCell sx={{ py: 1.5, verticalAlign: 'top' }}>

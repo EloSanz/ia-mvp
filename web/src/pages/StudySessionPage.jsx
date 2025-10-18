@@ -24,9 +24,22 @@ export default function StudySessionPage() {
   const { clearLastDeck } = useLastDeck();
 
   const {
-    session, currentCard, loading, error, showingAnswer, responseTime,
-    sessionStats, startSession, showAnswer, reviewCard, nextCard, finishSession,
-    getProgress, formatTime, hasActiveSession, canShowAnswer
+    session,
+    currentCard,
+    loading,
+    error,
+    showingAnswer,
+    responseTime,
+    sessionStats,
+    startSession,
+    showAnswer,
+    reviewCard,
+    nextCard,
+    finishSession,
+    getProgress,
+    formatTime,
+    hasActiveSession,
+    canShowAnswer
   } = useStudySession();
 
   const [paused, setPaused] = useState(false);
@@ -55,11 +68,17 @@ export default function StudySessionPage() {
       await startSession(deckId, studyOptions.limit);
       setSnackbar({ open: true, message: '¡Sesión de estudio iniciada!', severity: 'success' });
     } catch (err) {
-      setSnackbar({ open: true, message: err.message || 'Error al iniciar la sesión', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: err.message || 'Error al iniciar la sesión',
+        severity: 'error'
+      });
     }
   };
 
-  const handleShowAnswer = () => { if (canShowAnswer) showAnswer(); };
+  const handleShowAnswer = () => {
+    if (canShowAnswer) showAnswer();
+  };
 
   const handleReview = async (difficulty) => {
     try {
@@ -67,7 +86,11 @@ export default function StudySessionPage() {
       const nextCardResult = await nextCard();
       if (nextCardResult === null) setShowFinishDialog(true);
     } catch (err) {
-      setSnackbar({ open: true, message: err.message || 'Error al revisar la tarjeta', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: err.message || 'Error al revisar la tarjeta',
+        severity: 'error'
+      });
     }
   };
 
@@ -77,7 +100,11 @@ export default function StudySessionPage() {
       if (nextCardResult === null) setShowFinishDialog(true);
       else setSnackbar({ open: true, message: 'Tarjeta saltada', severity: 'info' });
     } catch (err) {
-      setSnackbar({ open: true, message: err.message || 'Error al saltar la tarjeta', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: err.message || 'Error al saltar la tarjeta',
+        severity: 'error'
+      });
     }
   };
 
@@ -90,26 +117,56 @@ export default function StudySessionPage() {
       clearLastDeck();
       setSnackbar({ open: true, message: '¡Sesión completada exitosamente!', severity: 'success' });
     } catch (err) {
-      setSnackbar({ open: true, message: err.message || 'Error al finalizar la sesión', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: err.message || 'Error al finalizar la sesión',
+        severity: 'error'
+      });
     }
   };
 
   const handleRestart = () => navigate('/study');
   const handleGoHome = () => navigate('/');
-  const handlePause = () => { setPaused(true); setSnackbar({ open: true, message: 'Sesión pausada', severity: 'info' }); };
-  const handleResume = () => { setPaused(false); setSnackbar({ open: true, message: 'Sesión reanudada', severity: 'success' }); };
-  const handleCloseSnackbar = () => setSnackbar(s => ({ ...s, open: false }));
+  const handlePause = () => {
+    setPaused(true);
+    setSnackbar({ open: true, message: 'Sesión pausada', severity: 'info' });
+  };
+  const handleResume = () => {
+    setPaused(false);
+    setSnackbar({ open: true, message: 'Sesión reanudada', severity: 'success' });
+  };
+  const handleCloseSnackbar = () => setSnackbar((s) => ({ ...s, open: false }));
 
   if (!session && loading) {
-    return (<><Navigation /><SessionLoading /></>);
+    return (
+      <>
+        <Navigation />
+        <SessionLoading />
+      </>
+    );
   }
 
   if (sessionFinished && finalStats) {
-    return (<><Navigation /><SessionFinished stats={finalStats} formatTime={formatTime} onRestart={handleRestart} onHome={handleGoHome} /></>);
+    return (
+      <>
+        <Navigation />
+        <SessionFinished
+          stats={finalStats}
+          formatTime={formatTime}
+          onRestart={handleRestart}
+          onHome={handleGoHome}
+        />
+      </>
+    );
   }
 
   if (!session) {
-    return (<><Navigation /><SessionError onBack={() => navigate('/study')} /></>);
+    return (
+      <>
+        <Navigation />
+        <SessionError onBack={() => navigate('/study')} />
+      </>
+    );
   }
 
   return (
@@ -118,7 +175,11 @@ export default function StudySessionPage() {
       <Container maxWidth="lg" sx={{ mt: 4, mb: 12 }}>
         <Breadcrumbs />
 
-        {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
 
         {/* Estadísticas minimalistas (sin revisadas/tiempos) */}
         <StudyStatsLite
@@ -126,7 +187,11 @@ export default function StudySessionPage() {
           progress={getProgress()}
         />
 
-        {paused && <Alert severity="info" sx={{ mb: 3 }}>Sesión pausada. Haz clic en play para continuar.</Alert>}
+        {paused && (
+          <Alert severity="info" sx={{ mb: 3 }}>
+            Sesión pausada. Haz clic en play para continuar.
+          </Alert>
+        )}
 
         <Box sx={{ mb: 4 }}>
           <StudyCard
@@ -168,7 +233,11 @@ export default function StudySessionPage() {
         </Alert>
       </Snackbar>
 
-      <FinishDialog open={showFinishDialog} onClose={() => setShowFinishDialog(false)} onFinish={handleFinish} />
+      <FinishDialog
+        open={showFinishDialog}
+        onClose={() => setShowFinishDialog(false)}
+        onFinish={handleFinish}
+      />
     </>
   );
 }

@@ -40,7 +40,8 @@ const AIFlashcardsGenerator = ({ open, onClose, onGenerate }) => {
     } catch (err) {
       let errorMessage = 'Error al generar las flashcards';
       if (err.code === 'ECONNABORTED') {
-        errorMessage = 'Timeout: La generación tomó demasiado tiempo. Intenta con un texto más corto.';
+        errorMessage =
+          'Timeout: La generación tomó demasiado tiempo. Intenta con un texto más corto.';
       } else if (err.response) {
         errorMessage = `Error del servidor: ${err.response.status} - ${err.response.data?.error || 'Error desconocido'}`;
       } else if (err.request) {
@@ -70,8 +71,13 @@ const AIFlashcardsGenerator = ({ open, onClose, onGenerate }) => {
           Ingresa el texto del que quieres generar flashcards. La IA analizará el contenido y creará
           preguntas y respuestas relevantes.
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: muiTheme.fontFamily, mb: 2 }}>
-          💡 <strong>Tip:</strong> Para mejores resultados, usa textos de 200-500 palabras. Textos muy largos pueden tardar más en procesarse.
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ fontFamily: muiTheme.fontFamily, mb: 2 }}
+        >
+          💡 <strong>Tip:</strong> Para mejores resultados, usa textos de 200-500 palabras. Textos
+          muy largos pueden tardar más en procesarse.
         </Typography>
         <TextField
           autoFocus
