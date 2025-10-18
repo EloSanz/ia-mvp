@@ -56,6 +56,15 @@ const DeckPage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchTotal, setSearchTotal] = useState(0);
 
+  // Filtro de dificultad
+  const [difficultyFilter, setDifficultyFilter] = useState('all');
+
+  // Filtro de tags
+  const [tagFilter, setTagFilter] = useState('all');
+
+  // Filtro de revisiones
+  const [reviewFilter, setReviewFilter] = useState('all');
+
   // Estados para tags y paginación
   const [tags, setTags] = useState([]); // Lista de tags disponibles
   const [newCardTagId, setNewCardTagId] = useState('');
@@ -145,11 +154,7 @@ const DeckPage = () => {
     }
   };
 
-  const handleSearch = async (
-    query,
-    p =  flashcardManager.page,
-    pageSize = rowsPerPage
-  ) => {
+  const handleSearch = async (query, p = flashcardManager.page, pageSize = rowsPerPage) => {
     try {
       setSearching(true);
       const res = await flashcards.searchInDeck(deckId, query, { page: p, pageSize });
@@ -173,7 +178,7 @@ const DeckPage = () => {
 
     // Si el query está vacío, volver a cargar todas las cards
     if (!query.trim()) {
-      loadDeckAndCards( flashcardManager.page, rowsPerPage);
+      loadDeckAndCards(flashcardManager.page, rowsPerPage);
     } else {
       // Debounced search - esperar 300ms antes de buscar
       clearTimeout(window.searchTimeout);
@@ -214,7 +219,25 @@ const DeckPage = () => {
     setSearchResults([]);
     setSearchTotal(0);
     setPage(0);
-    loadDeckAndCards( flashcardManager.page, rowsPerPage);
+    loadDeckAndCards(flashcardManager.page, rowsPerPage);
+  };
+
+  // Función para manejar cambios en el filtro de dificultad
+  const handleDifficultyFilterChange = (value) => {
+    setDifficultyFilter(value);
+    setPage(0);
+  };
+
+  // Función para manejar cambios en el filtro de tags
+  const handleTagFilterChange = (value) => {
+    setTagFilter(value);
+    setPage(0);
+  };
+
+  // Función para manejar cambios en el filtro de revisiones
+  const handleReviewFilterChange = (value) => {
+    setReviewFilter(value);
+    setPage(0);
   };
 
   const handleCreateCard = async () => {
@@ -378,11 +401,20 @@ const DeckPage = () => {
         {/* Información del deck */}
         {deck && (
           <Box sx={{ mb: 1 }}>
-            <Typography variant="h4" component="h1" gutterBottom sx={{ fontFamily: muiTheme.fontFamily }}>
+            <Typography
+              variant="h4"
+              component="h1"
+              gutterBottom
+              sx={{ fontFamily: muiTheme.fontFamily }}
+            >
               {deck.name}
             </Typography>
             {deck.description && (
-              <Typography variant="body1" color="text.secondary" sx={{ fontFamily: muiTheme.fontFamily }}>
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                sx={{ fontFamily: muiTheme.fontFamily }}
+              >
                 descripción: {deck.description}
               </Typography>
             )}
@@ -424,6 +456,12 @@ const DeckPage = () => {
           searching={searching}
           onSearchChange={handleSearchInputChange}
           onClearSearch={handleClearSearch}
+          difficultyFilter={difficultyFilter}
+          onDifficultyFilterChange={handleDifficultyFilterChange}
+          tagFilter={tagFilter}
+          onTagFilterChange={handleTagFilterChange}
+          reviewFilter={reviewFilter}
+          onReviewFilterChange={handleReviewFilterChange}
           openReviewDialog={openReviewDialog}
           openEditDialog={openEditDialog}
           handleDeleteCard={handleDeleteCard}
@@ -434,7 +472,7 @@ const DeckPage = () => {
           loadDeckAndCards={loadDeckAndCards}
           tagsService={tagsService}
           onCardTagUpdated={onCardTagUpdated}
-        />  
+        />
         {/* Modal de revisión de flashcards */}
         <ReviewFlashcardModal
           open={flashcardManager.reviewDialogOpen}

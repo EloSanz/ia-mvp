@@ -24,13 +24,7 @@ import {
   Schedule as ScheduleIcon
 } from '@mui/icons-material';
 
-const StudyStats = ({
-  session,
-  stats,
-  progress,
-  formatTime,
-  compact = false
-}) => {
+const StudyStats = ({ session, stats, progress, formatTime, compact = false }) => {
   if (!session) {
     return null;
   }
@@ -115,12 +109,7 @@ const StudyStats = ({
               Sesión: {session.deckName}
             </Typography>
           </Box>
-          <Chip
-            label="Activa"
-            color="success"
-            size="small"
-            icon={<CheckIcon />}
-          />
+          <Chip label="Activa" color="success" size="small" icon={<CheckIcon />} />
         </Box>
 
         {/* Progreso Principal */}
@@ -202,7 +191,9 @@ const StudyStats = ({
               <StatItem
                 icon={TrendingIcon}
                 label="Tiempo Promedio"
-                value={safeStats.averageResponseTime > 0 ? `${safeStats.averageResponseTime}s` : '--'}
+                value={
+                  safeStats.averageResponseTime > 0 ? `${safeStats.averageResponseTime}s` : '--'
+                }
               />
             </Box>
           </Grid>
@@ -213,17 +204,8 @@ const StudyStats = ({
               📋 Información de Sesión
             </Typography>
             <Box display="flex" flexDirection="column" gap={2}>
-              <StatItem
-                icon={ScheduleIcon}
-                label="Tarjetas Totales"
-                value={session.totalCards}
-              />
-              <StatItem
-                icon={BrainIcon}
-                label="Estado"
-                value="Activa"
-                color="success"
-              />
+              <StatItem icon={ScheduleIcon} label="Tarjetas Totales" value={session.totalCards} />
+              <StatItem icon={BrainIcon} label="Estado" value="Activa" color="success" />
               <Box>
                 <Typography variant="body2" color="text.secondary">
                   ID de Sesión

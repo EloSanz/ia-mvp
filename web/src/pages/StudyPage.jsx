@@ -20,21 +20,26 @@ export default function StudyPage() {
   const [selectedDeck, setSelectedDeck] = useState('');
   const [studyOptions, setStudyOptions] = useState({ limit: '', mode: 'normal' });
 
-  useEffect(() => { (async () => {
-    try {
-      setLoading(true);
-      const res = await decks.getAll();
-      setAvailableDecks(res.data.data || []);
-    } catch (e) {
-      console.error(e);
-      setError('Error al cargar los decks disponibles');
-    } finally {
-      setLoading(false);
-    }
-  })(); }, [decks]);
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await decks.getAll();
+        setAvailableDecks(res.data.data || []);
+      } catch (e) {
+        console.error(e);
+        setError('Error al cargar los decks disponibles');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [decks]);
 
   const handleStartStudy = () => {
-    if (!selectedDeck) { setError('Por favor selecciona un deck para estudiar'); return; }
+    if (!selectedDeck) {
+      setError('Por favor selecciona un deck para estudiar');
+      return;
+    }
     setError(null);
     navigate(`/study/session/${selectedDeck}`, {
       state: { deckId: selectedDeck, limit: studyOptions.limit || null, mode: studyOptions.mode }
@@ -59,7 +64,11 @@ export default function StudyPage() {
         <Breadcrumbs />
         <StudyHeader />
 
-        {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
 
         <StudyConfig
           hasDecks={hasDecks}
@@ -79,7 +88,6 @@ export default function StudyPage() {
         ) : (
           <EmptyState onGoHome={() => navigate('/')} />
         )}
-
       </Container>
     </>
   );
@@ -90,15 +98,12 @@ function EmptyState({ onGoHome }) {
     <Box textAlign="center" py={8}>
       <SchoolIcon sx={{ fontSize: 64, color: 'grey.400', mb: 2 }} />
       No hay decks disponibles
-      <Box mt={2} mb={3} color="text.secondary">Crea tu primer deck para comenzar a estudiar</Box>
-      <Button
-      variant="contained"
-      size="large"
-      onClick={onGoHome}
-      startIcon={<BooksIcon />} 
-    >
-      Ir a Mis Decks
-    </Button>
+      <Box mt={2} mb={3} color="text.secondary">
+        Crea tu primer deck para comenzar a estudiar
+      </Box>
+      <Button variant="contained" size="large" onClick={onGoHome} startIcon={<BooksIcon />}>
+        Ir a Mis Decks
+      </Button>
     </Box>
   );
 }

@@ -1,9 +1,26 @@
 import React from 'react';
 
-import { Card, CardContent, Typography, Grid, FormControl, InputLabel, Select, MenuItem, TextField, Button } from '@mui/material';
+import {
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  TextField,
+  Button
+} from '@mui/material';
 import { PlayArrow as PlayIcon } from '@mui/icons-material';
 
-export default function StudyConfig({ hasDecks, studyOptions, setStudyOptions, onStart, disabled }) {
+export default function StudyConfig({
+  hasDecks,
+  studyOptions,
+  setStudyOptions,
+  onStart,
+  disabled
+}) {
   if (!hasDecks) return null;
 
   return (
@@ -13,14 +30,19 @@ export default function StudyConfig({ hasDecks, studyOptions, setStudyOptions, o
           ⚙️ Configuración de Estudio
         </Typography>
 
-        <Grid container spacing={3} alignItems="flex-end" sx={{ display: 'flex', alignItems: 'flex-start' }}>
+        <Grid
+          container
+          spacing={3}
+          alignItems="flex-end"
+          sx={{ display: 'flex', alignItems: 'flex-start' }}
+        >
           <Grid item xs={12} md={2}>
             <FormControl fullWidth>
               <InputLabel>Modo de Estudio</InputLabel>
               <Select
                 value={studyOptions.mode}
                 label="Modo de Estudio"
-                onChange={(e) => setStudyOptions(prev => ({ ...prev, mode: e.target.value }))}
+                onChange={(e) => setStudyOptions((prev) => ({ ...prev, mode: e.target.value }))}
               >
                 <MenuItem value="normal">Normal (todas las cards)</MenuItem>
                 <MenuItem value="review">Solo revisión (vencidas)</MenuItem>
@@ -30,13 +52,13 @@ export default function StudyConfig({ hasDecks, studyOptions, setStudyOptions, o
           </Grid>
 
           <Grid item xs={12} md={4} sx={{ display: 'flex', alignItems: 'flex-start' }}>
-          <TextField
+            <TextField
               fullWidth
               label="Límite de tarjetas (opcional)"
               type="number"
               value={studyOptions.limit}
               helperText="Deja vacío para estudiar todas las tarjetas disponibles"
-              onChange={(e) => setStudyOptions(prev => ({ ...prev, limit: e.target.value }))}
+              onChange={(e) => setStudyOptions((prev) => ({ ...prev, limit: e.target.value }))}
               slotProps={{ input: { min: 1, max: 130 } }}
             />
           </Grid>

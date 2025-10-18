@@ -37,7 +37,9 @@ const StudyCard = ({
 }) => {
   if (!card) {
     return (
-      <Card sx={{ minHeight: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Card
+        sx={{ minHeight: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
         <CardContent>
           <Typography variant="h6" color="text.secondary">
             No hay más tarjetas para estudiar
@@ -49,19 +51,27 @@ const StudyCard = ({
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
-      case 1: return 'success'; // Fácil
-      case 2: return 'warning'; // Normal
-      case 3: return 'error';   // Difícil
-      default: return 'default';
+      case 1:
+        return 'success'; // Fácil
+      case 2:
+        return 'warning'; // Normal
+      case 3:
+        return 'error'; // Difícil
+      default:
+        return 'default';
     }
   };
 
   const getDifficultyLabel = (difficulty) => {
     switch (difficulty) {
-      case 1: return 'Fácil';
-      case 2: return 'Normal';
-      case 3: return 'Difícil';
-      default: return 'Desconocido';
+      case 1:
+        return 'Fácil';
+      case 2:
+        return 'Normal';
+      case 3:
+        return 'Difícil';
+      default:
+        return 'Desconocido';
     }
   };
 
@@ -167,11 +177,7 @@ const StudyCard = ({
           {/* RESPUESTA */}
           <Fade in={showingAnswer} timeout={300}>
             <Box sx={{ textAlign: 'center' }}>
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                sx={{ mb: 2, fontSize: '0.9rem' }}
-              >
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 2, fontSize: '0.9rem' }}>
                 Pregunta:
               </Typography>
 

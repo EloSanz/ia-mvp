@@ -6,10 +6,7 @@ import {
   CircularProgress,
   useTheme as useMuiTheme
 } from '@mui/material';
-import {
-  Search as SearchIcon,
-  Clear as ClearIcon
-} from '@mui/icons-material';
+import { Search as SearchIcon, Clear as ClearIcon } from '@mui/icons-material';
 
 const SearchBar = ({
   searchQuery,
@@ -17,9 +14,9 @@ const SearchBar = ({
   onClearSearch,
   searching = false,
   disabled = false,
-  placeholder = "Buscar...",
-  label = "Buscar",
-  size = "small"
+  placeholder = 'Buscar...',
+  label = 'Buscar',
+  size = 'small'
 }) => {
   const muiTheme = useMuiTheme();
 
@@ -47,12 +44,7 @@ const SearchBar = ({
         ),
         endAdornment: searchQuery ? (
           <InputAdornment position="end">
-            <IconButton
-              size="small"
-              onClick={onClearSearch}
-              disabled={disabled}
-              sx={{ mr: 0.5 }}
-            >
+            <IconButton size="small" onClick={onClearSearch} disabled={disabled} sx={{ mr: 0.5 }}>
               <ClearIcon fontSize="small" />
             </IconButton>
             {searching && <CircularProgress size={16} />}

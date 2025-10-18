@@ -8,7 +8,9 @@ export default function SessionError({ onBack }) {
         Error al cargar la sesión de estudio. Por favor, intenta nuevamente.
       </Alert>
       <Box sx={{ mt: 3 }}>
-        <Button variant="contained" onClick={onBack}>Volver a Estudiar</Button>
+        <Button variant="contained" onClick={onBack}>
+          Volver a Estudiar
+        </Button>
       </Box>
     </Container>
   );

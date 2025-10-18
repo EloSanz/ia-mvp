@@ -95,11 +95,11 @@ const StudyControls = ({
           {/* Controles principales */}
           <Box display="flex" gap={1} alignItems="center">
             {/* Botón Pausar/Reanudar */}
-            <Tooltip title={paused ? "Reanudar sesión" : "Pausar sesión"}>
+            <Tooltip title={paused ? 'Reanudar sesión' : 'Pausar sesión'}>
               <IconButton
                 onClick={paused ? onResume : onPause}
                 disabled={loading}
-                color={paused ? "primary" : "default"}
+                color={paused ? 'primary' : 'default'}
                 size="medium"
               >
                 {paused ? <PlayIcon /> : <PauseIcon />}
@@ -125,12 +125,7 @@ const StudyControls = ({
 
             {/* Botón Reiniciar */}
             <Tooltip title="Reiniciar sesión">
-              <IconButton
-                onClick={onRestart}
-                disabled={loading}
-                color="default"
-                size="medium"
-              >
+              <IconButton onClick={onRestart} disabled={loading} color="default" size="medium">
                 <RefreshIcon />
               </IconButton>
             </Tooltip>
@@ -151,12 +146,7 @@ const StudyControls = ({
 
             {/* Botón Inicio */}
             <Tooltip title="Volver al inicio">
-              <IconButton
-                onClick={onGoHome}
-                disabled={loading}
-                color="default"
-                size="large"
-              >
+              <IconButton onClick={onGoHome} disabled={loading} color="default" size="large">
                 <HomeIcon />
               </IconButton>
             </Tooltip>
@@ -174,17 +164,18 @@ const StudyControls = ({
         aria-labelledby="finish-dialog-title"
         aria-describedby="finish-dialog-description"
       >
-        <DialogTitle id="finish-dialog-title">
-          ¿Finalizar sesión de estudio?
-        </DialogTitle>
+        <DialogTitle id="finish-dialog-title">¿Finalizar sesión de estudio?</DialogTitle>
         <DialogContent>
           <DialogContentText id="finish-dialog-description">
-            Estás a punto de finalizar la sesión de estudio. Se guardarán todas las estadísticas
-            y podrás continuar más tarde desde donde te quedaste.
-            <br /><br />
+            Estás a punto de finalizar la sesión de estudio. Se guardarán todas las estadísticas y
+            podrás continuar más tarde desde donde te quedaste.
+            <br />
+            <br />
             <strong>Progreso actual: {progress.percentage}%</strong>
             <br />
-            <strong>Tarjetas revisadas: {progress.current} de {progress.total}</strong>
+            <strong>
+              Tarjetas revisadas: {progress.current} de {progress.total}
+            </strong>
           </DialogContentText>
         </DialogContent>
         <DialogActions>

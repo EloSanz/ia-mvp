@@ -54,7 +54,15 @@ export const useNavigation = () => {
   }, [lastDeckId, hasLastDeck, token]);
 
   // Extraer información de la ruta usando el hook separado
-  const { isOnDeckPage, isOnStudyPage, isOnHome, currentDeckId, currentSessionId, currentPath, canGoBack } = routeInfo;
+  const {
+    isOnDeckPage,
+    isOnStudyPage,
+    isOnHome,
+    currentDeckId,
+    currentSessionId,
+    currentPath,
+    canGoBack
+  } = routeInfo;
 
   // Funciones de navegación inteligente
   const goToDecks = () => {
