@@ -46,6 +46,9 @@ import Navigation from '../components/Navigation';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { useNavigation } from '../hooks/useNavigation';
+import useDeckPagination from '../hooks/useDeckPagination';
+import Pagination from '../components/Pagination';
+import DeckSorting from '../components/DeckSorting';
 
 import { useTheme as useMuiTheme } from '@mui/material';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
@@ -60,6 +63,22 @@ const HomePage = () => {
   const [decksList, setDecksList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Hook de paginación y ordenamiento
+  const {
+    paginatedDecks,
+    currentPage,
+    itemsPerPage,
+    totalPages,
+    totalItems,
+    sortBy,
+    sortOrder,
+    handlePageChange,
+    handleItemsPerPageChange,
+    handleSortChange,
+    hasItems,
+    isEmpty
+  } = useDeckPagination(decksList, 8); // Por defecto 8 elementos por página
 
   // Modal para crear deck
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -83,6 +102,14 @@ const HomePage = () => {
 
   //Monitoreo de deck para portada IA
   const [deckMonitory, setDeckMonitory] = useState(null);
+
+  // Estado para toast de confirmación
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+
+  // Función helper para mostrar toasts
+  const showToast = (message, severity = 'success') => {
+    setToast({ open: true, message, severity });
+  };
 
   const loadDecks = useCallback(async () => {
     try {
@@ -118,6 +145,7 @@ const HomePage = () => {
       setCreateDialogOpen(false);
       setNewDeck({ name: '', description: '', generateCover: false });
       loadDecks(); // Recargar la lista
+      showToast(`Deck "${newDeck.name}" creado exitosamente`);
     } catch (err) {
       console.error('Error creating deck:', err);
     } finally {
@@ -155,6 +183,7 @@ const HomePage = () => {
       setEditDialogOpen(false);
       setEditingDeck(null);
       loadDecks();
+      showToast(`Deck "${editingDeck.name}" actualizado exitosamente`);
     } catch (err) {
       console.error('Error editing deck:', err);
     } finally {
@@ -183,8 +212,10 @@ const HomePage = () => {
       }
 
       loadDecks();
+      showToast(`Deck "${deckToDelete.name}" eliminado exitosamente`);
     } catch (err) {
       console.error('Error deleting deck:', err);
+      showToast('Error al eliminar el deck', 'error');
     }
   };
 
@@ -220,11 +251,11 @@ const HomePage = () => {
           fontFamily: muiTheme.fontFamily
         }}
       >
-        {/* Breadcrumbs para navegación contextual */}
-        <Breadcrumbs showOnHome={true} />
+        {/* Breadcrumbs para navegación contextual - Oculto en home */}
+        <Breadcrumbs showOnHome={false} />
 
         {/* Sección de "Continuar donde dejaste" */}
-        {lastDeckExists === true && (
+        {lastDeckExists === true && lastDeckId && decksList.find(d => d.id === lastDeckId) && (
           <Box sx={{ mb: 3 }}>
             <Alert
               severity="info"
@@ -235,10 +266,28 @@ const HomePage = () => {
                   size="small"
                   onClick={goToLastDeck}
                   startIcon={<ArrowForwardIcon />}
+                  sx={{ 
+                    fontWeight: 'bold',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
                 >
                   Continuar
                 </Button>
               }
+              sx={{
+                backgroundColor: themeName === 'github' ? '#21262d' : undefined,
+                border: themeName === 'github' ? '1px solid #30363d' : undefined,
+                '& .MuiAlert-message': {
+                  color: themeName === 'github' ? '#ffffff' : undefined,
+                  fontWeight: themeName === 'github' ? '500' : undefined
+                },
+                '& .MuiAlertTitle-root': {
+                  color: themeName === 'github' ? '#ffffff' : undefined,
+                  fontWeight: themeName === 'github' ? 'bold' : undefined,
+                  fontSize: themeName === 'github' ? '1.1rem' : undefined
+                }
+              }}
             >
               <AlertTitle>Continuar estudiando</AlertTitle>
               Estabas estudiando el deck "
@@ -288,8 +337,8 @@ const HomePage = () => {
           }}
         >
           <Box display="flex" alignItems="center" gap={1}>
-            <Typography variant="h5" component="h1" sx={{ color: muiTheme.palette.text.primary }}>
-              <span className="japanese-title">Decks</span>
+            <Typography variant="h5" component="h1" sx={{ color: muiTheme.palette.text.primary, fontWeight: 'bold' }}>
+              <span className="japanese-title">Mis Decks</span>
             </Typography>
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
@@ -328,7 +377,7 @@ const HomePage = () => {
           </Alert>
         )}
 
-        {decksList.length === 0 && !loading && (
+        {isEmpty && !loading && (
           <Box textAlign="center" mt={6}>
             <Typography variant="h6" sx={{ color: 'grey.400' }} gutterBottom>
               No tienes decks creados aún
@@ -338,14 +387,35 @@ const HomePage = () => {
             </Typography>
           </Box>
         )}
-        {decksList.length != 0 && !loading && (
-          <DecksGridCard
-            decks={decksList}
-            deckMonitory={deckMonitory}
-            onEdit={openEditDialog}
-            onDelete={handleDeleteDeck}
-            onNavigate={(id) => navigate(`/decks/${id}`)}
-          />
+        {hasItems && !loading && (
+          <>
+            {/* Controles de ordenamiento */}
+            <DeckSorting
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSortChange={handleSortChange}
+            />
+            
+            {/* Grid de decks */}
+            <DecksGridCard
+              decks={paginatedDecks}
+              deckMonitory={deckMonitory}
+              onEdit={openEditDialog}
+              onDelete={handleDeleteDeck}
+              onNavigate={(id) => navigate(`/decks/${id}`)}
+            />
+            
+            {/* Paginación */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              itemsPerPageOptions={[8, 16, 24]}
+            />
+          </>
         )}
         {/* Botones de acción flotantes */}
         <Box
@@ -571,6 +641,55 @@ const HomePage = () => {
             {toast.message}
           </Alert>
         </Snackbar>
+
+        {/* Botones de acción flotantes */}
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2
+          }}
+        >
+          {/* Botón para crear deck con IA */}
+          <Button
+            variant="contained"
+            startIcon={<AIIcon />}
+            onClick={() => setAiDeckGeneratorOpen(true)}
+            sx={{
+              borderRadius: '50px',
+              px: 3,
+              py: 1.5,
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              textTransform: 'none',
+              boxShadow: 3,
+              '&:hover': {
+                boxShadow: 6
+              }
+            }}
+          >
+            Crear Deck con IA
+          </Button>
+          
+          {/* FAB para crear deck normal */}
+          <Fab
+            color="primary"
+            aria-label="add"
+            sx={{
+              width: 64,
+              height: 64,
+              '& .MuiSvgIcon-root': {
+                fontSize: 32
+              }
+            }}
+            onClick={() => setCreateDialogOpen(true)}
+          >
+            <AddIcon />
+          </Fab>
+        </Box>
       </Container>
     </>
   );
