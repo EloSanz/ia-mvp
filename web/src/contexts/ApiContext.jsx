@@ -92,7 +92,12 @@ export const ApiProvider = ({ children }) => {
     getById: (id) => api.get(`/api/decks/${id}`),
     create: (data) => api.post('/api/decks', data, { timeout: 30000 }),
     update: (id, data) => api.put(`/api/decks/${id}`, data),
-    delete: (id) => api.delete(`/api/decks/${id}`)
+    delete: (id) => api.delete(`/api/decks/${id}`),
+    // Nuevos métodos para generación con IA
+    suggestTopics: (count = 3) => api.post('/api/decks/suggest-topics', { count }),
+    generateWithAI: (config) => api.post('/api/decks/generate-with-ai', config, { 
+      timeout: 120000  // 2 minutos para generación completa
+    })
   };
 
   // Flashcards API

@@ -37,7 +37,8 @@ import {
   GitHub as GitHubIcon,
   Email as EmailIcon,
   Info as InfoIcon,
-  ArrowForward as ArrowForwardIcon
+  ArrowForward as ArrowForwardIcon,
+  AutoAwesome as AIIcon
 } from '@mui/icons-material';
 import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
@@ -48,6 +49,7 @@ import { useNavigation } from '../hooks/useNavigation';
 import { useTheme as useMuiTheme } from '@mui/material';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
 import DecksGridCard from '../components/DecksGridCard';
+import AIDeckGeneratorModal from '../components/AIDeckGeneratorModal';
 const HomePage = () => {
   const muiTheme = useMuiTheme();
   const { themeName } = useAppTheme();
@@ -74,6 +76,9 @@ const HomePage = () => {
 
   // Modal para contacto
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
+
+  // Modal para generación de deck con IA
+  const [aiDeckGeneratorOpen, setAiDeckGeneratorOpen] = useState(false);
 
   //Monitoreo de deck para portada IA
   const [deckMonitory, setDeckMonitory] = useState(null);
@@ -185,6 +190,12 @@ const HomePage = () => {
   const openEditDialog = (deck) => {
     setEditingDeck({ ...deck });
     setEditDialogOpen(true);
+  };
+
+  const handleAIDeckGenerated = (result) => {
+    console.log('Deck generado con IA:', result);
+    loadDecks(); // Recargar la lista
+    showToast(`Deck "${result.deck.name}" creado exitosamente con ${result.flashcards.length} flashcards`);
   };
 
   if (loading) {
@@ -335,24 +346,54 @@ const HomePage = () => {
             onNavigate={(id) => navigate(`/decks/${id}`)}
           />
         )}
-        {/* FAB para crear nuevo deck */}
-        <Fab
-          color="primary"
-          aria-label="add"
+        {/* Botones de acción flotantes */}
+        <Box
           sx={{
             position: 'fixed',
             bottom: 24,
             right: 24,
-            width: 64,
-            height: 64,
-            '& .MuiSvgIcon-root': {
-              fontSize: 32
-            }
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2
           }}
-          onClick={() => setCreateDialogOpen(true)}
         >
-          <AddIcon />
-        </Fab>
+          {/* Botón para crear deck con IA */}
+          <Button
+            variant="contained"
+            startIcon={<AIIcon />}
+            onClick={() => setAiDeckGeneratorOpen(true)}
+            sx={{
+              borderRadius: '50px',
+              px: 3,
+              py: 1.5,
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              textTransform: 'none',
+              boxShadow: 3,
+              '&:hover': {
+                boxShadow: 6
+              }
+            }}
+          >
+            Crear Deck con IA
+          </Button>
+          
+          {/* FAB para crear deck normal */}
+          <Fab
+            color="primary"
+            aria-label="add"
+            sx={{
+              width: 64,
+              height: 64,
+              '& .MuiSvgIcon-root': {
+                fontSize: 32
+              }
+            }}
+            onClick={() => setCreateDialogOpen(true)}
+          >
+            <AddIcon />
+          </Fab>
+        </Box>
 
         {/* Modal para crear deck */}
         <Dialog
@@ -497,6 +538,38 @@ const HomePage = () => {
           cancelText="Cancelar"
           size="xs"
         />
+
+        {/* Modal para generación de deck con IA */}
+        <AIDeckGeneratorModal
+          open={aiDeckGeneratorOpen}
+          onClose={() => setAiDeckGeneratorOpen(false)}
+          onGenerate={handleAIDeckGenerated}
+        />
+
+        {/* Toast de confirmación */}
+        <Snackbar
+          open={toast.open}
+          autoHideDuration={5000}
+          onClose={() => setToast({ ...toast, open: false })}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          sx={{ mb: 2, mr: 2 }}
+        >
+          <Alert
+            onClose={() => setToast({ ...toast, open: false })}
+            severity={toast.severity}
+            sx={{ 
+              width: '100%',
+              minWidth: '300px',
+              fontSize: '1rem',
+              py: 1.5,
+              '& .MuiAlert-message': {
+                fontWeight: 500
+              }
+            }}
+          >
+            {toast.message}
+          </Alert>
+        </Snackbar>
       </Container>
     </>
   );
