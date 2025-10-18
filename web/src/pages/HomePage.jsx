@@ -39,7 +39,9 @@ import {
   Email as EmailIcon,
   Info as InfoIcon,
   ArrowForward as ArrowForwardIcon,
-  AutoAwesome as AIIcon
+  AutoAwesome as AIIcon,
+  Create as CreateIcon,
+  AutoFixHigh as AutoFixHighIcon
 } from '@mui/icons-material';
 import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
@@ -431,7 +433,7 @@ const HomePage = () => {
           {/* Botón para crear deck con IA */}
           <Button
             variant="contained"
-            startIcon={<AIIcon />}
+            startIcon={<AutoFixHighIcon />}
             onClick={() => setAiDeckGeneratorOpen(true)}
             sx={{
               borderRadius: '50px',
@@ -441,29 +443,44 @@ const HomePage = () => {
               fontWeight: 'bold',
               textTransform: 'none',
               boxShadow: 3,
+              background: (theme) => 
+                theme.palette.mode === 'dark' 
+                  ? 'linear-gradient(45deg, #FF6B6B, #4ECDC4)'
+                  : 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
               '&:hover': {
-                boxShadow: 6
+                boxShadow: 6,
+                background: (theme) => 
+                  theme.palette.mode === 'dark' 
+                    ? 'linear-gradient(45deg, #FF5252, #26A69A)'
+                    : 'linear-gradient(45deg, #FF5252, #26A69A)'
               }
             }}
           >
-            Crear Deck con IA
+            🪄 Crear con IA
           </Button>
           
-          {/* FAB para crear deck normal */}
-          <Fab
-            color="primary"
-            aria-label="add"
+          {/* Botón para crear deck manual */}
+          <Button
+            variant="contained"
+            startIcon={<CreateIcon />}
+            onClick={() => setCreateDialogOpen(true)}
             sx={{
-              width: 64,
-              height: 64,
-              '& .MuiSvgIcon-root': {
-                fontSize: 32
+              borderRadius: '50px',
+              px: 3,
+              py: 1.5,
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              textTransform: 'none',
+              boxShadow: 3,
+              backgroundColor: 'primary.main',
+              '&:hover': {
+                boxShadow: 6,
+                backgroundColor: 'primary.dark'
               }
             }}
-            onClick={() => setCreateDialogOpen(true)}
           >
-            <AddIcon />
-          </Fab>
+            ✏️ Crear Manual
+          </Button>
         </Box>
 
         {/* Modal para crear deck */}
@@ -656,7 +673,7 @@ const HomePage = () => {
           {/* Botón para crear deck con IA */}
           <Button
             variant="contained"
-            startIcon={<AIIcon />}
+            startIcon={<AutoFixHighIcon />}
             onClick={() => setAiDeckGeneratorOpen(true)}
             sx={{
               borderRadius: '50px',
@@ -666,29 +683,44 @@ const HomePage = () => {
               fontWeight: 'bold',
               textTransform: 'none',
               boxShadow: 3,
+              background: (theme) => 
+                theme.palette.mode === 'dark' 
+                  ? 'linear-gradient(45deg, #FF6B6B, #4ECDC4)'
+                  : 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
               '&:hover': {
-                boxShadow: 6
+                boxShadow: 6,
+                background: (theme) => 
+                  theme.palette.mode === 'dark' 
+                    ? 'linear-gradient(45deg, #FF5252, #26A69A)'
+                    : 'linear-gradient(45deg, #FF5252, #26A69A)'
               }
             }}
           >
-            Crear Deck con IA
+            🪄 Crear con IA
           </Button>
           
-          {/* FAB para crear deck normal */}
-          <Fab
-            color="primary"
-            aria-label="add"
+          {/* Botón para crear deck manual */}
+          <Button
+            variant="contained"
+            startIcon={<CreateIcon />}
+            onClick={() => setCreateDialogOpen(true)}
             sx={{
-              width: 64,
-              height: 64,
-              '& .MuiSvgIcon-root': {
-                fontSize: 32
+              borderRadius: '50px',
+              px: 3,
+              py: 1.5,
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              textTransform: 'none',
+              boxShadow: 3,
+              backgroundColor: 'primary.main',
+              '&:hover': {
+                boxShadow: 6,
+                backgroundColor: 'primary.dark'
               }
             }}
-            onClick={() => setCreateDialogOpen(true)}
           >
-            <AddIcon />
-          </Fab>
+            ✏️ Crear Manual
+          </Button>
         </Box>
       </Container>
     </>
