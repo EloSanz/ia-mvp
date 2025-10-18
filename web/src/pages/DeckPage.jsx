@@ -405,7 +405,7 @@ const DeckPage = () => {
               variant="h4"
               component="h1"
               gutterBottom
-              sx={{ fontFamily: muiTheme.fontFamily }}
+              sx={{ fontFamily: muiTheme.fontFamily, fontWeight: 'bold' }}
             >
               {deck.name}
             </Typography>
@@ -415,7 +415,7 @@ const DeckPage = () => {
                 color="text.secondary"
                 sx={{ fontFamily: muiTheme.fontFamily }}
               >
-                descripción: {deck.description}
+                {deck.description}
               </Typography>
             )}
           </Box>
