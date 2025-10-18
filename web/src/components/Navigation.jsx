@@ -72,6 +72,8 @@ const Navigation = () => {
             </Button>
           )}
 
+          {/* Comentado para no mostrar el botón de sincronización ya que hoy en dia no esta haciendo nada. */}
+          {/*
           <Button
             color="inherit"
             startIcon={<SyncIcon />}
@@ -82,6 +84,7 @@ const Navigation = () => {
           >
             Sincronizar
           </Button>
+          */}
 
           <Button
             color="inherit"

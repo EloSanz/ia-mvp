@@ -75,8 +75,8 @@ export const useNavigation = () => {
 
   const goToLastDeck = () => {
     if (lastDeckId && lastDeckExists) {
-      // Llevar directamente a una sesión de estudio del último deck
-      navigate(`/study/session/${lastDeckId}`);
+      // Llevar al deck que estaba estudiando
+      navigate(`/decks/${lastDeckId}`);
     } else {
       goToDecks();
     }
@@ -126,7 +126,7 @@ export const useNavigation = () => {
         { label: `Sesión ${sessionId}`, path: currentPath }
       );
     } else if (currentPath === '/') {
-      items.push({ label: 'Mis Decks', path: '/' });
+      items.push({ label: 'Inicio', path: '/' });
     }
 
     return items;

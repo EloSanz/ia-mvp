@@ -13,7 +13,6 @@ import {
 import React from 'react';
 import {
   Add as AddIcon,
-  School as SchoolIcon,
   Delete as DeleteIcon,
   Edit as EditIcon,
   GitHub as GitHubIcon,
@@ -79,16 +78,17 @@ export default function DecksGridCard({ decks, deckMonitory, onEdit, onDelete, o
               )}
 
               {/* Contenido */}
-              <CardContent>
+              <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                 <Typography
                   variant="h6"
                   fontWeight="bold"
                   gutterBottom
                   sx={{
-                    width: '15rem', // ancho fijo
-                    // whiteSpace: "nowrap",     // no salta de línea
-                    overflow: 'hidden', // oculta el texto sobrante
-                    textOverflow: 'ellipsis' // muestra "..."
+                    color: '#FFFFFF',
+                    width: '15rem',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    mb: 1
                   }}
                 >
                   {deck.name}
@@ -105,17 +105,46 @@ export default function DecksGridCard({ decks, deckMonitory, onEdit, onDelete, o
                     {deck.description}
                   </Typography>
                 )}
-                <Typography variant="body2">
-                  <strong>New:</strong> {deck.newCount ?? 0} <strong>Learn:</strong>{' '}
-                  {deck.learnCount ?? 0} <strong>Due:</strong> {deck.dueCount ?? 0}
-                </Typography>
-                <Box display="flex" justifyContent="flex-end" gap={1}>
+                <Box sx={{ mb: 2 }}>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: '#9CA3AF',
+                      fontSize: '0.875rem',
+                      mb: 0.5
+                    }}
+                  >
+                    Nuevas: {deck.newCount ?? 0} • Aprendiendo: {deck.learnCount ?? 0}
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: '#9CA3AF',
+                      fontSize: '0.875rem'
+                    }}
+                  >
+                    Pendientes: {deck.dueCount ?? 0}
+                  </Typography>
+                </Box>
+                <Box 
+                  display="flex" 
+                  justifyContent="flex-end" 
+                  gap={1.5}
+                  sx={{ mt: 'auto' }}
+                >
                   <Tooltip title="Editar deck">
                     <IconButton
                       size="small"
                       onClick={(e) => {
                         e.stopPropagation();
                         onEdit(deck);
+                      }}
+                      sx={{
+                        '&:hover': {
+                          backgroundColor: '#1E293B',
+                          color: '#FFFFFF'
+                        },
+                        transition: 'all 0.2s ease-in-out'
                       }}
                     >
                       <EditIcon fontSize="small" />
@@ -128,19 +157,15 @@ export default function DecksGridCard({ decks, deckMonitory, onEdit, onDelete, o
                         e.stopPropagation();
                         onDelete(deck.id);
                       }}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Ver deck">
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onNavigate(deck.id);
+                      sx={{
+                        '&:hover': {
+                          backgroundColor: '#1E293B',
+                          color: '#FFFFFF'
+                        },
+                        transition: 'all 0.2s ease-in-out'
                       }}
                     >
-                      <SchoolIcon fontSize="small" />
+                      <DeleteIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
                 </Box>
