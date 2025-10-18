@@ -92,14 +92,16 @@ const CardRow = ({
 
       {/* 6) Acciones */}
       <TableCell sx={{ py: 1, verticalAlign: 'middle' }}>
-        <Box sx={{
-          display: 'flex',
-          gap: 0.5,
-          justifyContent: 'flex-end',
-          opacity: 0.7,
-          transition: 'opacity 0.2s ease-in-out',
-          '&:hover': { opacity: 1 }
-        }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 0.5,
+            justifyContent: 'flex-end',
+            opacity: 0.7,
+            transition: 'opacity 0.2s ease-in-out',
+            '&:hover': { opacity: 1 }
+          }}
+        >
           <Tooltip title="Revisar">
             <IconButton
               size="small"

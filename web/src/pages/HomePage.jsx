@@ -72,6 +72,9 @@ const HomePage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deckToDelete, setDeckToDelete] = useState(null);
 
+  // Modal para contacto
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+
   //Monitoreo de deck para portada IA
   const [deckMonitory, setDeckMonitory] = useState(null);
 
@@ -226,8 +229,9 @@ const HomePage = () => {
               }
             >
               <AlertTitle>Continuar estudiando</AlertTitle>
-              Estabas estudiando el deck #{lastDeckId}. Haz clic en "Continuar" para retomar tu
-              sesión.
+              Estabas estudiando el deck "
+              {decksList.find((d) => d.id === lastDeckId)?.name || `ID: ${lastDeckId}`}". Haz clic
+              en "Continuar" para retomar tu sesión.
             </Alert>
           </Box>
         )}
@@ -281,6 +285,7 @@ const HomePage = () => {
               <IconButton
                 size="small"
                 sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.text.primary }}
+                onClick={() => window.open('https://github.com/EloSanz/ia-mvp', '_blank')}
               >
                 <GitHubIcon fontSize="small" />
               </IconButton>
@@ -289,6 +294,7 @@ const HomePage = () => {
               <IconButton
                 size="small"
                 sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.text.primary }}
+                onClick={() => setContactDialogOpen(true)}
               >
                 <EmailIcon fontSize="small" />
               </IconButton>
@@ -439,6 +445,40 @@ const HomePage = () => {
             >
               {editing ? <CircularProgress size={20} /> : 'Guardar'}
             </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Modal para contacto */}
+        <Dialog
+          open={contactDialogOpen}
+          onClose={() => setContactDialogOpen(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>Contacto</DialogTitle>
+          <DialogContent>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              Para contactarnos, puedes escribirnos al siguiente email:
+            </Typography>
+            <Typography
+              variant="h6"
+              sx={{
+                fontFamily: 'monospace',
+                bgcolor: 'grey.100',
+                p: 2,
+                borderRadius: 1,
+                textAlign: 'center',
+                color: 'primary.main'
+              }}
+            >
+              icardscontact@gmail.com
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
+              Estaremos encantados de atender tus consultas, sugerencias o reportar problemas.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setContactDialogOpen(false)}>Cerrar</Button>
           </DialogActions>
         </Dialog>
 

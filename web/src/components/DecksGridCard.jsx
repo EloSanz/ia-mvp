@@ -35,8 +35,16 @@ export default function DecksGridCard({ decks, deckMonitory, onEdit, onDelete, o
                 color: '#fff',
                 height: '100%',
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  boxShadow: 6,
+                  transform: 'translateY(-4px)',
+                  backgroundColor: 'rgba(255,255,255,0.08)'
+                }
               }}
+              onClick={() => onNavigate(deck.id)}
             >
               {/* Portada */}
               {deck.coverUrl ? (
