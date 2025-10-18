@@ -41,10 +41,15 @@ const CardRow = ({
       sx={{
         backgroundColor: muiTheme?.palette?.background?.paper || '#ffffff',
         cursor: 'pointer',
-        '&:hover': { backgroundColor: muiTheme?.palette?.action?.hover || '#f5f5f5' }
+        transition: 'all 0.2s ease-in-out',
+        '&:hover': {
+          backgroundColor: muiTheme?.palette?.action?.hover || '#f5f5f5',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+          transform: 'translateY(-1px)'
+        }
       }}
     >
-      {/* 1) Consigna */}
+      {/* 1-2) Consigna (ocupa ambas columnas: Consigna + Buscar) */}
       <TableCell
         sx={{
           color: muiTheme?.palette?.text?.primary || '#000000',
@@ -52,12 +57,10 @@ const CardRow = ({
           py: 1.5,
           verticalAlign: 'top'
         }}
+        colSpan={2}
       >
-        {card.front.length > 45 ? card.front.substring(0, 45) + '…' : card.front}
+        {card.front.length > 120 ? card.front.substring(0, 120) + '…' : card.front}
       </TableCell>
-
-      {/* 2) Columna de búsqueda - placeholder vacío para que el ancho del header coincida */}
-      <TableCell sx={{ py: 1.5, verticalAlign: 'top' }}>{/* vacío intencional */}</TableCell>
 
       {/* 3) Tag (TagCrud) */}
       <TableCell sx={{ py: 1.5, verticalAlign: 'top' }}>
@@ -89,12 +92,26 @@ const CardRow = ({
 
       {/* 6) Acciones */}
       <TableCell sx={{ py: 1, verticalAlign: 'middle' }}>
-        <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+        <Box sx={{
+          display: 'flex',
+          gap: 0.5,
+          justifyContent: 'flex-end',
+          opacity: 0.7,
+          transition: 'opacity 0.2s ease-in-out',
+          '&:hover': { opacity: 1 }
+        }}>
           <Tooltip title="Revisar">
             <IconButton
               size="small"
               aria-label="Revisar"
-              sx={{ color: muiTheme.palette?.icon?.main || muiTheme.palette?.primary?.main }}
+              sx={{
+                color: muiTheme.palette?.icon?.main || muiTheme.palette?.primary?.main,
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  backgroundColor: (muiTheme.palette?.primary?.main || '#1976d2') + '20',
+                  transform: 'scale(1.1)'
+                }
+              }}
               onClick={(e) => {
                 e.stopPropagation();
                 openReviewDialog(card);
@@ -107,7 +124,14 @@ const CardRow = ({
             <IconButton
               size="small"
               aria-label="Editar"
-              sx={{ color: muiTheme.palette?.icon?.main || muiTheme.palette?.secondary?.main }}
+              sx={{
+                color: muiTheme.palette?.icon?.main || muiTheme.palette?.secondary?.main,
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  backgroundColor: (muiTheme.palette?.secondary?.main || '#dc004e') + '20',
+                  transform: 'scale(1.1)'
+                }
+              }}
               onClick={(e) => {
                 e.stopPropagation();
                 openEditDialog(card);
@@ -120,7 +144,14 @@ const CardRow = ({
             <IconButton
               size="small"
               aria-label="Eliminar"
-              sx={{ color: muiTheme.palette?.icon?.main || muiTheme.palette?.error?.main }}
+              sx={{
+                color: muiTheme.palette?.icon?.main || muiTheme.palette?.error?.main,
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  backgroundColor: (muiTheme.palette?.error?.main || '#f44336') + '20',
+                  transform: 'scale(1.1)'
+                }
+              }}
               onClick={(e) => {
                 e.stopPropagation();
                 handleDeleteCard(card.id);

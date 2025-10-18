@@ -20,7 +20,8 @@ import {
   FirstPage as FirstPageIcon,
   LastPage as LastPageIcon,
   RestartAlt as RestartAltIcon,
-  ClearAll as ClearAllIcon
+  ClearAll as ClearAllIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material';
 import CardRow from '../CardRow';
 import SearchBar from '../SearchBar';
@@ -128,19 +129,9 @@ const FlashcardTable = ({
             <TableRow>
               <TableCell
                 sx={{ color: safeMuiTheme.palette?.text?.secondary, fontSize: '0.875rem', py: 1.5 }}
+                colSpan={2}
               >
                 Consigna
-              </TableCell>
-
-              <TableCell
-                sx={{
-                  color: safeMuiTheme.palette?.text?.secondary,
-                  fontSize: '0.875rem',
-                  py: 1.5,
-                  minWidth: 200
-                }}
-              >
-                Buscar
               </TableCell>
 
               <TableCell
@@ -185,11 +176,8 @@ const FlashcardTable = ({
 
             {/* Segunda fila: controles alineados bajo cada título */}
             <TableRow>
-              {/* 1) Consigna - vacío (placeholder para mantener alineación) */}
-              <TableCell sx={{ py: 1 }} />
-
-              {/* 2) Buscar - aquí va el SearchBar */}
-              <TableCell sx={{ py: 1 }}>
+              {/* 1-2) Consigna + Buscar - aquí va el SearchBar */}
+              <TableCell sx={{ py: 1 }} colSpan={2}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <SearchBar
                     searchQuery={searchQuery || ''}
@@ -257,8 +245,10 @@ const FlashcardTable = ({
                 </FormControl>
               </TableCell>
 
-              {/* 6) Acciones - vacío (placeholder) */}
-              <TableCell sx={{ py: 1 }} />
+              {/* 6) Acciones - ícono de settings */}
+              <TableCell sx={{ py: 0.5, textAlign: 'inherit', verticalAlign: 'middle' }}>
+                <SettingsIcon sx={{ fontSize: '1.5rem', color: 'text.primary' }} />
+              </TableCell>
             </TableRow>
           </TableHead>
 
@@ -282,8 +272,8 @@ const FlashcardTable = ({
               ))
             ) : (
               <TableRow>
-                {/* Actualicé colSpan a 6 porque ahora hay 6 columnas en el header */}
-                <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                {/* Actualicé colSpan a 5 porque ahora hay 5 columnas en el header */}
+                <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
                   <Typography variant="body1" color="text.secondary">
                     {searchQuery ||
                     difficultyFilter !== 'all' ||
@@ -318,7 +308,17 @@ const FlashcardTable = ({
           <Stack direction="row" spacing={1}>
             <Tooltip title="Ir al principio">
               <span>
-                <IconButton onClick={goToFirstPage} disabled={page === 0}>
+                <IconButton
+                  onClick={goToFirstPage}
+                  disabled={page === 0}
+                  sx={{
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover:not(:disabled)': {
+                      backgroundColor: safeMuiTheme.palette?.action?.hover,
+                      transform: 'scale(1.1)'
+                    }
+                  }}
+                >
                   <FirstPageIcon />
                 </IconButton>
               </span>
@@ -332,6 +332,13 @@ const FlashcardTable = ({
                       ? page >= Math.ceil((searchTotal || 0) / rowsPerPage) - 1
                       : page >= Math.ceil((totalCards || 0) / rowsPerPage) - 1
                   }
+                  sx={{
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover:not(:disabled)': {
+                      backgroundColor: safeMuiTheme.palette?.action?.hover,
+                      transform: 'scale(1.1)'
+                    }
+                  }}
                 >
                   <LastPageIcon />
                 </IconButton>
@@ -339,14 +346,33 @@ const FlashcardTable = ({
             </Tooltip>
             <Tooltip title="Restablecer filas por página a 15">
               <span>
-                <IconButton onClick={resetRowsPerPage} disabled={rowsPerPage === 15}>
+                <IconButton
+                  onClick={resetRowsPerPage}
+                  disabled={rowsPerPage === 15}
+                  sx={{
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover:not(:disabled)': {
+                      backgroundColor: safeMuiTheme.palette?.action?.hover,
+                      transform: 'scale(1.1)'
+                    }
+                  }}
+                >
                   <RestartAltIcon />
                 </IconButton>
               </span>
             </Tooltip>
             <Tooltip title="Limpiar búsqueda y filtros, volver al inicio">
               <span>
-                <IconButton onClick={clearTable}>
+                <IconButton
+                  onClick={clearTable}
+                  sx={{
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      backgroundColor: safeMuiTheme.palette?.action?.hover,
+                      transform: 'scale(1.1)'
+                    }
+                  }}
+                >
                   <ClearAllIcon />
                 </IconButton>
               </span>
