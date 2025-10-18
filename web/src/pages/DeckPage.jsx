@@ -56,6 +56,12 @@ const DeckPage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchTotal, setSearchTotal] = useState(0);
 
+  // Filtro de dificultad
+  const [difficultyFilter, setDifficultyFilter] = useState('all');
+
+  // Filtro de tags
+  const [tagFilter, setTagFilter] = useState('all');
+
   // Estados para tags y paginación
   const [tags, setTags] = useState([]); // Lista de tags disponibles
   const [newCardTagId, setNewCardTagId] = useState('');
@@ -215,6 +221,18 @@ const DeckPage = () => {
     setSearchTotal(0);
     setPage(0);
     loadDeckAndCards( flashcardManager.page, rowsPerPage);
+  };
+
+  // Función para manejar cambios en el filtro de dificultad
+  const handleDifficultyFilterChange = (value) => {
+    setDifficultyFilter(value);
+    setPage(0);
+  };
+
+  // Función para manejar cambios en el filtro de tags
+  const handleTagFilterChange = (value) => {
+    setTagFilter(value);
+    setPage(0);
   };
 
   const handleCreateCard = async () => {
@@ -424,6 +442,10 @@ const DeckPage = () => {
           searching={searching}
           onSearchChange={handleSearchInputChange}
           onClearSearch={handleClearSearch}
+          difficultyFilter={difficultyFilter}
+          onDifficultyFilterChange={handleDifficultyFilterChange}
+          tagFilter={tagFilter}
+          onTagFilterChange={handleTagFilterChange}
           openReviewDialog={openReviewDialog}
           openEditDialog={openEditDialog}
           handleDeleteCard={handleDeleteCard}

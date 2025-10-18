@@ -11,7 +11,10 @@ import {
   Box,
   IconButton,
   Stack,
-  Tooltip
+  Tooltip,
+  Select,
+  MenuItem,
+  FormControl
 } from '@mui/material';
 import {
   FirstPage as FirstPageIcon,
@@ -35,6 +38,10 @@ const FlashcardTable = ({
   searching,
   onSearchChange,
   onClearSearch,
+  difficultyFilter,
+  onDifficultyFilterChange,
+  tagFilter,
+  onTagFilterChange,
   openReviewDialog,
   openEditDialog,
   handleDeleteCard,
@@ -46,15 +53,27 @@ const FlashcardTable = ({
   loadDeckAndCards,
   setRowsPerPage
 }) => {
-  // Verificaciones defensivas
   const safeMuiTheme = muiTheme || {};
   const safeCards = Array.isArray(cards) ? cards : [];
   const safeTags = Array.isArray(tags) ? tags : [];
   const safeSearchResults = Array.isArray(searchResults) ? searchResults : [];
 
-  const displayCards = searchQuery ? safeSearchResults : safeCards;
+  const applyFilters = (cards) => {
+    let filtered = cards;
 
-  // Helpers para los controles
+    if (difficultyFilter && difficultyFilter !== 'all') {
+      filtered = filtered.filter(card => card.difficulty === parseInt(difficultyFilter));
+    }
+
+    if (tagFilter && tagFilter !== 'all') {
+      filtered = filtered.filter(card => card.tagId === tagFilter);
+    }
+
+    return filtered;
+  };
+
+  const displayCards = searchQuery ? safeSearchResults : applyFilters(safeCards);
+
   const goToFirstPage = () => {
     setPage(null, 0);
   };
@@ -66,26 +85,15 @@ const FlashcardTable = ({
   };
 
   const resetRowsPerPage = () => {
-    // Simula el evento del paginador de MUI
     setRowsPerPage({ target: { value: 15 } });
   };
 
   const clearTable = () => {
     onClearSearch && onClearSearch();
+    onDifficultyFilterChange && onDifficultyFilterChange('all');
+    onTagFilterChange && onTagFilterChange('all');
     setPage(null, 0);
   };
-
-  // Debug logging (remover después de solucionar)
-  // console.log('FlashcardTable props:', {
-  //   cardsLength: safeCards.length,
-  //   tagsLength: safeTags.length,
-  //   searchResultsLength: safeSearchResults.length,
-  //   displayCardsLength: displayCards.length,
-  //   muiTheme: !!safeMuiTheme,
-  //   page,
-  //   rowsPerPage,
-  //   totalCards
-  // });
 
   try {
     return (
@@ -119,16 +127,64 @@ const FlashcardTable = ({
                   />
                 </Box>
               </TableCell>
+
+              {/* Tag: ahora el texto "Tag" arriba y el Select debajo */}
               <TableCell
-                sx={{ color: safeMuiTheme.palette?.text?.secondary, fontSize: '0.875rem', py: 1.5 }}
+                sx={{
+                  color: safeMuiTheme.palette?.text?.secondary,
+                  fontSize: '0.875rem',
+                  py: 1.5,
+                  minWidth: 180
+                }}
               >
-                Tag
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Typography variant="inherit" sx={{ alignSelf: 'flex-start' }}>Tag</Typography>
+                  <FormControl size="small" sx={{ minWidth: 120 }}>
+                    <Select
+                      value={tagFilter || 'all'}
+                      onChange={(e) => onTagFilterChange(e.target.value)}
+                      sx={{ fontSize: '0.875rem' }}
+                    >
+                      <MenuItem value="all">Todas</MenuItem>
+                      <MenuItem value="">
+                        <em>Sin tag</em>
+                      </MenuItem>
+                      {safeTags.map((tag) => (
+                        <MenuItem key={tag.id} value={tag.id}>
+                          {tag.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
               </TableCell>
+
+              {/* Dificultad derecha: texto arriba, Select debajo */}
               <TableCell
-                sx={{ color: safeMuiTheme.palette?.text?.secondary, fontSize: '0.875rem', py: 1.5 }}
+                sx={{
+                  color: safeMuiTheme.palette?.text?.secondary,
+                  fontSize: '0.875rem',
+                  py: 1.5,
+                  minWidth: 150
+                }}
               >
-                Dificultad
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Typography variant="inherit">Dificultad</Typography>
+                  <FormControl size="small" sx={{ minWidth: 120 }}>
+                    <Select
+                      value={difficultyFilter || 'all'}
+                      onChange={(e) => onDifficultyFilterChange(e.target.value)}
+                      sx={{ fontSize: '0.875rem' }}
+                    >
+                      <MenuItem value="all">Todas</MenuItem>
+                      <MenuItem value="1">Fácil</MenuItem>
+                      <MenuItem value="2">Normal</MenuItem>
+                      <MenuItem value="3">Difícil</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
               </TableCell>
+
               <TableCell
                 sx={{ color: safeMuiTheme.palette?.text?.secondary, fontSize: '0.875rem', py: 1.5 }}
               >
@@ -146,6 +202,7 @@ const FlashcardTable = ({
               </TableCell>
             </TableRow>
           </TableHead>
+
           <TableBody>
             {displayCards && displayCards.length > 0 ? (
               displayCards.map((card) => (
@@ -166,15 +223,16 @@ const FlashcardTable = ({
               ))
             ) : (
               <TableRow>
+                {/* Actualicé colSpan a 6 porque ahora hay 6 columnas en el header */}
                 <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
                   <Typography variant="body1" color="text.secondary">
-                    {searchQuery
-                      ? 'No se encontraron flashcards con esa búsqueda'
+                    {searchQuery || difficultyFilter !== 'all' || tagFilter !== 'all'
+                      ? 'No se encontraron flashcards con esos filtros'
                       : 'No hay flashcards en este deck'}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    {searchQuery
-                      ? 'Intenta con otros términos de búsqueda'
+                    {searchQuery || difficultyFilter !== 'all' || tagFilter !== 'all'
+                      ? 'Intenta con otros términos de búsqueda o filtros'
                       : 'Crea tu primera flashcard para comenzar'}
                   </Typography>
                 </TableCell>
@@ -182,7 +240,7 @@ const FlashcardTable = ({
             )}
           </TableBody>
         </Table>
-        {/* Controles y paginador en la misma fila */}
+
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1, mb: 2 }}>
           <Stack direction="row" spacing={1}>
             <Tooltip title="Ir al principio">
@@ -213,7 +271,7 @@ const FlashcardTable = ({
                 </IconButton>
               </span>
             </Tooltip>
-            <Tooltip title="Limpiar búsqueda y volver al inicio">
+            <Tooltip title="Limpiar búsqueda y filtros, volver al inicio">
               <span>
                 <IconButton onClick={clearTable}>
                   <ClearAllIcon />
@@ -235,7 +293,6 @@ const FlashcardTable = ({
       </TableContainer>
     );
   } catch (error) {
-    // console.error('Error rendering FlashcardTable:', error);
     return (
       <div style={{ padding: '20px', color: 'red' }}>
         <h3>Error al renderizar la tabla de flashcards</h3>
