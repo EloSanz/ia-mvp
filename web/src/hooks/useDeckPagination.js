@@ -1,13 +1,39 @@
 import { useState, useEffect, useMemo } from 'react';
 
 const useDeckPagination = (decks = [], initialItemsPerPage = 8) => {
+  // Función para obtener valores del localStorage con fallbacks
+  const getStoredValue = (key, defaultValue) => {
+    try {
+      const stored = localStorage.getItem(key);
+      return stored ? JSON.parse(stored) : defaultValue;
+    } catch (error) {
+      console.warn(`Error reading ${key} from localStorage:`, error);
+      return defaultValue;
+    }
+  };
+
+  // Función para guardar valores en localStorage
+  const setStoredValue = (key, value) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.warn(`Error saving ${key} to localStorage:`, error);
+    }
+  };
+
   // Estado de paginación
   const [currentPage, setCurrentPage] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(initialItemsPerPage);
+  const [itemsPerPage, setItemsPerPage] = useState(() => 
+    getStoredValue('deck_pagination_itemsPerPage', initialItemsPerPage)
+  );
   
-  // Estado de ordenamiento
-  const [sortBy, setSortBy] = useState('updatedAt'); // Por defecto ordenar por última actualización
-  const [sortOrder, setSortOrder] = useState('desc'); // Por defecto descendente
+  // Estado de ordenamiento con persistencia
+  const [sortBy, setSortBy] = useState(() => 
+    getStoredValue('deck_pagination_sortBy', 'updatedAt')
+  );
+  const [sortOrder, setSortOrder] = useState(() => 
+    getStoredValue('deck_pagination_sortOrder', 'desc')
+  );
 
   // Calcular total de páginas
   const totalPages = Math.ceil(decks.length / itemsPerPage);
@@ -60,7 +86,9 @@ const useDeckPagination = (decks = [], initialItemsPerPage = 8) => {
 
   // Función para cambiar elementos por página
   const handleItemsPerPageChange = (newItemsPerPage) => {
-    setItemsPerPage(parseInt(newItemsPerPage, 10));
+    const newValue = parseInt(newItemsPerPage, 10);
+    setItemsPerPage(newValue);
+    setStoredValue('deck_pagination_itemsPerPage', newValue);
     setCurrentPage(0); // Resetear a la primera página
   };
 
@@ -68,6 +96,8 @@ const useDeckPagination = (decks = [], initialItemsPerPage = 8) => {
   const handleSortChange = (newSortBy, newSortOrder) => {
     setSortBy(newSortBy);
     setSortOrder(newSortOrder);
+    setStoredValue('deck_pagination_sortBy', newSortBy);
+    setStoredValue('deck_pagination_sortOrder', newSortOrder);
     setCurrentPage(0); // Resetear a la primera página
   };
 
@@ -82,6 +112,19 @@ const useDeckPagination = (decks = [], initialItemsPerPage = 8) => {
       setCurrentPage(Math.max(0, totalPages - 1));
     }
   }, [currentPage, totalPages]);
+
+  // Sincronizar cambios de estado con localStorage
+  useEffect(() => {
+    setStoredValue('deck_pagination_sortBy', sortBy);
+  }, [sortBy]);
+
+  useEffect(() => {
+    setStoredValue('deck_pagination_sortOrder', sortOrder);
+  }, [sortOrder]);
+
+  useEffect(() => {
+    setStoredValue('deck_pagination_itemsPerPage', itemsPerPage);
+  }, [itemsPerPage]);
 
   return {
     // Datos paginados
