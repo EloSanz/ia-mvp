@@ -110,10 +110,8 @@ export const useNavigation = () => {
     const items = [];
 
     if (isOnDeckPage) {
-      const deckId = currentDeckId;
       items.push(
-        { label: 'Mis Decks', path: '/', onClick: goToDecks },
-        { label: `Deck ${deckId}`, path: `/decks/${deckId}`, onClick: () => goToDeck(deckId) }
+        { label: 'Mis Decks', path: '/', onClick: goToDecks }
       );
     } else if (currentPath === '/study') {
       items.push(

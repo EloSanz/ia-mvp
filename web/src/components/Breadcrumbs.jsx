@@ -41,8 +41,10 @@ const Breadcrumbs = ({ showOnHome = false }) => {
       <MuiBreadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb">
         {breadcrumbs.map((item, index) => {
           const isLast = index === breadcrumbs.length - 1;
+          const hasClickHandler = item.onClick && typeof item.onClick === 'function';
 
-          if (isLast) {
+          // Si es el último item Y no tiene click handler, mostrarlo como texto
+          if (isLast && !hasClickHandler) {
             return (
               <Box key={item.path} display="flex" alignItems="center" gap={0.5}>
                 {getIconForPath(item.path)}
@@ -53,6 +55,7 @@ const Breadcrumbs = ({ showOnHome = false }) => {
             );
           }
 
+          // Si tiene click handler (incluso si es el último), mostrarlo como link
           return (
             <Link
               key={item.path}

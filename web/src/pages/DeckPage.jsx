@@ -415,7 +415,7 @@ const DeckPage = () => {
                 color="text.secondary"
                 sx={{ fontFamily: muiTheme.fontFamily }}
               >
-                descripción: {deck.description}
+                Descripción: {deck.description}
               </Typography>
             )}
           </Box>
