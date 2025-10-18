@@ -23,19 +23,25 @@ export const verifyToken = (token) => {
 
 export const authMiddleware = (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      throw new AuthError('Token no proporcionado');
-    }
+    // Obtiene el token del encabezado Authorization
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
 
-    const token = authHeader.split(' ')[1]; // Bearer TOKEN
     if (!token) {
-      throw new AuthError('Token no proporcionado');
+      return res.status(401).json({ message: 'Token no proporcionado.' });
     }
 
-    const decoded = verifyToken(token);
-    req.userId = decoded.userId;
-    next();
+    // Verifica el token incluyendo la validez y expiración
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+      if (err) {
+        // El error puede deberse a token expirado o inválido: deslogueamos y redirigimos al login
+        return res.status(401).json({ message: 'Error de tocken.' });
+      }
+
+      // Si es válido, añade la información decodificada al objeto de request
+      req.user = decoded;
+      next();
+    });
   } catch (error) {
     next(error);
   }

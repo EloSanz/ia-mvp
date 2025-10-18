@@ -17,8 +17,8 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-   // For debugging purposes
-   //console.log('➡️ API Request:', config.method?.toUpperCase(), config.url, config.data || config.params);
+    // For debugging purposes
+    //console.log('➡️ API Request:', config.method?.toUpperCase(), config.url, config.data || config.params);
     return config;
   },
   (error) => Promise.reject(error)
@@ -56,12 +56,16 @@ api.interceptors.response.use(
           statusCode: 404
         }
       };
+
       return Promise.reject({
         ...error,
         response: notFoundResponse
       });
     }
-
+    if (error.response && error.response.status === 401) {
+      // Redirige al usuario al login
+      window.location.href = '/login';
+    }
     return Promise.reject(error);
   }
 );
