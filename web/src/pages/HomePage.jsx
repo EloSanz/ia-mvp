@@ -45,6 +45,9 @@ import Navigation from '../components/Navigation';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { useNavigation } from '../hooks/useNavigation';
+import useDeckPagination from '../hooks/useDeckPagination';
+import Pagination from '../components/Pagination';
+import DeckSorting from '../components/DeckSorting';
 
 import { useTheme as useMuiTheme } from '@mui/material';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
@@ -58,6 +61,22 @@ const HomePage = () => {
   const [decksList, setDecksList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Hook de paginación y ordenamiento
+  const {
+    paginatedDecks,
+    currentPage,
+    itemsPerPage,
+    totalPages,
+    totalItems,
+    sortBy,
+    sortOrder,
+    handlePageChange,
+    handleItemsPerPageChange,
+    handleSortChange,
+    hasItems,
+    isEmpty
+  } = useDeckPagination(decksList, 8); // Por defecto 8 elementos por página
 
   // Modal para crear deck
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -347,7 +366,7 @@ const HomePage = () => {
           </Alert>
         )}
 
-        {decksList.length === 0 && !loading && (
+        {isEmpty && !loading && (
           <Box textAlign="center" mt={6}>
             <Typography variant="h6" sx={{ color: 'grey.400' }} gutterBottom>
               No tienes decks creados aún
@@ -357,14 +376,35 @@ const HomePage = () => {
             </Typography>
           </Box>
         )}
-        {decksList.length != 0 && !loading && (
-          <DecksGridCard
-            decks={decksList}
-            deckMonitory={deckMonitory}
-            onEdit={openEditDialog}
-            onDelete={handleDeleteDeck}
-            onNavigate={(id) => navigate(`/decks/${id}`)}
-          />
+        {hasItems && !loading && (
+          <>
+            {/* Controles de ordenamiento */}
+            <DeckSorting
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSortChange={handleSortChange}
+            />
+            
+            {/* Grid de decks */}
+            <DecksGridCard
+              decks={paginatedDecks}
+              deckMonitory={deckMonitory}
+              onEdit={openEditDialog}
+              onDelete={handleDeleteDeck}
+              onNavigate={(id) => navigate(`/decks/${id}`)}
+            />
+            
+            {/* Paginación */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              itemsPerPageOptions={[8, 16, 24]}
+            />
+          </>
         )}
         {/* FAB para crear nuevo deck */}
         <Fab

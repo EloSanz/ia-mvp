@@ -22,8 +22,8 @@ import {
 } from '@mui/icons-material';
 export default function DecksGridCard({ decks, deckMonitory, onEdit, onDelete, onNavigate }) {
   return (
-    <Box sx={{ flexGrow: 1, p: 2 }}>
-      <Grid container spacing={2}>
+    <Box sx={{ flexGrow: 1, p: 1 }}>
+      <Grid container spacing={1.5}>
         {decks.map((deck) => (
           <Grid item size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={deck.id}>
             <Card
