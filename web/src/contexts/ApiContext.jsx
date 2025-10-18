@@ -131,7 +131,10 @@ export const ApiProvider = ({ children }) => {
       api.get(`/api/flashcards/deck/${deckId}/search`, {
         params: { q: consigna, page, pageSize }
       }),
-    generateWithAI: (text) => api.post('/api/flashcards/ai-generate', { text })
+    generateWithAI: (text, options = {}) => {
+      const { timeout = 90000, retries = 1 } = options;
+      return api.post('/api/flashcards/ai-generate', { text }, { timeout });
+    }
   };
 
   // Tags API (RESTful, anidadas bajo decks)
@@ -158,12 +161,10 @@ export const ApiProvider = ({ children }) => {
   // Study API - Sistema de repetición espaciada
   const study = {
     // Iniciar sesión de estudio
-    startSession: (deckId, limit) =>
-      api.post('/api/study/start', { deckId, limit }),
+    startSession: (deckId, limit) => api.post('/api/study/start', { deckId, limit }),
 
     // Obtener siguiente card
-    getNextCard: (sessionId) =>
-      api.get(`/api/study/${sessionId}/next`),
+    getNextCard: (sessionId) => api.get(`/api/study/${sessionId}/next`),
 
     // Revisar card
     reviewCard: (sessionId, cardId, difficulty, responseTime) =>
@@ -174,16 +175,19 @@ export const ApiProvider = ({ children }) => {
       }),
 
     // Obtener estado de sesión
-    getSessionStatus: (sessionId) =>
-      api.get(`/api/study/${sessionId}/status`),
+    getSessionStatus: (sessionId) => api.get(`/api/study/${sessionId}/status`),
 
     // Finalizar sesión
-    finishSession: (sessionId) =>
-      api.post(`/api/study/${sessionId}/finish`),
+    finishSession: (sessionId) => api.post(`/api/study/${sessionId}/finish`),
 
     // Estadísticas globales (admin)
-    getGlobalStats: () =>
-      api.get('/api/study/stats')
+    getGlobalStats: () => api.get('/api/study/stats')
+  };
+
+  // Health check
+  const health = {
+    check: () => api.get('/api/health'),
+    detailed: () => api.get('/api/health/detailed')
   };
 
   const value = {
@@ -191,7 +195,8 @@ export const ApiProvider = ({ children }) => {
     flashcards,
     tags,
     sync,
-    study
+    study,
+    health
   };
 
   return <ApiContext.Provider value={value}>{children}</ApiContext.Provider>;

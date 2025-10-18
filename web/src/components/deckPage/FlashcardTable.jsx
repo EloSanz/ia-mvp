@@ -11,13 +11,17 @@ import {
   Box,
   IconButton,
   Stack,
-  Tooltip
+  Tooltip,
+  Select,
+  MenuItem,
+  FormControl
 } from '@mui/material';
 import {
   FirstPage as FirstPageIcon,
   LastPage as LastPageIcon,
   RestartAlt as RestartAltIcon,
-  ClearAll as ClearAllIcon
+  ClearAll as ClearAllIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material';
 import CardRow from '../CardRow';
 import SearchBar from '../SearchBar';
@@ -35,6 +39,12 @@ const FlashcardTable = ({
   searching,
   onSearchChange,
   onClearSearch,
+  difficultyFilter,
+  onDifficultyFilterChange,
+  tagFilter,
+  onTagFilterChange,
+  reviewFilter,
+  onReviewFilterChange,
   openReviewDialog,
   openEditDialog,
   handleDeleteCard,
@@ -46,15 +56,48 @@ const FlashcardTable = ({
   loadDeckAndCards,
   setRowsPerPage
 }) => {
-  // Verificaciones defensivas
   const safeMuiTheme = muiTheme || {};
   const safeCards = Array.isArray(cards) ? cards : [];
   const safeTags = Array.isArray(tags) ? tags : [];
   const safeSearchResults = Array.isArray(searchResults) ? searchResults : [];
 
-  const displayCards = searchQuery ? safeSearchResults : safeCards;
+  const applyFilters = (cards) => {
+    let filtered = cards;
 
-  // Helpers para los controles
+    if (difficultyFilter && difficultyFilter !== 'all') {
+      filtered = filtered.filter((card) => card.difficulty === parseInt(difficultyFilter));
+    }
+
+    if (tagFilter && tagFilter !== 'all') {
+      if (tagFilter === '') {
+        filtered = filtered.filter((card) => !card.tagId);
+      } else {
+        filtered = filtered.filter((card) => card.tagId === tagFilter);
+      }
+    }
+
+    // Aplicar filtro de revisiones
+    if (reviewFilter && reviewFilter !== 'all') {
+      if (reviewFilter === '0') {
+        // Solo cards con 0 revisiones
+        filtered = filtered.filter((card) => (card.reviewCount || 0) === 0);
+      } else if (reviewFilter === 'lt5') {
+        // Menos de 5 revisiones
+        filtered = filtered.filter((card) => (card.reviewCount || 0) < 5);
+      } else if (reviewFilter === 'lt10') {
+        // Menos de 10 revisiones
+        filtered = filtered.filter((card) => (card.reviewCount || 0) < 10);
+      } else if (reviewFilter === 'lt20') {
+        // Menos de 20 revisiones
+        filtered = filtered.filter((card) => (card.reviewCount || 0) < 20);
+      }
+    }
+
+    return filtered;
+  };
+
+  const displayCards = searchQuery ? safeSearchResults : applyFilters(safeCards);
+
   const goToFirstPage = () => {
     setPage(null, 0);
   };
@@ -66,74 +109,59 @@ const FlashcardTable = ({
   };
 
   const resetRowsPerPage = () => {
-    // Simula el evento del paginador de MUI
     setRowsPerPage({ target: { value: 15 } });
   };
 
   const clearTable = () => {
     onClearSearch && onClearSearch();
+    onDifficultyFilterChange && onDifficultyFilterChange('all');
+    onTagFilterChange && onTagFilterChange('all');
+    onReviewFilterChange && onReviewFilterChange('all');
     setPage(null, 0);
   };
-
-  // Debug logging (remover después de solucionar)
-  // console.log('FlashcardTable props:', {
-  //   cardsLength: safeCards.length,
-  //   tagsLength: safeTags.length,
-  //   searchResultsLength: safeSearchResults.length,
-  //   displayCardsLength: displayCards.length,
-  //   muiTheme: !!safeMuiTheme,
-  //   page,
-  //   rowsPerPage,
-  //   totalCards
-  // });
 
   try {
     return (
       <TableContainer>
         <Table sx={{ minWidth: 650 }}>
           <TableHead>
+            {/* Primera fila: títulos */}
             <TableRow>
               <TableCell
                 sx={{ color: safeMuiTheme.palette?.text?.secondary, fontSize: '0.875rem', py: 1.5 }}
+                colSpan={2}
               >
                 Consigna
               </TableCell>
+
               <TableCell
                 sx={{
                   color: safeMuiTheme.palette?.text?.secondary,
                   fontSize: '0.875rem',
                   py: 1.5,
-                  minWidth: 200
+                  minWidth: 180
                 }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="inherit">Buscar</Typography>
-                  <SearchBar
-                    searchQuery={searchQuery || ''}
-                    onSearchChange={onSearchChange}
-                    onClearSearch={onClearSearch}
-                    searching={searching}
-                    placeholder="Buscar flashcards..."
-                    label=""
-                    size="small"
-                  />
-                </Box>
-              </TableCell>
-              <TableCell
-                sx={{ color: safeMuiTheme.palette?.text?.secondary, fontSize: '0.875rem', py: 1.5 }}
               >
                 Tag
               </TableCell>
+
               <TableCell
-                sx={{ color: safeMuiTheme.palette?.text?.secondary, fontSize: '0.875rem', py: 1.5 }}
+                sx={{
+                  color: safeMuiTheme.palette?.text?.secondary,
+                  fontSize: '0.875rem',
+                  py: 1.5,
+                  minWidth: 150
+                }}
               >
                 Dificultad
               </TableCell>
+
               <TableCell
                 sx={{ color: safeMuiTheme.palette?.text?.secondary, fontSize: '0.875rem', py: 1.5 }}
               >
                 Revisiones
               </TableCell>
+
               <TableCell
                 sx={{
                   color: safeMuiTheme.palette?.text?.secondary,
@@ -145,7 +173,85 @@ const FlashcardTable = ({
                 Acciones
               </TableCell>
             </TableRow>
+
+            {/* Segunda fila: controles alineados bajo cada título */}
+            <TableRow>
+              {/* 1-2) Consigna + Buscar - aquí va el SearchBar */}
+              <TableCell sx={{ py: 1 }} colSpan={2}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <SearchBar
+                    searchQuery={searchQuery || ''}
+                    onSearchChange={onSearchChange}
+                    onClearSearch={onClearSearch}
+                    searching={searching}
+                    placeholder="Buscar flashcards..."
+                    label=""
+                    size="small"
+                  />
+                </Box>
+              </TableCell>
+
+              {/* 3) Tag - Select de tags */}
+              <TableCell sx={{ py: 1 }}>
+                <FormControl size="small" sx={{ minWidth: 160 }}>
+                  <Select
+                    value={tagFilter || 'all'}
+                    onChange={(e) => onTagFilterChange(e.target.value)}
+                    sx={{ fontSize: '0.875rem' }}
+                  >
+                    <MenuItem value="all">Todas</MenuItem>
+                    <MenuItem value="">
+                      <em>Sin tag</em>
+                    </MenuItem>
+                    {safeTags.map((tag) => (
+                      <MenuItem key={tag.id} value={tag.id}>
+                        {tag.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </TableCell>
+
+              {/* 4) Dificultad - Select de dificultad */}
+              <TableCell sx={{ py: 1 }}>
+                <FormControl size="small" sx={{ minWidth: 140 }}>
+                  <Select
+                    value={difficultyFilter || 'all'}
+                    onChange={(e) => onDifficultyFilterChange(e.target.value)}
+                    sx={{ fontSize: '0.875rem' }}
+                  >
+                    <MenuItem value="all">Todas</MenuItem>
+                    <MenuItem value="1">Fácil</MenuItem>
+                    <MenuItem value="2">Normal</MenuItem>
+                    <MenuItem value="3">Difícil</MenuItem>
+                  </Select>
+                </FormControl>
+              </TableCell>
+
+              {/* 5) Revisiones - Select de revisiones */}
+              <TableCell sx={{ py: 1 }}>
+                <FormControl size="small" sx={{ minWidth: 120 }}>
+                  <Select
+                    value={reviewFilter || 'all'}
+                    onChange={(e) => onReviewFilterChange(e.target.value)}
+                    sx={{ fontSize: '0.875rem' }}
+                  >
+                    <MenuItem value="all">Todas</MenuItem>
+                    <MenuItem value="0">0</MenuItem>
+                    <MenuItem value="lt5">Menos de 5</MenuItem>
+                    <MenuItem value="lt10">Menos de 10</MenuItem>
+                    <MenuItem value="lt20">Menos de 20</MenuItem>
+                  </Select>
+                </FormControl>
+              </TableCell>
+
+              {/* 6) Acciones - ícono de settings */}
+              <TableCell sx={{ py: 0.5, textAlign: 'inherit', verticalAlign: 'middle' }}>
+                <SettingsIcon sx={{ fontSize: '1.5rem', color: 'text.primary' }} />
+              </TableCell>
+            </TableRow>
           </TableHead>
+
           <TableBody>
             {displayCards && displayCards.length > 0 ? (
               displayCards.map((card) => (
@@ -166,15 +272,22 @@ const FlashcardTable = ({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                {/* Actualicé colSpan a 5 porque ahora hay 5 columnas en el header */}
+                <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
                   <Typography variant="body1" color="text.secondary">
-                    {searchQuery
-                      ? 'No se encontraron flashcards con esa búsqueda'
+                    {searchQuery ||
+                    difficultyFilter !== 'all' ||
+                    tagFilter !== 'all' ||
+                    reviewFilter !== 'all'
+                      ? 'No se encontraron flashcards con esos filtros'
                       : 'No hay flashcards en este deck'}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    {searchQuery
-                      ? 'Intenta con otros términos de búsqueda'
+                    {searchQuery ||
+                    difficultyFilter !== 'all' ||
+                    tagFilter !== 'all' ||
+                    reviewFilter !== 'all'
+                      ? 'Intenta con otros términos de búsqueda o filtros'
                       : 'Crea tu primera flashcard para comenzar'}
                   </Typography>
                 </TableCell>
@@ -182,12 +295,30 @@ const FlashcardTable = ({
             )}
           </TableBody>
         </Table>
-        {/* Controles y paginador en la misma fila */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1, mb: 2 }}>
+
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mt: 1,
+            mb: 2
+          }}
+        >
           <Stack direction="row" spacing={1}>
             <Tooltip title="Ir al principio">
               <span>
-                <IconButton onClick={goToFirstPage} disabled={page === 0}>
+                <IconButton
+                  onClick={goToFirstPage}
+                  disabled={page === 0}
+                  sx={{
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover:not(:disabled)': {
+                      backgroundColor: safeMuiTheme.palette?.action?.hover,
+                      transform: 'scale(1.1)'
+                    }
+                  }}
+                >
                   <FirstPageIcon />
                 </IconButton>
               </span>
@@ -197,10 +328,17 @@ const FlashcardTable = ({
                 <IconButton
                   onClick={goToLastPage}
                   disabled={
-                    (searchQuery.trim()
+                    searchQuery.trim()
                       ? page >= Math.ceil((searchTotal || 0) / rowsPerPage) - 1
-                      : page >= Math.ceil((totalCards || 0) / rowsPerPage) - 1)
+                      : page >= Math.ceil((totalCards || 0) / rowsPerPage) - 1
                   }
+                  sx={{
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover:not(:disabled)': {
+                      backgroundColor: safeMuiTheme.palette?.action?.hover,
+                      transform: 'scale(1.1)'
+                    }
+                  }}
                 >
                   <LastPageIcon />
                 </IconButton>
@@ -208,14 +346,33 @@ const FlashcardTable = ({
             </Tooltip>
             <Tooltip title="Restablecer filas por página a 15">
               <span>
-                <IconButton onClick={resetRowsPerPage} disabled={rowsPerPage === 15}>
+                <IconButton
+                  onClick={resetRowsPerPage}
+                  disabled={rowsPerPage === 15}
+                  sx={{
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover:not(:disabled)': {
+                      backgroundColor: safeMuiTheme.palette?.action?.hover,
+                      transform: 'scale(1.1)'
+                    }
+                  }}
+                >
                   <RestartAltIcon />
                 </IconButton>
               </span>
             </Tooltip>
-            <Tooltip title="Limpiar búsqueda y volver al inicio">
+            <Tooltip title="Limpiar búsqueda y filtros, volver al inicio">
               <span>
-                <IconButton onClick={clearTable}>
+                <IconButton
+                  onClick={clearTable}
+                  sx={{
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      backgroundColor: safeMuiTheme.palette?.action?.hover,
+                      transform: 'scale(1.1)'
+                    }
+                  }}
+                >
                   <ClearAllIcon />
                 </IconButton>
               </span>
@@ -235,7 +392,6 @@ const FlashcardTable = ({
       </TableContainer>
     );
   } catch (error) {
-    // console.error('Error rendering FlashcardTable:', error);
     return (
       <div style={{ padding: '20px', color: 'red' }}>
         <h3>Error al renderizar la tabla de flashcards</h3>

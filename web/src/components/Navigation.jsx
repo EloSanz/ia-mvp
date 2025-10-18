@@ -47,11 +47,7 @@ const Navigation = () => {
   const { user, logout } = useAuth();
 
   // Usar el hook de navegación inteligente
-  const {
-    isOnHome,
-    navigationButtonText,
-    navigationButtonAction
-  } = useNavigation();
+  const { isOnHome, navigationButtonText, navigationButtonAction } = useNavigation();
 
   return (
     <AppBar position="static" elevation={1}>
@@ -76,6 +72,8 @@ const Navigation = () => {
             </Button>
           )}
 
+          {/* Comentado para no mostrar el botón de sincronización ya que hoy en dia no esta haciendo nada. */}
+          {/*
           <Button
             color="inherit"
             startIcon={<SyncIcon />}
@@ -86,6 +84,7 @@ const Navigation = () => {
           >
             Sincronizar
           </Button>
+          */}
 
           <Button
             color="inherit"

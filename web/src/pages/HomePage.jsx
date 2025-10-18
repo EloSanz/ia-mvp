@@ -27,7 +27,8 @@ import {
   FormControlLabel,
   CardMedia,
   Card,
-  Skeleton
+  Skeleton,
+  Snackbar
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -44,6 +45,9 @@ import Navigation from '../components/Navigation';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { useNavigation } from '../hooks/useNavigation';
+import useDeckPagination from '../hooks/useDeckPagination';
+import Pagination from '../components/Pagination';
+import DeckSorting from '../components/DeckSorting';
 
 import { useTheme as useMuiTheme } from '@mui/material';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
@@ -57,6 +61,22 @@ const HomePage = () => {
   const [decksList, setDecksList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Hook de paginación y ordenamiento
+  const {
+    paginatedDecks,
+    currentPage,
+    itemsPerPage,
+    totalPages,
+    totalItems,
+    sortBy,
+    sortOrder,
+    handlePageChange,
+    handleItemsPerPageChange,
+    handleSortChange,
+    hasItems,
+    isEmpty
+  } = useDeckPagination(decksList, 8); // Por defecto 8 elementos por página
 
   // Modal para crear deck
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -72,8 +92,19 @@ const HomePage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deckToDelete, setDeckToDelete] = useState(null);
 
+  // Modal para contacto
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+
   //Monitoreo de deck para portada IA
-  const [deckMonitory,setDeckMonitory] =useState(null);
+  const [deckMonitory, setDeckMonitory] = useState(null);
+
+  // Estado para toast de confirmación
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+
+  // Función helper para mostrar toasts
+  const showToast = (message, severity = 'success') => {
+    setToast({ open: true, message, severity });
+  };
 
   const loadDecks = useCallback(async () => {
     try {
@@ -97,18 +128,19 @@ const HomePage = () => {
     if (!newDeck.name.trim()) return;
 
     try {
-      debugger
+      debugger;
       setCreating(true);
-      const { data: createdDeck } =await decks.create(newDeck);
-      if(newDeck.generateCover && createdDeck && createdDeck.data.id){
-        console.log("Generando portada IA...:" ,createdDeck.data)
-          // monitorear solo este deck recién creado
-        setDeckMonitory(createdDeck.data); 
+      const { data: createdDeck } = await decks.create(newDeck);
+      if (newDeck.generateCover && createdDeck && createdDeck.data.id) {
+        console.log('Generando portada IA...:', createdDeck.data);
+        // monitorear solo este deck recién creado
+        setDeckMonitory(createdDeck.data);
       }
 
       setCreateDialogOpen(false);
       setNewDeck({ name: '', description: '', generateCover: false });
       loadDecks(); // Recargar la lista
+      showToast(`Deck "${newDeck.name}" creado exitosamente`);
     } catch (err) {
       console.error('Error creating deck:', err);
     } finally {
@@ -122,23 +154,20 @@ const HomePage = () => {
     if (deckMonitory && !deckMonitory.coverUrl) {
       interval = setInterval(async () => {
         try {
-           const { data: updated }= await decks.getById(deckMonitory.id);
+          const { data: updated } = await decks.getById(deckMonitory.id);
           if (updated.data.coverUrl) {
-            setDecksList(prev =>
-              prev.map(d => (d.id === updated.data.id ? updated.data : d))
-            );
+            setDecksList((prev) => prev.map((d) => (d.id === updated.data.id ? updated.data : d)));
             setDeckMonitory(null); // dejar de monitorear
             // loadDecks();             // refresca lista completa
             clearInterval(interval);
           }
         } catch (err) {
-          console.error("Error fetching deck update:", err);
+          console.error('Error fetching deck update:', err);
         }
-      }, 10000);//Por lo general suel tardar menos de 30 segundos
+      }, 10000); //Por lo general suel tardar menos de 30 segundos
     }
     return () => clearInterval(interval);
   }, [deckMonitory]);
-
 
   const handleEditDeck = async () => {
     if (!editingDeck?.name?.trim()) return;
@@ -149,6 +178,7 @@ const HomePage = () => {
       setEditDialogOpen(false);
       setEditingDeck(null);
       loadDecks();
+      showToast(`Deck "${editingDeck.name}" actualizado exitosamente`);
     } catch (err) {
       console.error('Error editing deck:', err);
     } finally {
@@ -171,12 +201,16 @@ const HomePage = () => {
       // Si el deck eliminado era el último visitado, limpiarlo del localStorage
       if (lastDeckId === deckToDelete.id) {
         // Esto se maneja automáticamente por el hook useNavigation que valida la existencia del deck
-        console.log(`Deck ${deckToDelete.id} eliminado, localStorage será limpiado automáticamente`);
+        console.log(
+          `Deck ${deckToDelete.id} eliminado, localStorage será limpiado automáticamente`
+        );
       }
 
       loadDecks();
+      showToast(`Deck "${deckToDelete.name}" eliminado exitosamente`);
     } catch (err) {
       console.error('Error deleting deck:', err);
+      showToast('Error al eliminar el deck', 'error');
     }
   };
 
@@ -206,11 +240,11 @@ const HomePage = () => {
           fontFamily: muiTheme.fontFamily
         }}
       >
-        {/* Breadcrumbs para navegación contextual */}
-        <Breadcrumbs showOnHome={true} />
+        {/* Breadcrumbs para navegación contextual - Oculto en home */}
+        <Breadcrumbs showOnHome={false} />
 
         {/* Sección de "Continuar donde dejaste" */}
-        {lastDeckExists === true && (
+        {lastDeckExists === true && lastDeckId && decksList.find(d => d.id === lastDeckId) && (
           <Box sx={{ mb: 3 }}>
             <Alert
               severity="info"
@@ -221,13 +255,33 @@ const HomePage = () => {
                   size="small"
                   onClick={goToLastDeck}
                   startIcon={<ArrowForwardIcon />}
+                  sx={{ 
+                    fontWeight: 'bold',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
                 >
                   Continuar
                 </Button>
               }
+              sx={{
+                backgroundColor: themeName === 'github' ? '#21262d' : undefined,
+                border: themeName === 'github' ? '1px solid #30363d' : undefined,
+                '& .MuiAlert-message': {
+                  color: themeName === 'github' ? '#ffffff' : undefined,
+                  fontWeight: themeName === 'github' ? '500' : undefined
+                },
+                '& .MuiAlertTitle-root': {
+                  color: themeName === 'github' ? '#ffffff' : undefined,
+                  fontWeight: themeName === 'github' ? 'bold' : undefined,
+                  fontSize: themeName === 'github' ? '1.1rem' : undefined
+                }
+              }}
             >
               <AlertTitle>Continuar estudiando</AlertTitle>
-              Estabas estudiando el deck #{lastDeckId}. Haz clic en "Continuar" para retomar tu sesión.
+              Estabas estudiando el deck "
+              {decksList.find((d) => d.id === lastDeckId)?.name || `ID: ${lastDeckId}`}". Haz clic
+              en "Continuar" para retomar tu sesión.
             </Alert>
           </Box>
         )}
@@ -272,8 +326,8 @@ const HomePage = () => {
           }}
         >
           <Box display="flex" alignItems="center" gap={1}>
-            <Typography variant="h5" component="h1" sx={{ color: muiTheme.palette.text.primary }}>
-              <span className="japanese-title">Decks</span>
+            <Typography variant="h5" component="h1" sx={{ color: muiTheme.palette.text.primary, fontWeight: 'bold' }}>
+              <span className="japanese-title">Mis Decks</span>
             </Typography>
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
@@ -281,6 +335,7 @@ const HomePage = () => {
               <IconButton
                 size="small"
                 sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.text.primary }}
+                onClick={() => window.open('https://github.com/EloSanz/ia-mvp', '_blank')}
               >
                 <GitHubIcon fontSize="small" />
               </IconButton>
@@ -289,6 +344,7 @@ const HomePage = () => {
               <IconButton
                 size="small"
                 sx={{ color: muiTheme.palette.icon?.main || muiTheme.palette.text.primary }}
+                onClick={() => setContactDialogOpen(true)}
               >
                 <EmailIcon fontSize="small" />
               </IconButton>
@@ -310,8 +366,7 @@ const HomePage = () => {
           </Alert>
         )}
 
-     
-        {decksList.length === 0 && !loading && (
+        {isEmpty && !loading && (
           <Box textAlign="center" mt={6}>
             <Typography variant="h6" sx={{ color: 'grey.400' }} gutterBottom>
               No tienes decks creados aún
@@ -321,13 +376,36 @@ const HomePage = () => {
             </Typography>
           </Box>
         )}
-        {decksList.length != 0 && !loading &&
-         (<DecksGridCard decks={decksList} deckMonitory={deckMonitory}
-            onEdit={openEditDialog}
-            onDelete={handleDeleteDeck}
-            onNavigate={id => navigate(`/decks/${id}`)}
-         /> 
-      )}
+        {hasItems && !loading && (
+          <>
+            {/* Controles de ordenamiento */}
+            <DeckSorting
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSortChange={handleSortChange}
+            />
+            
+            {/* Grid de decks */}
+            <DecksGridCard
+              decks={paginatedDecks}
+              deckMonitory={deckMonitory}
+              onEdit={openEditDialog}
+              onDelete={handleDeleteDeck}
+              onNavigate={(id) => navigate(`/decks/${id}`)}
+            />
+            
+            {/* Paginación */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              itemsPerPageOptions={[8, 16, 24]}
+            />
+          </>
+        )}
         {/* FAB para crear nuevo deck */}
         <Fab
           color="primary"
@@ -380,7 +458,7 @@ const HomePage = () => {
               control={
                 <Checkbox
                   checked={newDeck.generateCover}
-                  onChange={e => setNewDeck({ ...newDeck, generateCover: e.target.checked })}
+                  onChange={(e) => setNewDeck({ ...newDeck, generateCover: e.target.checked })}
                   color="primary"
                 />
               }
@@ -441,6 +519,40 @@ const HomePage = () => {
           </DialogActions>
         </Dialog>
 
+        {/* Modal para contacto */}
+        <Dialog
+          open={contactDialogOpen}
+          onClose={() => setContactDialogOpen(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>Contacto</DialogTitle>
+          <DialogContent>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              Para contactarnos, puedes escribirnos al siguiente email:
+            </Typography>
+            <Typography
+              variant="h6"
+              sx={{
+                fontFamily: 'monospace',
+                bgcolor: 'grey.100',
+                p: 2,
+                borderRadius: 1,
+                textAlign: 'center',
+                color: 'primary.main'
+              }}
+            >
+              icardscontact@gmail.com
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
+              Estaremos encantados de atender tus consultas, sugerencias o reportar problemas.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setContactDialogOpen(false)}>Cerrar</Button>
+          </DialogActions>
+        </Dialog>
+
         {/* Modal para confirmar eliminación */}
         <ConfirmDeleteModal
           open={deleteDialogOpen}
@@ -456,6 +568,31 @@ const HomePage = () => {
           cancelText="Cancelar"
           size="xs"
         />
+
+        {/* Toast de confirmación */}
+        <Snackbar
+          open={toast.open}
+          autoHideDuration={5000}
+          onClose={() => setToast({ ...toast, open: false })}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          sx={{ mb: 2, mr: 2 }}
+        >
+          <Alert
+            onClose={() => setToast({ ...toast, open: false })}
+            severity={toast.severity}
+            sx={{ 
+              width: '100%',
+              minWidth: '300px',
+              fontSize: '1rem',
+              py: 1.5,
+              '& .MuiAlert-message': {
+                fontWeight: 500
+              }
+            }}
+          >
+            {toast.message}
+          </Alert>
+        </Snackbar>
       </Container>
     </>
   );

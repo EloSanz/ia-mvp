@@ -54,7 +54,15 @@ export const useNavigation = () => {
   }, [lastDeckId, hasLastDeck, token]);
 
   // Extraer información de la ruta usando el hook separado
-  const { isOnDeckPage, isOnStudyPage, isOnHome, currentDeckId, currentSessionId, currentPath, canGoBack } = routeInfo;
+  const {
+    isOnDeckPage,
+    isOnStudyPage,
+    isOnHome,
+    currentDeckId,
+    currentSessionId,
+    currentPath,
+    canGoBack
+  } = routeInfo;
 
   // Funciones de navegación inteligente
   const goToDecks = () => {
@@ -67,8 +75,8 @@ export const useNavigation = () => {
 
   const goToLastDeck = () => {
     if (lastDeckId && lastDeckExists) {
-      // Llevar directamente a una sesión de estudio del último deck
-      navigate(`/study/session/${lastDeckId}`);
+      // Llevar al deck que estaba estudiando
+      navigate(`/decks/${lastDeckId}`);
     } else {
       goToDecks();
     }
@@ -102,10 +110,8 @@ export const useNavigation = () => {
     const items = [];
 
     if (isOnDeckPage) {
-      const deckId = currentDeckId;
       items.push(
-        { label: 'Mis Decks', path: '/', onClick: goToDecks },
-        { label: `Deck ${deckId}`, path: `/decks/${deckId}`, onClick: () => goToDeck(deckId) }
+        { label: 'Mis Decks', path: '/', onClick: goToDecks }
       );
     } else if (currentPath === '/study') {
       items.push(
@@ -120,7 +126,7 @@ export const useNavigation = () => {
         { label: `Sesión ${sessionId}`, path: currentPath }
       );
     } else if (currentPath === '/') {
-      items.push({ label: 'Mis Decks', path: '/' });
+      items.push({ label: 'Inicio', path: '/' });
     }
 
     return items;

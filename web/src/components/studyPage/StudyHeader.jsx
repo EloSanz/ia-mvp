@@ -13,8 +13,18 @@ export default function StudyHeader() {
         Elige un deck y comienza a estudiar con repetición espaciada
       </Typography>
       <Box display="flex" justifyContent="center" gap={2} flexWrap="wrap">
-        <Chip icon={<BrainIcon />} label="Algoritmo de repetición espaciada" variant="outlined" color="primary" />
-        <Chip icon={<TimeIcon />} label="Optimizado para retención" variant="outlined" color="secondary" />
+        <Chip
+          icon={<BrainIcon />}
+          label="Algoritmo de repetición espaciada"
+          variant="outlined"
+          color="primary"
+        />
+        <Chip
+          icon={<TimeIcon />}
+          label="Optimizado para retención"
+          variant="outlined"
+          color="secondary"
+        />
       </Box>
     </Box>
   );

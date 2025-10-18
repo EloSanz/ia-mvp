@@ -38,42 +38,45 @@ export const useStudySession = () => {
   /**
    * Iniciar nueva sesión de estudio
    */
-  const startSession = useCallback(async (deckId, limit = null) => {
-    setLoading(true);
-    setError(null);
+  const startSession = useCallback(
+    async (deckId, limit = null) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const response = await study.startSession(deckId, limit);
-      const sessionData = response.data.data;
+      try {
+        const response = await study.startSession(deckId, limit);
+        const sessionData = response.data.data;
 
-      setSession({
-        id: sessionData.sessionId,
-        deckName: sessionData.deckName,
-        totalCards: sessionData.totalCards,
-        status: 'active'
-      });
+        setSession({
+          id: sessionData.sessionId,
+          deckName: sessionData.deckName,
+          totalCards: sessionData.totalCards,
+          status: 'active'
+        });
 
-      setCurrentCard(sessionData.currentCard);
-      setSessionStats(sessionData.sessionStats);
-      setShowingAnswer(false);
-      setResponseTime(0);
+        setCurrentCard(sessionData.currentCard);
+        setSessionStats(sessionData.sessionStats);
+        setShowingAnswer(false);
+        setResponseTime(0);
 
-      // Iniciar timer de respuesta
-      responseStartTime.current = Date.now();
-      timerRef.current = setInterval(() => {
-        if (responseStartTime.current) {
-          setResponseTime(Date.now() - responseStartTime.current);
-        }
-      }, 300);
+        // Iniciar timer de respuesta
+        responseStartTime.current = Date.now();
+        timerRef.current = setInterval(() => {
+          if (responseStartTime.current) {
+            setResponseTime(Date.now() - responseStartTime.current);
+          }
+        }, 300);
 
-      return sessionData;
-    } catch (err) {
-      setError(err.response?.data?.message || 'Error al iniciar sesión');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [study]);
+        return sessionData;
+      } catch (err) {
+        setError(err.response?.data?.message || 'Error al iniciar sesión');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [study]
+  );
 
   /**
    * Mostrar respuesta de la card actual
@@ -91,51 +94,54 @@ export const useStudySession = () => {
   /**
    * Revisar card con dificultad
    */
-  const reviewCard = useCallback(async (difficulty) => {
-    if (!session?.id || !currentCard?.id) {
-      throw new Error('Sesión o card no válida');
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Calcular tiempo de respuesta final
-      const finalResponseTime = responseStartTime.current
-        ? Math.round((Date.now() - responseStartTime.current) / 1000)
-        : 0;
-
-      const response = await study.reviewCard(
-        session.id,
-        currentCard.id,
-        difficulty,
-        finalResponseTime
-      );
-
-      const reviewData = response.data.data;
-
-      // Actualizar estadísticas
-      setSessionStats(reviewData.sessionStats);
-
-      // Resetear estado para siguiente card
-      setShowingAnswer(false);
-      setResponseTime(0);
-      responseStartTime.current = null;
-
-      // Detener timer anterior
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
+  const reviewCard = useCallback(
+    async (difficulty) => {
+      if (!session?.id || !currentCard?.id) {
+        throw new Error('Sesión o card no válida');
       }
 
-      return reviewData;
-    } catch (err) {
-      setError(err.response?.data?.message || 'Error al revisar card');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [session, currentCard, study]);
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Calcular tiempo de respuesta final
+        const finalResponseTime = responseStartTime.current
+          ? Math.round((Date.now() - responseStartTime.current) / 1000)
+          : 0;
+
+        const response = await study.reviewCard(
+          session.id,
+          currentCard.id,
+          difficulty,
+          finalResponseTime
+        );
+
+        const reviewData = response.data.data;
+
+        // Actualizar estadísticas
+        setSessionStats(reviewData.sessionStats);
+
+        // Resetear estado para siguiente card
+        setShowingAnswer(false);
+        setResponseTime(0);
+        responseStartTime.current = null;
+
+        // Detener timer anterior
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
+
+        return reviewData;
+      } catch (err) {
+        setError(err.response?.data?.message || 'Error al revisar card');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [session, currentCard, study]
+  );
 
   /**
    * Obtener siguiente card

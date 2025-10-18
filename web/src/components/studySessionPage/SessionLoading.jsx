@@ -5,7 +5,9 @@ export default function SessionLoading({ text = 'Inicializando sesión de estudi
   return (
     <Container maxWidth="lg" sx={{ mt: 4, textAlign: 'center' }}>
       <CircularProgress size={60} />
-      <Typography variant="h6" sx={{ mt: 2 }}>{text}</Typography>
+      <Typography variant="h6" sx={{ mt: 2 }}>
+        {text}
+      </Typography>
     </Container>
   );
 }

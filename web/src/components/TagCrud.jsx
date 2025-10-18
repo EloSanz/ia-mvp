@@ -87,9 +87,9 @@ const TagCrud = ({
       />
 
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontFamily: muiTheme.fontFamily }}>Cambiar o crear tag</DialogTitle>
-        <DialogContent sx={{ fontFamily: muiTheme.fontFamily }}>
-          <FormControl fullWidth sx={{ mb: 2 }}>
+        <DialogTitle sx={{ fontFamily: muiTheme.fontFamily, pb: 1 }}>Cambiar o crear tag</DialogTitle>
+        <DialogContent sx={{ fontFamily: muiTheme.fontFamily, pt: 2 }}>
+          <FormControl fullWidth sx={{ mb: 2, mt: 1 }}>
             <InputLabel id="tag-select-label">Tag existente</InputLabel>
             <Select
               labelId="tag-select-label"
