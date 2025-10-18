@@ -31,7 +31,7 @@ const Pagination = ({
       alignItems: 'center', 
       gap: 0.75,
       mt: 1,
-      mb: 0.5
+      mb: 0 // Eliminar margen inferior
     }}>
       {/* Información de elementos mostrados */}
       {showTotalItems && (

@@ -341,7 +341,7 @@ const DeckPage = () => {
   // Loading
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+      <Container maxWidth="xl" sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <CircularProgress />
       </Container>
     );
@@ -351,11 +351,12 @@ const DeckPage = () => {
   if (!deck) {
     return (
       <Container
-        maxWidth="lg"
+        maxWidth="xl"
         sx={{
-          py: 4,
+          pt: 4,
+          pb: 2, // Reducir padding inferior
           backgroundColor: muiTheme.palette.background.default,
-          minHeight: '100vh',
+          minHeight: 'calc(100vh - 64px)', // Restar la altura del header de navegación
           position: 'relative'
         }}
       >
@@ -386,11 +387,12 @@ const DeckPage = () => {
     <>
       <Navigation />
       <Container
-        maxWidth="lg"
+        maxWidth="xl"
         sx={{
-          py: 4,
+          pt: 4,
+          pb: 2, // Reducir padding inferior
           position: 'relative',
-          minHeight: '100vh',
+          minHeight: 'calc(100vh - 64px)', // Restar la altura del header de navegación
           fontFamily: muiTheme.fontFamily,
           backgroundColor: muiTheme.palette.background.default
         }}

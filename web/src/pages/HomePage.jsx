@@ -234,7 +234,7 @@ const HomePage = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+      <Container maxWidth="xl" sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <CircularProgress />
       </Container>
     );
@@ -244,11 +244,12 @@ const HomePage = () => {
     <>
       <Navigation />
       <Container
-        maxWidth="lg"
+        maxWidth="xl"
         sx={{
-          py: 2,
+          pt: 2,
+          pb: 1, // Reducir padding inferior
           backgroundColor: muiTheme.palette.background.default,
-          minHeight: '100vh',
+          minHeight: 'calc(100vh - 64px)', // Restar la altura del header de navegación
           position: 'relative',
           fontFamily: muiTheme.fontFamily
         }}
@@ -322,7 +323,7 @@ const HomePage = () => {
               font-family: ${themeName === 'kyoto' ? '"Sawarabi Mincho", "Noto Serif JP", serif' : themeName === 'tokyo' ? '"M PLUS 1p", "Noto Sans JP", sans-serif' : 'inherit'};
               letter-spacing: ${themeName === 'kyoto' ? '0.08em' : themeName === 'tokyo' ? '0.12em' : 'normal'};
               font-weight: ${themeName === 'kyoto' ? '600' : themeName === 'tokyo' ? '700' : 'normal'};
-              color: ${themeName === 'kyoto' ? '#6d4c41' : themeName === 'tokyo' ? '#00eaff' : 'inherit'};
+              color: ${themeName === 'kyoto' ? '#6d4c41' : themeName === 'tokyo' ? '#00eaff' : themeName === 'light' ? '#222' : themeName === 'dark' ? '#e0e0e0' : themeName === 'github' ? '#c9d1d9' : 'inherit'};
               text-shadow: ${themeName === 'kyoto' ? '0 2px 8px #f7cac9' : themeName === 'tokyo' ? '0 2px 12px #ff00cc' : 'none'};
             }
           `}
@@ -442,21 +443,39 @@ const HomePage = () => {
               fontSize: '0.9rem',
               fontWeight: 'bold',
               textTransform: 'none',
-              boxShadow: 3,
+              // Neumorphism/Glassy effect
               background: (theme) => 
-                theme.palette.mode === 'dark' 
-                  ? 'linear-gradient(45deg, #FF6B6B, #4ECDC4)'
-                  : 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
+                theme.palette.mode === 'dark'
+                  ? `linear-gradient(145deg, ${theme.palette.secondary.main}15, ${theme.palette.secondary.main}25)`
+                  : `linear-gradient(145deg, ${theme.palette.secondary.main}20, ${theme.palette.secondary.main}30)`,
+              backgroundColor: 'secondary.main',
+              backdropFilter: 'blur(10px)',
+              border: (theme) => 
+                theme.palette.mode === 'dark'
+                  ? `1px solid ${theme.palette.secondary.main}40`
+                  : `1px solid ${theme.palette.secondary.main}30`,
+              boxShadow: (theme) => 
+                theme.palette.mode === 'dark'
+                  ? `0 8px 32px ${theme.palette.secondary.main}20, inset 0 1px 0 ${theme.palette.secondary.main}30`
+                  : `0 8px 32px ${theme.palette.secondary.main}15, inset 0 1px 0 ${theme.palette.secondary.main}20`,
               '&:hover': {
-                boxShadow: 6,
                 background: (theme) => 
-                  theme.palette.mode === 'dark' 
-                    ? 'linear-gradient(45deg, #FF5252, #26A69A)'
-                    : 'linear-gradient(45deg, #FF5252, #26A69A)'
-              }
+                  theme.palette.mode === 'dark'
+                    ? `linear-gradient(145deg, ${theme.palette.secondary.main}25, ${theme.palette.secondary.main}35)`
+                    : `linear-gradient(145deg, ${theme.palette.secondary.main}30, ${theme.palette.secondary.main}40)`,
+                boxShadow: (theme) => 
+                  theme.palette.mode === 'dark'
+                    ? `0 12px 40px ${theme.palette.secondary.main}30, inset 0 1px 0 ${theme.palette.secondary.main}40`
+                    : `0 12px 40px ${theme.palette.secondary.main}25, inset 0 1px 0 ${theme.palette.secondary.main}30`,
+                transform: 'translateY(-2px)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              },
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              color: (theme) => 
+                theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.secondary.contrastText || '#ffffff'
             }}
           >
-            🪄 Crear con IA
+            Crear con IA
           </Button>
           
           {/* Botón para crear deck manual */}
@@ -476,10 +495,12 @@ const HomePage = () => {
               '&:hover': {
                 boxShadow: 6,
                 backgroundColor: 'primary.dark'
-              }
+              },
+              color: (theme) => 
+                theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.primary.contrastText || '#ffffff'
             }}
           >
-            ✏️ Crear Manual
+            Crear Manual
           </Button>
         </Box>
 
@@ -682,21 +703,39 @@ const HomePage = () => {
               fontSize: '0.9rem',
               fontWeight: 'bold',
               textTransform: 'none',
-              boxShadow: 3,
+              // Neumorphism/Glassy effect
               background: (theme) => 
-                theme.palette.mode === 'dark' 
-                  ? 'linear-gradient(45deg, #FF6B6B, #4ECDC4)'
-                  : 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
+                theme.palette.mode === 'dark'
+                  ? `linear-gradient(145deg, ${theme.palette.secondary.main}15, ${theme.palette.secondary.main}25)`
+                  : `linear-gradient(145deg, ${theme.palette.secondary.main}20, ${theme.palette.secondary.main}30)`,
+              backgroundColor: 'secondary.main',
+              backdropFilter: 'blur(10px)',
+              border: (theme) => 
+                theme.palette.mode === 'dark'
+                  ? `1px solid ${theme.palette.secondary.main}40`
+                  : `1px solid ${theme.palette.secondary.main}30`,
+              boxShadow: (theme) => 
+                theme.palette.mode === 'dark'
+                  ? `0 8px 32px ${theme.palette.secondary.main}20, inset 0 1px 0 ${theme.palette.secondary.main}30`
+                  : `0 8px 32px ${theme.palette.secondary.main}15, inset 0 1px 0 ${theme.palette.secondary.main}20`,
               '&:hover': {
-                boxShadow: 6,
                 background: (theme) => 
-                  theme.palette.mode === 'dark' 
-                    ? 'linear-gradient(45deg, #FF5252, #26A69A)'
-                    : 'linear-gradient(45deg, #FF5252, #26A69A)'
-              }
+                  theme.palette.mode === 'dark'
+                    ? `linear-gradient(145deg, ${theme.palette.secondary.main}25, ${theme.palette.secondary.main}35)`
+                    : `linear-gradient(145deg, ${theme.palette.secondary.main}30, ${theme.palette.secondary.main}40)`,
+                boxShadow: (theme) => 
+                  theme.palette.mode === 'dark'
+                    ? `0 12px 40px ${theme.palette.secondary.main}30, inset 0 1px 0 ${theme.palette.secondary.main}40`
+                    : `0 12px 40px ${theme.palette.secondary.main}25, inset 0 1px 0 ${theme.palette.secondary.main}30`,
+                transform: 'translateY(-2px)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              },
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              color: (theme) => 
+                theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.secondary.contrastText || '#ffffff'
             }}
           >
-            🪄 Crear con IA
+            Crear con IA
           </Button>
           
           {/* Botón para crear deck manual */}
@@ -716,10 +755,12 @@ const HomePage = () => {
               '&:hover': {
                 boxShadow: 6,
                 backgroundColor: 'primary.dark'
-              }
+              },
+              color: (theme) => 
+                theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.primary.contrastText || '#ffffff'
             }}
           >
-            ✏️ Crear Manual
+            Crear Manual
           </Button>
         </Box>
       </Container>

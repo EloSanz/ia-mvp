@@ -85,9 +85,6 @@ export default function DecksGridCard({ decks, deckMonitory, onEdit, onDelete, o
                   gutterBottom
                   sx={{
                     color: '#FFFFFF',
-                    width: '15rem',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
                     mb: 1
                   }}
                 >
@@ -98,34 +95,12 @@ export default function DecksGridCard({ decks, deckMonitory, onEdit, onDelete, o
                     variant="body2"
                     color="text.secondary"
                     sx={{
-                      mb: 1,
-                      width: '15rem' // ancho fijo
+                      mb: 1
                     }}
                   >
                     {deck.description}
                   </Typography>
                 )}
-                <Box sx={{ mb: 2 }}>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: '#9CA3AF',
-                      fontSize: '0.875rem',
-                      mb: 0.5
-                    }}
-                  >
-                    Nuevas: {deck.newCount ?? 0} • Aprendiendo: {deck.learnCount ?? 0}
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: '#9CA3AF',
-                      fontSize: '0.875rem'
-                    }}
-                  >
-                    Pendientes: {deck.dueCount ?? 0}
-                  </Typography>
-                </Box>
                 <Box 
                   display="flex" 
                   justifyContent="flex-end" 

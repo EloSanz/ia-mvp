@@ -76,7 +76,7 @@ const StudyControls = ({
           display="flex"
           justifyContent="space-between"
           alignItems="center"
-          maxWidth="lg"
+          maxWidth="xl"
           mx="auto"
         >
           {/* Información de progreso */}

@@ -172,7 +172,7 @@ export default function StudySessionPage() {
   return (
     <>
       <Navigation />
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 12 }}>
+      <Container maxWidth="xl" sx={{ mt: 4, mb: 12 }}>
         <Breadcrumbs />
 
         {error && (
