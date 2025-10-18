@@ -70,7 +70,8 @@ export default function DecksGridCard({ decks, deckMonitory, onEdit, onDelete, o
                 <CardMedia
                   component="img"
                   height="140"
-                  image="/src/assets/deck-placeholder.png"
+                  width="100%"
+                  image="/cards.png"
                   alt={deck.name}
                   sx={{ objectFit: 'cover' }}
                 />
