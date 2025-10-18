@@ -28,7 +28,10 @@ import {
   CardMedia,
   Card,
   Skeleton,
-  Snackbar
+  Snackbar,
+  SpeedDial,
+  SpeedDialAction,
+  SpeedDialIcon
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -39,7 +42,9 @@ import {
   Email as EmailIcon,
   Info as InfoIcon,
   ArrowForward as ArrowForwardIcon,
-  AutoAwesome as AIIcon
+  AutoAwesome as AIIcon,
+  Create as CreateIcon,
+  AutoFixHigh as AutoFixHighIcon
 } from '@mui/icons-material';
 import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
@@ -99,6 +104,9 @@ const HomePage = () => {
 
   // Modal para generación de deck con IA
   const [aiDeckGeneratorOpen, setAiDeckGeneratorOpen] = useState(false);
+
+  // Estado para SpeedDial
+  const [speedDialOpen, setSpeedDialOpen] = useState(false);
 
   //Monitoreo de deck para portada IA
   const [deckMonitory, setDeckMonitory] = useState(null);
@@ -229,6 +237,28 @@ const HomePage = () => {
     loadDecks(); // Recargar la lista
     showToast(`Deck "${result.deck.name}" creado exitosamente con ${result.flashcards.length} flashcards`);
   };
+
+  // Acciones del SpeedDial
+  const speedDialActions = [
+    {
+      icon: <AutoFixHighIcon />,
+      name: 'Crear con IA',
+      tooltip: 'Genera un deck completo con IA',
+      onClick: () => {
+        setSpeedDialOpen(false);
+        setAiDeckGeneratorOpen(true);
+      }
+    },
+    {
+      icon: <CreateIcon />,
+      name: 'Crear manualmente',
+      tooltip: 'Crea un deck desde cero',
+      onClick: () => {
+        setSpeedDialOpen(false);
+        setCreateDialogOpen(true);
+      }
+    }
+  ];
 
   if (loading) {
     return (
@@ -642,54 +672,47 @@ const HomePage = () => {
           </Alert>
         </Snackbar>
 
-        {/* Botones de acción flotantes */}
-        <Box
-          sx={{
-            position: 'fixed',
-            bottom: 24,
+        {/* SpeedDial para crear decks */}
+        <SpeedDial
+          ariaLabel="Crear deck"
+          sx={{ 
+            position: 'fixed', 
+            bottom: 24, 
             right: 24,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2
-          }}
-        >
-          {/* Botón para crear deck con IA */}
-          <Button
-            variant="contained"
-            startIcon={<AIIcon />}
-            onClick={() => setAiDeckGeneratorOpen(true)}
-            sx={{
-              borderRadius: '50px',
-              px: 3,
-              py: 1.5,
-              fontSize: '0.9rem',
-              fontWeight: 'bold',
-              textTransform: 'none',
-              boxShadow: 3,
-              '&:hover': {
-                boxShadow: 6
-              }
-            }}
-          >
-            Crear Deck con IA
-          </Button>
-          
-          {/* FAB para crear deck normal */}
-          <Fab
-            color="primary"
-            aria-label="add"
-            sx={{
+            '& .MuiFab-primary': {
               width: 64,
               height: 64,
-              '& .MuiSvgIcon-root': {
-                fontSize: 32
+              backgroundColor: 'primary.main',
+              '&:hover': {
+                backgroundColor: 'primary.dark'
               }
-            }}
-            onClick={() => setCreateDialogOpen(true)}
-          >
-            <AddIcon />
-          </Fab>
-        </Box>
+            }
+          }}
+          icon={<SpeedDialIcon icon={<AddIcon />} openIcon={<AddIcon />} />}
+          onClose={() => setSpeedDialOpen(false)}
+          onOpen={() => setSpeedDialOpen(true)}
+          open={speedDialOpen}
+          TooltipProps={{
+            title: 'Genera decks completos con IA o crea los tuyos desde cero'
+          }}
+        >
+          {speedDialActions.map((action) => (
+            <SpeedDialAction
+              key={action.name}
+              icon={action.icon}
+              tooltipTitle={action.tooltip}
+              onClick={action.onClick}
+              sx={{
+                '& .MuiFab-primary': {
+                  backgroundColor: 'primary.main',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark'
+                  }
+                }
+              }}
+            />
+          ))}
+        </SpeedDial>
       </Container>
     </>
   );

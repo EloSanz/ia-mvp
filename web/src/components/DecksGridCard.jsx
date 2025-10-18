@@ -33,6 +33,7 @@ export default function DecksGridCard({ decks, deckMonitory, onEdit, onDelete, o
                 backgroundColor: 'rgba(255,255,255,0.05)',
                 color: '#fff',
                 height: '100%',
+                maxHeight: '320px', // altura máxima para consistencia
                 display: 'flex',
                 flexDirection: 'column',
                 cursor: 'pointer',
@@ -99,33 +100,19 @@ export default function DecksGridCard({ decks, deckMonitory, onEdit, onDelete, o
                     color="text.secondary"
                     sx={{
                       mb: 1,
-                      width: '15rem' // ancho fijo
+                      width: '15rem', // ancho fijo
+                      height: '3.6em', // altura fija para 3 líneas (1.2em * 3)
+                      overflow: 'hidden',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3, // máximo 3 líneas
+                      WebkitBoxOrient: 'vertical',
+                      textOverflow: 'ellipsis',
+                      lineHeight: '1.2em'
                     }}
                   >
                     {deck.description}
                   </Typography>
                 )}
-                <Box sx={{ mb: 2 }}>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: '#9CA3AF',
-                      fontSize: '0.875rem',
-                      mb: 0.5
-                    }}
-                  >
-                    Nuevas: {deck.newCount ?? 0} • Aprendiendo: {deck.learnCount ?? 0}
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: '#9CA3AF',
-                      fontSize: '0.875rem'
-                    }}
-                  >
-                    Pendientes: {deck.dueCount ?? 0}
-                  </Typography>
-                </Box>
                 <Box 
                   display="flex" 
                   justifyContent="flex-end" 
