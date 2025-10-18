@@ -264,19 +264,21 @@ const HomePage = () => {
               severity="info"
               icon={<SchoolIcon />}
               action={
-                <Button
-                  color="inherit"
-                  size="small"
-                  onClick={goToLastDeck}
-                  startIcon={<ArrowForwardIcon />}
-                  sx={{ 
-                    fontWeight: 'bold',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}
-                >
-                  Continuar
-                </Button>
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={goToLastDeck}
+                    endIcon={<ArrowForwardIcon />}
+                    sx={{ 
+                      fontWeight: 'bold',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}
+                  >
+                    Continuar
+                  </Button>
+                </Box>
               }
               sx={{
                 backgroundColor: themeName === 'github' ? '#21262d' : undefined,
@@ -292,9 +294,8 @@ const HomePage = () => {
                 }
               }}
             >
-              <AlertTitle>Continuar estudiando</AlertTitle>
-              Estabas estudiando el deck "
-              {decksList.find((d) => d.id === lastDeckId)?.name || `ID: ${lastDeckId}`}". Haz clic
+              <AlertTitle>Continuar estudiando</AlertTitle>              
+              Estabas estudiando el deck <strong>{decksList.find((d) => d.id === lastDeckId)?.name || `ID: ${lastDeckId}`}</strong>. Haz clic
               en "Continuar" para retomar tu sesión.
             </Alert>
           </Box>

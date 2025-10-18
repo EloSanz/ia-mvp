@@ -15,23 +15,19 @@ import {
   Tabs,
   Tab,
   Slider,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Chip,
   Card,
   CardContent,
   CardActions,
   LinearProgress,
   Stepper,
   Step,
-  StepLabel
+  StepLabel,
+  FormControlLabel,
+  Checkbox
 } from '@mui/material';
 import { 
   AutoAwesome as AIIcon, 
   Lightbulb as LightbulbIcon,
-  Settings as SettingsIcon,
   Psychology as PsychologyIcon
 } from '@mui/icons-material';
 
@@ -51,12 +47,8 @@ const AIDeckGeneratorModal = ({ open, onClose, onGenerate }) => {
   const [formData, setFormData] = useState({
     topic: '',
     flashcardCount: 10,
-    difficulty: 'intermediate',
-    tags: []
+    generateCover: true
   });
-  
-  // Estados para tags
-  const [tagInput, setTagInput] = useState('');
 
   const generationSteps = [
     'Generando metadata del deck...',
@@ -74,29 +66,6 @@ const AIDeckGeneratorModal = ({ open, onClose, onGenerate }) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleAddTag = () => {
-    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        tags: [...prev.tags, tagInput.trim()]
-      }));
-      setTagInput('');
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove) => {
-    setFormData(prev => ({
-      ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
-    }));
-  };
-
-  const handleKeyPress = (event) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      handleAddTag();
-    }
-  };
 
   const loadSuggestions = async () => {
     try {
@@ -129,9 +98,7 @@ const AIDeckGeneratorModal = ({ open, onClose, onGenerate }) => {
         mode,
         topic: finalTopic,
         flashcardCount: formData.flashcardCount,
-        difficulty: formData.difficulty,
-        tags: formData.tags,
-        generateCover: true
+        generateCover: formData.generateCover
       };
 
       // Simular pasos de generación
@@ -149,12 +116,10 @@ const AIDeckGeneratorModal = ({ open, onClose, onGenerate }) => {
       clearInterval(stepInterval);
       setGenerationStep(generationSteps.length - 1);
 
-      // Simular un pequeño delay para mostrar el último paso
-      setTimeout(() => {
-        onGenerate(response.data.data);
-        onClose();
-        resetForm();
-      }, 1000);
+      // Cerrar el modal inmediatamente y luego generar
+      onClose();
+      resetForm();
+      onGenerate(response.data.data);
 
     } catch (err) {
       setError('Error al generar el deck');
@@ -168,10 +133,8 @@ const AIDeckGeneratorModal = ({ open, onClose, onGenerate }) => {
     setFormData({
       topic: '',
       flashcardCount: 10,
-      difficulty: 'intermediate',
-      tags: []
+      generateCover: true
     });
-    setTagInput('');
     setSuggestions([]);
     setGenerationStep(0);
     setActiveTab(0);
@@ -213,92 +176,38 @@ const AIDeckGeneratorModal = ({ open, onClose, onGenerate }) => {
           {formData.flashcardCount}
         </Typography>
       </Box>
-    </Box>
-  );
-
-  const renderConfiguredMode = () => (
-    <Box>
-      <Typography variant="body1" gutterBottom sx={{ mb: 2 }}>
-        Configura todos los parámetros para personalizar la generación del deck.
-      </Typography>
-      
-      <TextField
-        fullWidth
-        label="Tema del deck"
-        placeholder="Ej: Física cuántica, Historia de Roma, Programación en Python..."
-        value={formData.topic}
-        onChange={(e) => handleInputChange('topic', e.target.value)}
-        sx={{ mb: 2 }}
-      />
-
-      <Box display="flex" alignItems="center" gap={1} mb={2}>
-        <Typography variant="body2" sx={{ minWidth: 120 }}>Cantidad de flashcards:</Typography>
-        <Slider
-          value={formData.flashcardCount}
-          onChange={(e, value) => handleInputChange('flashcardCount', value)}
-          min={5}
-          max={20}
-          step={1}
-          valueLabelDisplay="auto"
-          sx={{ width: 200 }}
-        />
-        <Typography variant="body2" sx={{ minWidth: 30 }}>
-          {formData.flashcardCount}
-        </Typography>
-      </Box>
-
-      <FormControl fullWidth sx={{ mb: 2 }}>
-        <InputLabel>Nivel de dificultad</InputLabel>
-        <Select
-          value={formData.difficulty}
-          onChange={(e) => handleInputChange('difficulty', e.target.value)}
-        >
-          <MenuItem value="beginner">Principiante</MenuItem>
-          <MenuItem value="intermediate">Intermedio</MenuItem>
-          <MenuItem value="advanced">Avanzado</MenuItem>
-        </Select>
-      </FormControl>
-
-      <Box>
-        <Typography variant="body2" gutterBottom>
-          Tags adicionales (opcional):
-        </Typography>
-        <Box display="flex" gap={1} mb={1}>
-          <TextField
-            size="small"
-            placeholder="Agregar tag..."
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            sx={{ flexGrow: 1 }}
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={formData.generateCover}
+            onChange={(e) => handleInputChange('generateCover', e.target.checked)}
+            color="primary"
           />
-          <Button 
-            variant="outlined" 
-            onClick={handleAddTag}
-            disabled={!tagInput.trim()}
-          >
-            Agregar
-          </Button>
-        </Box>
-        <Box display="flex" flexWrap="wrap" gap={0.5}>
-          {formData.tags.map((tag, index) => (
-            <Chip
-              key={index}
-              label={tag}
-              onDelete={() => handleRemoveTag(tag)}
-              size="small"
-            />
-          ))}
-        </Box>
-      </Box>
+        }
+        label="Generar portada automática por IA"
+        sx={{ mt: 1 }}
+      />
     </Box>
   );
+
 
   const renderSuggestedMode = () => (
     <Box>
       <Typography variant="body1" gutterBottom sx={{ mb: 2 }}>
         La IA analizará tus decks existentes y sugerirá temas relacionados.
       </Typography>
+      
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={formData.generateCover}
+            onChange={(e) => handleInputChange('generateCover', e.target.checked)}
+            color="primary"
+          />
+        }
+        label="Generar portada automática por IA"
+        sx={{ mb: 2 }}
+      />
       
       {suggestions.length === 0 ? (
         <Box textAlign="center" py={4}>
@@ -406,11 +315,6 @@ const AIDeckGeneratorModal = ({ open, onClose, onGenerate }) => {
                 iconPosition="start"
               />
               <Tab 
-                icon={<SettingsIcon />} 
-                label="Configuración Avanzada" 
-                iconPosition="start"
-              />
-              <Tab 
                 icon={<LightbulbIcon />} 
                 label="Sugerencias Personalizadas" 
                 iconPosition="start"
@@ -418,8 +322,7 @@ const AIDeckGeneratorModal = ({ open, onClose, onGenerate }) => {
             </Tabs>
 
             {activeTab === 0 && renderFreeMode()}
-            {activeTab === 1 && renderConfiguredMode()}
-            {activeTab === 2 && renderSuggestedMode()}
+            {activeTab === 1 && renderSuggestedMode()}
           </>
         )}
       </DialogContent>
