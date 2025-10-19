@@ -106,7 +106,8 @@ export class StudyService {
     return {
       currentCard: this.formatCardForStudy(nextCard),
       queueLength: session.queue.getQueue().length - session.queue.getCurrentIndex(),
-      progress: session.queue.getProgress()
+      progress: session.queue.getProgress(),
+      sessionStats: this.formatSessionStats(session.stats)
     };
   }
 

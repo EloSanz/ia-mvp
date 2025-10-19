@@ -72,7 +72,8 @@ export const StudyController = {
       BaseController.success(res, {
         currentCard: result.currentCard,
         queueLength: result.queueLength,
-        progress: result.progress
+        progress: result.progress,
+        sessionStats: result.sessionStats
       }, 'Siguiente card obtenida exitosamente');
 
     } catch (error) {

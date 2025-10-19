@@ -20,8 +20,6 @@ import {
 } from '@mui/material';
 import {
   Flip as FlipIcon,
-  Schedule as ScheduleIcon,
-  AccessTime as TimeIcon,
   Psychology as PsychologyIcon
 } from '@mui/icons-material';
 
@@ -30,8 +28,6 @@ const StudyCard = ({
   showingAnswer,
   onShowAnswer,
   onReview,
-  responseTime,
-  formatTime,
   loading = false,
   disabled = false
 }) => {
@@ -107,18 +103,6 @@ const StudyCard = ({
             )}
           </Box>
 
-          {showingAnswer && (
-            <Box display="flex" alignItems="center" gap={1}>
-              <Tooltip title="Tiempo de respuesta">
-                <Box display="flex" alignItems="center" gap={0.5}>
-                  <TimeIcon fontSize="small" color="action" />
-                  <Typography variant="body2" color="text.secondary">
-                    {formatTime(responseTime)}
-                  </Typography>
-                </Box>
-              </Tooltip>
-            </Box>
-          )}
         </Box>
       </Box>
 
@@ -283,17 +267,6 @@ const StudyCard = ({
         </Box>
       </CardContent>
 
-      {/* Footer con información adicional */}
-      {showingAnswer && card.nextReview && (
-        <Box sx={{ p: 2, pt: 0, borderTop: 1, borderColor: 'divider' }}>
-          <Box display="flex" alignItems="center" gap={1}>
-            <ScheduleIcon fontSize="small" color="action" />
-            <Typography variant="body2" color="text.secondary">
-              Próxima revisión: {new Date(card.nextReview).toLocaleDateString()}
-            </Typography>
-          </Box>
-        </Box>
-      )}
     </Card>
   );
 };
