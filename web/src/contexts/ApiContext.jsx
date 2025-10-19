@@ -56,12 +56,16 @@ api.interceptors.response.use(
           statusCode: 404
         }
       };
+
       return Promise.reject({
         ...error,
         response: notFoundResponse
       });
     }
-
+    if (error.response && error.response.status === 401) {
+      // Redirige al usuario al login
+      window.location.href = '/login';
+    }
     return Promise.reject(error);
   }
 );
