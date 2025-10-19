@@ -68,8 +68,9 @@ const FlashcardTable = ({
       filtered = filtered.filter((card) => card.difficulty === parseInt(difficultyFilter));
     }
 
-    if (tagFilter && tagFilter !== 'all') {
+    if (tagFilter !== 'all') {
       if (tagFilter === '') {
+        // Filtrar cards que NO tienen tag asignado (tagId es null, undefined, o vacío)
         filtered = filtered.filter((card) => !card.tagId);
       } else {
         filtered = filtered.filter((card) => card.tagId === tagFilter);
