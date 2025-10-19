@@ -161,7 +161,7 @@ export const ApiProvider = ({ children }) => {
   // Study API - Sistema de repetición espaciada
   const study = {
     // Iniciar sesión de estudio
-    startSession: (deckId, limit) => api.post('/api/study/start', { deckId, limit }),
+    startSession: (deckId, limit, tagId) => api.post('/api/study/start', { deckId, limit, tagId }),
 
     // Obtener siguiente card
     getNextCard: (sessionId) => api.get(`/api/study/${sessionId}/next`),

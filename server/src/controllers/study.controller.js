@@ -13,7 +13,7 @@ export const StudyController = {
    */
   startStudySession: BaseController.wrap(async (req, res) => {
     const { userId } = req;
-    const { deckId, limit } = req.body;
+    const { deckId, limit, tagId } = req.body;
 
 
     // Validaciones
@@ -29,7 +29,7 @@ export const StudyController = {
     }
 
     try {
-      const result = await StudyService.startStudySession(userId, deckId, actualLimit);
+      const result = await StudyService.startStudySession(userId, deckId, actualLimit, tagId);
 
       BaseController.success(res, {
         sessionId: result.sessionId,

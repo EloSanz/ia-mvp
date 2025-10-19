@@ -35,12 +35,12 @@ export const useStudySession = () => {
    * Iniciar nueva sesión de estudio
    */
   const startSession = useCallback(
-    async (deckId, limit = null) => {
+    async (deckId, limit = null, tagId = null) => {
       setLoading(true);
       setError(null);
 
       try {
-        const response = await study.startSession(deckId, limit);
+        const response = await study.startSession(deckId, limit, tagId);
         const sessionData = response.data.data;
 
         setSession({

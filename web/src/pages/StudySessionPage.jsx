@@ -66,7 +66,7 @@ export default function StudySessionPage() {
 
   const initializeSession = async () => {
     try {
-      await startSession(deckId, studyOptions.limit);
+      await startSession(deckId, studyOptions.limit, studyOptions.tagId);
       setSnackbar({ open: true, message: '¡Sesión de estudio iniciada!', severity: 'success' });
     } catch (err) {
       setSnackbar({

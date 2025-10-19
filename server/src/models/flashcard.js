@@ -97,6 +97,14 @@ export class Flashcard {
   }
 
   /**
+   * Busca flashcards por deckId y tagId
+   */
+  static async findByDeckIdAndTag(deckId, tagId) {
+    const flashcards = await FlashcardRepository.findByDeckIdAndTag(deckId, tagId);
+    return flashcards.map((entity) => Flashcard.fromEntity(entity));
+  }
+
+  /**
    * Busca flashcards que necesitan revisión (nextReview <= ahora)
    */
   static async findDueForReview(deckId = null) {
