@@ -9,8 +9,24 @@ import OpenAI from 'openai';
  * @returns {Promise<string>} URL de la imagen generada
  */
 export async function generateDeckCoverURL(title, description) {
+  // Límite de seguridad: DALL·E 2 tiene un límite de 1000.
+  // Dejamos ~300 caracteres para las instrucciones y reservamos ~700 para los inputs.
+  const MAX_INPUT_LENGTH = 700;
 
-  const prompt = `Minimalist flat illustration for a deck titled "${title}". Show a simple icon or symbol related to ${title}, with clean lines and few colors. Concept: ${description}. No text, only visual elements.`;
+  // 1. Truncar el Título y la Descripción
+  const safeTitle = title.substring(0, MAX_INPUT_LENGTH / 2);
+  const safeDescription = description.substring(0, MAX_INPUT_LENGTH / 2);
+
+  // 2. Prompt Optimizado (Mucho más corto, cumple las reglas de estilo)
+  const prompt = `
+Genera una **ilustración abstracta y conceptual** para una cubierta/tarjeta.
+**OBJETIVO CLAVE:** **SIN TEXTO, SIN LETRAS, SIN NÚMEROS, SIN LOGOS, SIN MARCAS DE AGUA.**
+**ESTILO:** **Icono minimalista, vectorial, plano (flat design), 2D. Líneas limpias y pocos colores.**
+**CONTENIDO:** Un único símbolo o forma abstracta que represente el concepto de:
+- **Título:** "${safeTitle}"
+- **Descripción:** "${safeDescription}"
+**FORMATO:** Composición centrada y simple, fondo liso o suave degradado.
+`;
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   try {
@@ -35,12 +51,24 @@ export async function generateDeckCoverURL(title, description) {
  * @returns {Promise<{ base64: string|null, error: any|null }>}
  */
 export async function generateDeckCoverBase64(title, description) {
-  const prompt = `Minimalist flat illustration for a deck titled "${title}". 
-Use only simple geometric shapes or abstract symbols inspired by the theme: ${description}. 
-No text, no letters, no words, no emoji. 
-Use clean lines, few solid colors, and flat style. 
-The design should look like a logo or icon, centered, with no background noise.`;
+  // Límite de seguridad: DALL·E 2 tiene un límite de 1000.
+  // Dejamos ~300 caracteres para las instrucciones y reservamos ~700 para los inputs.
+  const MAX_INPUT_LENGTH = 700;
 
+  // 1. Truncar el Título y la Descripción
+  const safeTitle = title.substring(0, MAX_INPUT_LENGTH / 2);
+  const safeDescription = description.substring(0, MAX_INPUT_LENGTH / 2);
+
+  // 2. Prompt Optimizado (Mucho más corto, cumple las reglas de estilo)
+  const prompt = `
+Genera una **ilustración abstracta y conceptual** para una cubierta/tarjeta.
+**OBJETIVO CLAVE:** **SIN TEXTO, SIN LETRAS, SIN NÚMEROS, SIN LOGOS, SIN MARCAS DE AGUA.**
+**ESTILO:** **Icono minimalista, vectorial, plano (flat design), 2D. Líneas limpias y pocos colores.**
+**CONTENIDO:** Un único símbolo o forma abstracta que represente el concepto de:
+- **Título:** "${safeTitle}"
+- **Descripción:** "${safeDescription}"
+**FORMATO:** Composición centrada y simple, fondo liso o suave degradado.
+`;
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   try {
