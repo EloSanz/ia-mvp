@@ -16,7 +16,7 @@ export class StudyService {
   /**
    * Inicia una nueva sesión de estudio
    */
-  static async startStudySession(userId, deckId, limit = MAX_CARDS_PER_SESSION) {
+  static async startStudySession(userId, deckId, limit = MAX_CARDS_PER_SESSION, tagId = null) {
     try {
       // Validar que el usuario tenga acceso al deck
       const deck = await this.validateDeckAccess(userId, deckId);
@@ -25,8 +25,10 @@ export class StudyService {
       }
 
       // Obtener todas las flashcards del deck que pueden ser estudiadas
-      const allCardsResult = await Flashcard.findByDeckId(deckId);
-      const allCards = allCardsResult.items || [];
+      // Si se especifica tagId, filtrar por tag
+      const allCards = tagId
+        ? await Flashcard.findByDeckIdAndTag(deckId, tagId)
+        : (await Flashcard.findByDeckId(deckId)).items || [];
 
       // Limitar la cantidad de cards por sesión
       const actualLimit = limit || MAX_CARDS_PER_SESSION;
@@ -106,7 +108,8 @@ export class StudyService {
     return {
       currentCard: this.formatCardForStudy(nextCard),
       queueLength: session.queue.getQueue().length - session.queue.getCurrentIndex(),
-      progress: session.queue.getProgress()
+      progress: session.queue.getProgress(),
+      sessionStats: this.formatSessionStats(session.stats)
     };
   }
 

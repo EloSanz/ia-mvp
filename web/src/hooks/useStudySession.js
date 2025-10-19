@@ -5,7 +5,7 @@
  * Gestiona el estado completo de una sesión de estudio con repetición espaciada
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useApi } from '../contexts/ApiContext';
 
 export const useStudySession = () => {
@@ -17,10 +17,9 @@ export const useStudySession = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+
   // Estado de respuesta
   const [showingAnswer, setShowingAnswer] = useState(false);
-  const [responseTime, setResponseTime] = useState(0);
-  const responseStartTime = useRef(null);
 
   // Estadísticas en tiempo real
   const [sessionStats, setSessionStats] = useState({
@@ -32,19 +31,16 @@ export const useStudySession = () => {
     averageResponseTime: 0
   });
 
-  // Timer para el tiempo de respuesta
-  const timerRef = useRef(null);
-
   /**
    * Iniciar nueva sesión de estudio
    */
   const startSession = useCallback(
-    async (deckId, limit = null) => {
+    async (deckId, limit = null, tagId = null) => {
       setLoading(true);
       setError(null);
 
       try {
-        const response = await study.startSession(deckId, limit);
+        const response = await study.startSession(deckId, limit, tagId);
         const sessionData = response.data.data;
 
         setSession({
@@ -57,15 +53,6 @@ export const useStudySession = () => {
         setCurrentCard(sessionData.currentCard);
         setSessionStats(sessionData.sessionStats);
         setShowingAnswer(false);
-        setResponseTime(0);
-
-        // Iniciar timer de respuesta
-        responseStartTime.current = Date.now();
-        timerRef.current = setInterval(() => {
-          if (responseStartTime.current) {
-            setResponseTime(Date.now() - responseStartTime.current);
-          }
-        }, 300);
 
         return sessionData;
       } catch (err) {
@@ -84,10 +71,6 @@ export const useStudySession = () => {
   const showAnswer = useCallback(() => {
     if (currentCard && !showingAnswer) {
       setShowingAnswer(true);
-      // Detener el timer cuando se muestra la respuesta
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
     }
   }, [currentCard, showingAnswer]);
 
@@ -104,16 +87,11 @@ export const useStudySession = () => {
       setError(null);
 
       try {
-        // Calcular tiempo de respuesta final
-        const finalResponseTime = responseStartTime.current
-          ? Math.round((Date.now() - responseStartTime.current) / 1000)
-          : 0;
-
         const response = await study.reviewCard(
           session.id,
           currentCard.id,
           difficulty,
-          finalResponseTime
+          0 // Sin tiempo de respuesta por ahora
         );
 
         const reviewData = response.data.data;
@@ -123,14 +101,6 @@ export const useStudySession = () => {
 
         // Resetear estado para siguiente card
         setShowingAnswer(false);
-        setResponseTime(0);
-        responseStartTime.current = null;
-
-        // Detener timer anterior
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-        }
 
         return reviewData;
       } catch (err) {
@@ -167,24 +137,13 @@ export const useStudySession = () => {
       setSessionStats(nextData.sessionStats);
       setShowingAnswer(false);
 
-      // Reiniciar timer para nueva card
-      responseStartTime.current = Date.now();
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      timerRef.current = setInterval(() => {
-        if (responseStartTime.current) {
-          setResponseTime(Date.now() - responseStartTime.current);
-        }
-      }, 300);
-
       return nextData;
-    } catch (err) {
-      setError(err.response?.data?.message || 'Error al obtener siguiente card');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+      } catch (err) {
+        setError(err.response?.data?.message || 'Error al obtener siguiente card');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
   }, [session, study]);
 
   /**
@@ -231,7 +190,6 @@ export const useStudySession = () => {
       setSession(null);
       setCurrentCard(null);
       setShowingAnswer(false);
-      setResponseTime(0);
       setSessionStats({
         cardsReviewed: 0,
         easyCount: 0,
@@ -240,13 +198,6 @@ export const useStudySession = () => {
         timeSpent: 0,
         averageResponseTime: 0
       });
-
-      // Limpiar timers
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-      responseStartTime.current = null;
 
       return finishData;
     } catch (err) {
@@ -289,9 +240,7 @@ export const useStudySession = () => {
    */
   useEffect(() => {
     return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
+      // Cleanup si es necesario
     };
   }, []);
 
@@ -302,7 +251,6 @@ export const useStudySession = () => {
     loading,
     error,
     showingAnswer,
-    responseTime,
     sessionStats: sessionStats || {
       cardsReviewed: 0,
       easyCount: 0,

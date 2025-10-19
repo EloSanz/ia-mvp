@@ -128,7 +128,6 @@ const HomePage = () => {
     if (!newDeck.name.trim()) return;
 
     try {
-      debugger;
       setCreating(true);
       const { data: createdDeck } = await decks.create(newDeck);
       if (newDeck.generateCover && createdDeck && createdDeck.data.id) {

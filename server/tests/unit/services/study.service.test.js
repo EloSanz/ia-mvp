@@ -11,6 +11,7 @@ jest.mock('uuid', () => ({
 jest.mock('../../../src/models/flashcard.js', () => ({
   Flashcard: {
     findByDeckId: jest.fn(),
+    findByDeckIdAndTag: jest.fn(),
     markAsReviewed: jest.fn(),
   }
 }));
@@ -64,7 +65,8 @@ describe('StudyService', () => {
 
     // Configurar mocks por defecto
     Deck.findById.mockResolvedValue(testDeck);
-    Flashcard.findByDeckId.mockResolvedValue(testCards);
+    Flashcard.findByDeckId.mockResolvedValue({ items: testCards, total: testCards.length });
+    Flashcard.findByDeckIdAndTag.mockResolvedValue(testCards);
   });
 
   describe('startStudySession', () => {

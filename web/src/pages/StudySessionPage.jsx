@@ -56,16 +56,17 @@ export default function StudySessionPage() {
     initializedRef.current.clear();
   }, [deckId]);
 
+  // Solo inicializar sesión una vez por deckId
   useEffect(() => {
-    if (deckId && !session?.id && !initializedRef.current.has(deckId)) {
+    if (deckId && !initializedRef.current.has(deckId)) {
       initializedRef.current.add(deckId);
       initializeSession();
     }
-  }, [deckId, session?.id]);
+  }, [deckId]);
 
   const initializeSession = async () => {
     try {
-      await startSession(deckId, studyOptions.limit);
+      await startSession(deckId, studyOptions.limit, studyOptions.tagId);
       setSnackbar({ open: true, message: '¡Sesión de estudio iniciada!', severity: 'success' });
     } catch (err) {
       setSnackbar({
@@ -86,6 +87,7 @@ export default function StudySessionPage() {
       const nextCardResult = await nextCard();
       if (nextCardResult === null) setShowFinishDialog(true);
     } catch (err) {
+      console.error('Error in handleReview:', err);
       setSnackbar({
         open: true,
         message: err.message || 'Error al revisar la tarjeta',
@@ -199,8 +201,6 @@ export default function StudySessionPage() {
             showingAnswer={showingAnswer}
             onShowAnswer={handleShowAnswer}
             onReview={handleReview}
-            responseTime={responseTime}
-            formatTime={formatTime}
             loading={loading}
             disabled={paused || loading}
           />

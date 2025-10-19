@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Card, CardContent, LinearProgress, Typography, Stack } from '@mui/material';
 
 export default function StudyStatsLite({ stats, progress }) {
-  const pct = Math.round((progress?.current || 0) * 100);
+  const pct = progress?.percentage || 0;
 
   return (
     <Card sx={{ mb: 3 }}>
