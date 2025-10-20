@@ -121,16 +121,18 @@ const StudyCard = ({
           <Fade in={!showingAnswer} timeout={300}>
             <Box sx={{ textAlign: 'center', mb: 3 }}>
               <Typography
-                variant="h5"
+                variant="h4"
                 component="div"
                 sx={{
                   mb: 3,
-                  fontWeight: 500,
+                  fontWeight: 600,
                   lineHeight: 1.4,
                   minHeight: 120,
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  color: 'text.primary',
+                  textAlign: 'center'
                 }}
               >
                 {card.front}
@@ -161,30 +163,40 @@ const StudyCard = ({
           {/* RESPUESTA */}
           <Fade in={showingAnswer} timeout={300}>
             <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 2, fontSize: '0.9rem' }}>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 2, fontSize: '0.95rem', fontWeight: 500 }}>
                 Pregunta:
               </Typography>
 
               <Typography
-                variant="h6"
+                variant="body1"
                 sx={{
                   mb: 3,
-                  fontWeight: 400,
+                  fontWeight: 500,
                   minHeight: 80,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: 'text.secondary'
+                  color: 'text.secondary',
+                  fontStyle: 'italic'
                 }}
               >
                 {card.front}
               </Typography>
 
-              <Box sx={{ my: 3, py: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
+              <Box sx={{
+                my: 3,
+                py: 3,
+                px: 2,
+                bgcolor: 'background.paper',
+                borderRadius: 2,
+                border: '1px solid',
+                borderColor: 'divider',
+                boxShadow: 1
+              }}>
                 <Typography
                   variant="body1"
                   color="text.secondary"
-                  sx={{ mb: 1, fontSize: '0.9rem' }}
+                  sx={{ mb: 2, fontSize: '0.95rem', fontWeight: 500 }}
                 >
                   Respuesta:
                 </Typography>
@@ -193,13 +205,14 @@ const StudyCard = ({
                   variant="h5"
                   component="div"
                   sx={{
-                    fontWeight: 500,
-                    lineHeight: 1.4,
+                    fontWeight: 600,
+                    lineHeight: 1.5,
                     minHeight: 100,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: 'text.primary'
+                    color: 'text.primary',
+                    textAlign: 'center'
                   }}
                 >
                   {card.back}
@@ -207,8 +220,16 @@ const StudyCard = ({
               </Box>
 
               {/* Botones de dificultad */}
-              <Box sx={{ mt: 3 }}>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              <Box sx={{ mt: 4 }}>
+                <Typography
+                  variant="h6"
+                  color="text.primary"
+                  sx={{
+                    mb: 3,
+                    fontWeight: 500,
+                    textAlign: 'center'
+                  }}
+                >
                   ¿Qué tan fácil fue recordar esta respuesta?
                 </Typography>
 
