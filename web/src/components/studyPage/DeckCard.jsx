@@ -32,7 +32,22 @@ export default function DeckCard({ deck, selected, onSelect, onView }) {
     >
       <CardContent sx={{ flex: 1 }}>
         <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-          <Typography variant="h6" component="h3" fontWeight={600}>
+          <Typography 
+            variant="h6" 
+            component="h3" 
+            fontWeight={600}
+            sx={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              lineHeight: '1.2em',
+              height: '2.4em', // 2 líneas * 1.2em
+              flex: 1,
+              mr: 1
+            }}
+          >
             {deck.name}
           </Typography>
           <Chip
@@ -40,10 +55,24 @@ export default function DeckCard({ deck, selected, onSelect, onView }) {
             size="small"
             color={deck.isPublic ? 'success' : 'default'}
             variant="outlined"
+            sx={{ flexShrink: 0 }}
           />
         </Box>
 
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        <Typography 
+          variant="body2" 
+          color="text.secondary" 
+          sx={{ 
+            mb: 2,
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            lineHeight: '1.2em',
+            height: '3.6em' // 3 líneas * 1.2em
+          }}
+        >
           {deck.description || 'Sin descripción'}
         </Typography>
 

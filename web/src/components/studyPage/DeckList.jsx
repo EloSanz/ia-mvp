@@ -12,9 +12,9 @@ export default function DeckList({ decks, selectedDeckId, onSelect, onViewDeck }
         📖 Selecciona un Deck para Estudiar
       </Typography>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={1.5}>
         {decks.map((deck) => (
-          <Grid item xs={12} md={6} lg={4} key={deck.id}>
+          <Grid item size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={deck.id}>
             <DeckCard
               deck={deck}
               selected={selectedDeckId === String(deck.id)}
