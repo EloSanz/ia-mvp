@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Container, Alert, Box, Button } from '@mui/material';
 import Navigation from '../components/Navigation';
 import Breadcrumbs from '../components/Breadcrumbs';
@@ -12,13 +12,15 @@ import { School as SchoolIcon, LibraryBooks as BooksIcon } from '@mui/icons-mate
 
 export default function StudyPage() {
   const navigate = useNavigate();
-  const { decks } = useApi();
+  const { decks, tags } = useApi();
 
   const [availableDecks, setAvailableDecks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedDeck, setSelectedDeck] = useState('');
   const [studyOptions, setStudyOptions] = useState({ limit: '', mode: 'normal' });
+  const [availableTags, setAvailableTags] = useState([]);
+  const [selectedTag, setSelectedTag] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -35,6 +37,28 @@ export default function StudyPage() {
     })();
   }, [decks]);
 
+  // Función memoizada para cargar tags
+  const loadTags = useCallback(async (deckId) => {
+    try {
+      const res = await tags.getByDeckId(deckId);
+      setAvailableTags(res.data.data || []);
+      setSelectedTag(''); // Resetear tag seleccionada cuando cambia el deck
+    } catch (e) {
+      console.error('Error loading tags:', e);
+      setAvailableTags([]);
+    }
+  }, [tags]);
+
+  // Cargar tags cuando se selecciona un deck
+  useEffect(() => {
+    if (selectedDeck) {
+      loadTags(selectedDeck);
+    } else {
+      setAvailableTags([]);
+      setSelectedTag('');
+    }
+  }, [selectedDeck, loadTags]);
+
   const handleStartStudy = () => {
     if (!selectedDeck) {
       setError('Por favor selecciona un deck para estudiar');
@@ -42,7 +66,12 @@ export default function StudyPage() {
     }
     setError(null);
     navigate(`/study/session/${selectedDeck}`, {
-      state: { deckId: selectedDeck, limit: studyOptions.limit || null, mode: studyOptions.mode }
+      state: {
+        deckId: selectedDeck,
+        limit: studyOptions.limit || null,
+        mode: studyOptions.mode,
+        tagId: selectedTag || null
+      }
     });
   };
 
@@ -60,7 +89,7 @@ export default function StudyPage() {
   return (
     <>
       <Navigation />
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+      <Container maxWidth="xl" sx={{ mt: 4, mb: 8 }}>
         <Breadcrumbs />
         <StudyHeader />
 
@@ -76,6 +105,9 @@ export default function StudyPage() {
           setStudyOptions={setStudyOptions}
           onStart={handleStartStudy}
           disabled={!selectedDeck}
+          availableTags={availableTags}
+          selectedTag={selectedTag}
+          setSelectedTag={setSelectedTag}
         />
 
         {hasDecks ? (

@@ -128,6 +128,173 @@ class OpenAIService {
       throw new Error('Failed to parse OpenAI response');
     }
   }
+
+  /**
+   * Sugiere temas de decks basados en los decks existentes del usuario
+   */
+  async suggestDeckTopics(userDecks, count = 3) {
+    if (!this.openai) {
+      throw new Error('OpenAI service is not configured');
+    }
+
+    const systemPrompt = `Eres un asistente experto en aprendizaje y memorización. 
+    Analiza los decks existentes del usuario y sugiere temas relacionados que podrían interesarle.
+    
+    INSTRUCCIONES:
+    - Basándote en los títulos y descripciones de los decks existentes, identifica patrones de interés
+    - Sugiere temas que complementen o expandan sus áreas de estudio actuales
+    - Considera diferentes niveles de dificultad y enfoques
+    - Cada sugerencia debe ser específica y atractiva
+    - Evita repetir temas que ya tiene
+    
+    Devuelve las sugerencias en formato JSON:
+    {
+      "topics": [
+        {
+          "title": "Título del tema sugerido",
+          "description": "Descripción breve del tema y por qué es relevante",
+          "reasoning": "Por qué este tema se relaciona con sus intereses actuales"
+        }
+      ]
+    }`;
+
+    const userDecksText = userDecks.map(deck => 
+      `- "${deck.name}": ${deck.description || 'Sin descripción'}`
+    ).join('\n');
+
+    const response = await this.openai.chat.completions.create({
+      model: this.config.model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Decks actuales del usuario:\n${userDecksText}\n\nSugiere ${count} temas relacionados.` }
+      ],
+      max_tokens: this.config.maxTokens,
+      temperature: 0.8,
+      response_format: { type: 'json_object' }
+    });
+
+    try {
+      const result = JSON.parse(response.choices[0].message.content);
+      return result.topics || [];
+    } catch (error) {
+      throw new Error('Failed to parse OpenAI response');
+    }
+  }
+
+  /**
+   * Genera un deck completo desde un tema libre
+   */
+  async generateCompleteDeck(topic, flashcardCount = 10) {
+    if (!this.openai) {
+      throw new Error('OpenAI service is not configured');
+    }
+
+    const systemPrompt = `Eres un experto en creación de contenido educativo. 
+    Genera un deck completo de flashcards sobre el tema especificado.
+    
+    INSTRUCCIONES:
+    - Crea un título atractivo y descriptivo para el deck
+    - Escribe una descripción clara del contenido y objetivos
+    - Genera exactamente ${flashcardCount} flashcards de alta calidad
+    - Las flashcards deben cubrir los conceptos más importantes del tema
+    - Usa diferentes tipos de preguntas (definiciones, ejemplos, aplicaciones)
+    - Asegúrate de que las respuestas sean precisas y educativas
+    
+    Devuelve todo en formato JSON:
+    {
+      "deck": {
+        "name": "Título del deck",
+        "description": "Descripción del deck y sus objetivos"
+      },
+      "flashcards": [
+        {
+          "front": "Pregunta o concepto",
+          "back": "Respuesta o explicación"
+        }
+      ]
+    }`;
+
+    const response = await this.openai.chat.completions.create({
+      model: this.config.model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Tema: ${topic}` }
+      ],
+      max_tokens: this.config.maxTokens,
+      temperature: 0.7,
+      response_format: { type: 'json_object' }
+    });
+
+    try {
+      return JSON.parse(response.choices[0].message.content);
+    } catch (error) {
+      throw new Error('Failed to parse OpenAI response');
+    }
+  }
+
+  /**
+   * Genera un deck con configuración específica
+   */
+  async generateCompleteDeckWithConfig(topic, flashcardCount, difficulty, tags = []) {
+    if (!this.openai) {
+      throw new Error('OpenAI service is not configured');
+    }
+
+    const difficultyLevels = {
+      'beginner': 'principiante',
+      'intermediate': 'intermedio', 
+      'advanced': 'avanzado'
+    };
+
+    const systemPrompt = `Eres un experto en creación de contenido educativo. 
+    Genera un deck completo de flashcards sobre el tema especificado con configuración personalizada.
+    
+    CONFIGURACIÓN:
+    - Tema: ${topic}
+    - Cantidad de flashcards: ${flashcardCount}
+    - Nivel de dificultad: ${difficultyLevels[difficulty] || 'intermedio'}
+    - Tags adicionales: ${tags.join(', ') || 'ninguno'}
+    
+    INSTRUCCIONES:
+    - Crea un título atractivo y descriptivo para el deck
+    - Escribe una descripción clara del contenido y objetivos
+    - Genera exactamente ${flashcardCount} flashcards de alta calidad
+    - Adapta la complejidad al nivel ${difficultyLevels[difficulty] || 'intermedio'}
+    - Incluye conceptos básicos, intermedios y avanzados según corresponda
+    - Las flashcards deben ser progresivas en dificultad
+    - Usa diferentes tipos de preguntas (definiciones, ejemplos, aplicaciones, análisis)
+    
+    Devuelve todo en formato JSON:
+    {
+      "deck": {
+        "name": "Título del deck",
+        "description": "Descripción del deck y sus objetivos"
+      },
+      "flashcards": [
+        {
+          "front": "Pregunta o concepto",
+          "back": "Respuesta o explicación"
+        }
+      ]
+    }`;
+
+    const response = await this.openai.chat.completions.create({
+      model: this.config.model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Genera el deck con la configuración especificada.` }
+      ],
+      max_tokens: this.config.maxTokens,
+      temperature: 0.7,
+      response_format: { type: 'json_object' }
+    });
+
+    try {
+      return JSON.parse(response.choices[0].message.content);
+    } catch (error) {
+      throw new Error('Failed to parse OpenAI response');
+    }
+  }
 }
 
 export const openaiService = new OpenAIService();

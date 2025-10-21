@@ -2,6 +2,7 @@ import { Deck } from '../models/deck.js';
 import { DeckDto } from '../dtos/deck.dto.js';
 import { BaseController } from './base.controller.js';
 import { ForbiddenError, NotFoundError } from '../utils/custom.errors.js';
+import { deckGeneratorService } from '../services/deckGenerator.service.js';
 
 export const DeckController = {
   /**
@@ -109,5 +110,63 @@ export const DeckController = {
 
     await Deck.delete(id);
     BaseController.success(res, null, 'Deck eliminado exitosamente');
+  }),
+
+  /**
+   * Sugiere temas de decks basados en los decks existentes del usuario
+   */
+  suggestTopics: BaseController.wrap(async (req, res) => {
+    const userId = parseInt(req.userId);
+    const { count = 3 } = req.body;
+
+    const suggestions = await deckGeneratorService.suggestTopicsFromUserDecks(userId, count);
+
+    BaseController.success(res, { topics: suggestions }, 'Temas sugeridos exitosamente');
+  }),
+
+  /**
+   * Genera un deck completo con IA
+   */
+  generateDeckWithAI: BaseController.wrap(async (req, res) => {
+    const userId = parseInt(req.userId);
+    const { mode, topic, flashcardCount, difficulty, tags, generateCover = true } = req.body;
+
+    if (!topic || !topic.trim()) {
+      return BaseController.error(res, 'El tema es requerido', 400, ['Tema vacío']);
+    }
+
+    let result;
+
+    try {
+      if (mode === 'free') {
+        // Modo tema libre
+        result = await deckGeneratorService.generateDeckFromTopic(userId, topic, {
+          flashcardCount: flashcardCount || 10,
+          generateCover
+        });
+      } else if (mode === 'configured') {
+        // Modo con configuración
+        result = await deckGeneratorService.generateDeckFromConfig(userId, {
+          topic,
+          flashcardCount: flashcardCount || 10,
+          difficulty: difficulty || 'intermediate',
+          tags: tags || [],
+          generateCover
+        });
+      } else if (mode === 'suggested') {
+        // Modo sugerido (usa el tema como está)
+        result = await deckGeneratorService.generateDeckFromTopic(userId, topic, {
+          flashcardCount: flashcardCount || 10,
+          generateCover
+        });
+      } else {
+        return BaseController.error(res, 'Modo inválido', 400, ['Modo debe ser: free, configured, o suggested']);
+      }
+
+      BaseController.success(res, result, result.message, 201);
+    } catch (error) {
+      console.error('Error generando deck con IA:', error);
+      BaseController.error(res, `Error generando deck: ${error.message}`, 500, [error.message]);
+    }
   })
 };

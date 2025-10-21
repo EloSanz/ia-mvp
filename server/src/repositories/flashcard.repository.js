@@ -137,6 +137,40 @@ export class FlashcardRepository {
   }
 
   /**
+   * Busca flashcards por deckId y tagId
+   */
+  static async findByDeckIdAndTag(deckId, tagId) {
+    try {
+      const whereClause = {
+        deckId: parseInt(deckId)
+      };
+
+      // Solo agregar filtro de tag si tagId está definido
+      if (tagId) {
+        whereClause.tagId = parseInt(tagId);
+      }
+
+      const flashcards = await prisma.flashcard.findMany({
+        where: whereClause,
+        include: {
+          deck: {
+            select: {
+              id: true,
+              name: true
+            }
+          },
+          tag: true
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      return flashcards.map((card) => FlashcardEntity.fromPrisma(card));
+    } catch (error) {
+      throw new Error(`Error al buscar flashcards por deck y tag: ${error.message}`);
+    }
+  }
+
+  /**
    * Busca flashcards que necesitan revisión
    */
   static async findDueForReview(deckId = null) {

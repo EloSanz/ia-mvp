@@ -56,12 +56,16 @@ api.interceptors.response.use(
           statusCode: 404
         }
       };
+
       return Promise.reject({
         ...error,
         response: notFoundResponse
       });
     }
-
+    if (error.response && error.response.status === 401) {
+      // Redirige al usuario al login
+      window.location.href = '/login';
+    }
     return Promise.reject(error);
   }
 );
@@ -92,7 +96,12 @@ export const ApiProvider = ({ children }) => {
     getById: (id) => api.get(`/api/decks/${id}`),
     create: (data) => api.post('/api/decks', data, { timeout: 30000 }),
     update: (id, data) => api.put(`/api/decks/${id}`, data),
-    delete: (id) => api.delete(`/api/decks/${id}`)
+    delete: (id) => api.delete(`/api/decks/${id}`),
+    // Nuevos métodos para generación con IA
+    suggestTopics: (count = 3) => api.post('/api/decks/suggest-topics', { count }),
+    generateWithAI: (config) => api.post('/api/decks/generate-with-ai', config, { 
+      timeout: 120000  // 2 minutos para generación completa
+    })
   };
 
   // Flashcards API
@@ -157,7 +166,7 @@ export const ApiProvider = ({ children }) => {
   // Study API - Sistema de repetición espaciada
   const study = {
     // Iniciar sesión de estudio
-    startSession: (deckId, limit) => api.post('/api/study/start', { deckId, limit }),
+    startSession: (deckId, limit, tagId) => api.post('/api/study/start', { deckId, limit, tagId }),
 
     // Obtener siguiente card
     getNextCard: (sessionId) => api.get(`/api/study/${sessionId}/next`),

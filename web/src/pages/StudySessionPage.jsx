@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Container, Box, Alert, Snackbar } from '@mui/material';
+import { Container, Box, Alert, Snackbar, Typography } from '@mui/material';
 
 import Navigation from '../components/Navigation';
 import Breadcrumbs from '../components/Breadcrumbs';
@@ -56,25 +56,13 @@ export default function StudySessionPage() {
     initializedRef.current.clear();
   }, [deckId]);
 
+  // Solo inicializar sesión una vez por deckId
   useEffect(() => {
-    if (deckId && !session?.id && !initializedRef.current.has(deckId)) {
+    if (deckId && !initializedRef.current.has(deckId)) {
       initializedRef.current.add(deckId);
       initializeSession();
     }
-  }, [deckId, session?.id]);
-
-  const initializeSession = async () => {
-    try {
-      await startSession(deckId, studyOptions.limit);
-      setSnackbar({ open: true, message: '¡Sesión de estudio iniciada!', severity: 'success' });
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message: err.message || 'Error al iniciar la sesión',
-        severity: 'error'
-      });
-    }
-  };
+  }, [deckId]);
 
   const handleShowAnswer = () => {
     if (canShowAnswer) showAnswer();
@@ -86,9 +74,70 @@ export default function StudySessionPage() {
       const nextCardResult = await nextCard();
       if (nextCardResult === null) setShowFinishDialog(true);
     } catch (err) {
+      console.error('Error in handleReview:', err);
       setSnackbar({
         open: true,
         message: err.message || 'Error al revisar la tarjeta',
+        severity: 'error'
+      });
+    }
+  };
+
+  // Manejo de teclado para navegación rápida
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      // Solo procesar si no estamos en un input o textarea
+      if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      // Prevenir comportamiento por defecto para las teclas que manejamos
+      if (event.code === 'Space' || (event.key >= '1' && event.key <= '3')) {
+        event.preventDefault();
+      }
+
+      switch (event.code) {
+        case 'Space':
+          // Mostrar respuesta si está disponible
+          if (canShowAnswer && !showingAnswer && !loading && !paused) {
+            handleShowAnswer();
+          }
+          break;
+        case 'Digit1':
+          // Fácil (1)
+          if (showingAnswer && !loading && !paused) {
+            handleReview(1);
+          }
+          break;
+        case 'Digit2':
+          // Normal (2)
+          if (showingAnswer && !loading && !paused) {
+            handleReview(2);
+          }
+          break;
+        case 'Digit3':
+          // Difícil (3)
+          if (showingAnswer && !loading && !paused) {
+            handleReview(3);
+          }
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [canShowAnswer, showingAnswer, loading, paused, handleShowAnswer, handleReview]);
+
+  const initializeSession = async () => {
+    try {
+      await startSession(deckId, studyOptions.limit, studyOptions.tagId);
+      setSnackbar({ open: true, message: '¡Sesión de estudio iniciada!', severity: 'success' });
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: err.message || 'Error al iniciar la sesión',
         severity: 'error'
       });
     }
@@ -172,7 +221,7 @@ export default function StudySessionPage() {
   return (
     <>
       <Navigation />
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 12 }}>
+      <Container maxWidth="xl" sx={{ mt: 4, mb: 12 }}>
         <Breadcrumbs />
 
         {error && (
@@ -199,11 +248,20 @@ export default function StudySessionPage() {
             showingAnswer={showingAnswer}
             onShowAnswer={handleShowAnswer}
             onReview={handleReview}
-            responseTime={responseTime}
-            formatTime={formatTime}
             loading={loading}
             disabled={paused || loading}
           />
+
+          {/* Ayuda de teclado */}
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+              {!showingAnswer ? (
+                <>Presiona <strong>ESPACIO</strong> para mostrar la respuesta</>
+              ) : (
+                <>Presiona <strong>1</strong> (Fácil), <strong>2</strong> (Normal), o <strong>3</strong> (Difícil)</>
+              )}
+            </Typography>
+          </Box>
         </Box>
 
         <StudyControls

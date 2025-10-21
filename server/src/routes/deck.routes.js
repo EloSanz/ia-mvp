@@ -13,4 +13,8 @@ router.post('/', DeckController.createDeck);
 router.put('/:id', DeckController.updateDeck);
 router.delete('/:id', DeckController.deleteDeck);
 
+// Rutas para generación con IA
+router.post('/suggest-topics', DeckController.suggestTopics);
+router.post('/generate-with-ai', DeckController.generateDeckWithAI);
+
 export default router;
