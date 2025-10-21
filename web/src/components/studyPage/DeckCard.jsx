@@ -9,13 +9,13 @@ export default function DeckCard({ deck, selected, onSelect, onView }) {
   if (deck.stats) {
     totalCards = deck.stats.flashcardsCount;
     dueCards = deck.stats.newFlashcardsCount;
-    reviewedCards = totalCards - deck.stats.revisionsCount;
-    newCards = Math.abs(totalCards - dueCards - reviewedCards);
+    reviewedCards = totalCards - deck.stats.newFlashcardsCount;
+    // newCards = Math.abs(totalCards - dueCards - reviewedCards);
   } else {
     totalCards = deck.cardCount || 0;
     dueCards = totalCards > 0 ? Math.floor(Math.random() * totalCards) : 0;
-    reviewedCards = totalCards > 0 ? Math.floor(Math.random() * (totalCards - dueCards)) : 0;
-    newCards = Math.max(0, totalCards - dueCards - reviewedCards);
+    // reviewedCards = totalCards > 0 ? Math.floor(Math.random() * (totalCards - dueCards)) : 0;
+    newCards = Math.max(0, totalCards - dueCards);
   }
 
   return (
@@ -32,9 +32,9 @@ export default function DeckCard({ deck, selected, onSelect, onView }) {
     >
       <CardContent sx={{ flex: 1 }}>
         <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-          <Typography 
-            variant="h6" 
-            component="h3" 
+          <Typography
+            variant="h6"
+            component="h3"
             fontWeight={600}
             sx={{
               display: '-webkit-box',
@@ -59,10 +59,10 @@ export default function DeckCard({ deck, selected, onSelect, onView }) {
           />
         </Box>
 
-        <Typography 
-          variant="body2" 
-          color="text.secondary" 
-          sx={{ 
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{
             mb: 2,
             display: '-webkit-box',
             WebkitLineClamp: 3,
@@ -78,8 +78,9 @@ export default function DeckCard({ deck, selected, onSelect, onView }) {
 
         <Box display="flex" flexDirection="column" gap={1}>
           <Row label="Total de tarjetas:" value={totalCards} icon={<BooksIcon />} />
-          <Row label="Pendientes:" value={dueCards} chipProps={{ color: 'warning' }} />
-          <Row label="Nuevas:" value={newCards} chipProps={{ color: 'info' }} />
+          <Row label="Revisada:" value={reviewedCards} chipProps={{ color: 'success' }} />
+          <Row label="Pendientes de revision:" value={dueCards} chipProps={{ color: 'warning' }} />
+
         </Box>
       </CardContent>
 
