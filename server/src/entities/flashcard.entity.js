@@ -103,9 +103,9 @@ export class FlashcardEntity {
 
     // Calcular próxima revisión basada en dificultad (algoritmo simple)
     const daysMultiplier = {
-      1: 1, // Fácil: revisar en 1 día
+      1: 7, // Fácil: revisar en 7 días
       2: 3, // Normal: revisar en 3 días
-      3: 7 // Difícil: revisar en 7 días
+      3: 1 // Difícil: revisar en 1 día
     };
 
     const days = daysMultiplier[this.difficulty] || 3;
