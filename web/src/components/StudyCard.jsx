@@ -77,7 +77,7 @@ const StudyCard = ({
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        minHeight: 400,
+        minHeight: 500,
         perspective: '1000px'
       }}
     >
@@ -85,8 +85,8 @@ const StudyCard = ({
       <Box
         sx={{
           position: 'relative',
-          width: 700,
-          height: 400,
+          width: 800,
+          height: 500,
           transformStyle: 'preserve-3d',
           transition: 'transform 0.6s ease-in-out',
           transform: showingAnswer ? 'rotateY(180deg)' : 'rotateY(0deg)',
@@ -246,7 +246,7 @@ const StudyCard = ({
             {/* Pregunta sin label redundante */}
             <Typography
               sx={{
-                mb: 4, // margin 32px
+                mb: 5, // margin 40px
                 fontSize: '18px',
                 fontWeight: 500,
                 color: 'rgba(255, 255, 255, 0.7)',
@@ -258,9 +258,9 @@ const StudyCard = ({
             </Typography>
 
             <Box sx={{
-              my: 2,
-              py: 3,
-              px: 3,
+              my: 5,
+              py: 4,
+              px: 4,
               bgcolor: 'rgba(255, 255, 255, 0.03)',
               borderRadius: 2,
               border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -294,7 +294,7 @@ const StudyCard = ({
           </Box>
 
           {/* Botones de dificultad en la parte inferior */}
-          <Box sx={{ position: 'absolute', bottom: 20, left: 0, right: 0, px: 2 }}>
+          <Box sx={{ position: 'absolute', bottom: 20, left: 0, right: 0, px: 2, mt: 8 }}>
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
               {/* Botón Fácil */}
               <Button
