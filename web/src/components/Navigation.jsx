@@ -22,7 +22,8 @@ import {
   Logout as LogoutIcon,
   Person as PersonIcon,
   Code as GithubIcon,
-  Psychology as StudyIcon
+  Psychology as StudyIcon,
+  LibraryBooks as LibraryIcon
 } from '@mui/icons-material';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -93,6 +94,15 @@ const Navigation = () => {
             sx={{ mr: 2 }}
           >
             Estudiar
+          </Button>
+
+          <Button
+            color="inherit"
+            startIcon={<LibraryIcon />}
+            onClick={() => navigate('/library')}
+            sx={{ mr: 2 }}
+          >
+            Biblioteca
           </Button>
 
           <Tooltip title="Seleccionar tema">

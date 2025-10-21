@@ -9,6 +9,7 @@ import HomePage from './pages/HomePage';
 import DeckPage from './pages/DeckPage';
 import StudyPage from './pages/StudyPage';
 import StudySessionPage from './pages/StudySessionPage';
+import LibraryPage from './pages/LibraryPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 
@@ -73,6 +74,14 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <StudySessionPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/library"
+                element={
+                  <ProtectedRoute>
+                    <LibraryPage />
                   </ProtectedRoute>
                 }
               />
