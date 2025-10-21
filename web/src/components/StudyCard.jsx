@@ -144,8 +144,8 @@ const StudyCard = ({
               component="div"
               sx={{
                 fontWeight: 600,
-                fontSize: '2rem', // 32px
-                lineHeight: 1.3,
+                fontSize: '32px',
+                lineHeight: 1.4,
                 color: '#FFFFFF',
                 textAlign: 'center',
                 mb: 3,
@@ -176,20 +176,26 @@ const StudyCard = ({
               <Box
                 sx={{
                   position: 'absolute',
-                  top: -8,
-                  right: -8,
-                  bgcolor: 'background.paper',
-                  color: 'text.secondary',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: 1,
-                  px: 0.5,
-                  py: 0.25,
-                  fontSize: '0.7rem',
+                  bottom: 'calc(100% + 12px)',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  bgcolor: 'rgba(0, 0, 0, 0.8)',
+                  backdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '6px',
+                  px: 1.5,
+                  py: 0.5,
+                  fontSize: '11px',
                   fontWeight: 600,
-                  minWidth: 20,
-                  textAlign: 'center',
-                  boxShadow: 1
+                  color: '#FFFFFF',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+                  animation: 'subtlePulse 2s ease-in-out infinite',
+                  '@keyframes subtlePulse': {
+                    '0%, 100%': { opacity: 0.8, transform: 'translateX(-50%) scale(1)' },
+                    '50%': { opacity: 1, transform: 'translateX(-50%) scale(1.05)' }
+                  }
                 }}
               >
                 ESPACIO
@@ -237,17 +243,15 @@ const StudyCard = ({
 
           {/* Contenido de la respuesta */}
           <Box sx={{ textAlign: 'center', px: 2, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontSize: '0.9rem' }}>
-              Pregunta:
-            </Typography>
+            {/* Pregunta sin label redundante */}
             <Typography
-              variant="body2"
               sx={{
-                mb: 2,
+                mb: 4, // margin 32px
+                fontSize: '18px',
                 fontWeight: 500,
-                color: 'text.secondary',
+                color: 'rgba(255, 255, 255, 0.7)',
                 fontStyle: 'italic',
-                fontSize: '0.9rem'
+                lineHeight: 1.5
               }}
             >
               {card.front}
@@ -255,28 +259,32 @@ const StudyCard = ({
 
             <Box sx={{
               my: 2,
-              py: 2,
-              px: 2,
-              bgcolor: 'background.paper',
+              py: 3,
+              px: 3,
+              bgcolor: 'rgba(255, 255, 255, 0.03)',
               borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'divider',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
               boxShadow: 1
             }}>
               <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ mb: 1, fontSize: '0.9rem', fontWeight: 500 }}
+                sx={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  color: 'rgba(255, 255, 255, 0.5)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  mb: 2
+                }}
               >
                 Respuesta:
               </Typography>
               <Typography
-                variant="h6"
                 component="div"
                 sx={{
-                  fontWeight: 600,
-                  lineHeight: 1.4,
-                  color: 'text.primary',
+                  fontSize: '24px',
+                  lineHeight: 1.6,
+                  fontWeight: 400,
+                  color: '#FFFFFF',
                   textAlign: 'center'
                 }}
               >
@@ -287,132 +295,161 @@ const StudyCard = ({
 
           {/* Botones de dificultad en la parte inferior */}
           <Box sx={{ position: 'absolute', bottom: 20, left: 0, right: 0, px: 2 }}>
-            <Typography
-              variant="body2"
-              color="text.primary"
-              sx={{
-                mb: 2,
-                fontWeight: 500,
-                textAlign: 'center',
-                fontSize: '0.9rem'
-              }}
-            >
-              ¿Qué tan fácil fue recordar esta respuesta?
-            </Typography>
-
-            <Box display="flex" gap={1.5} justifyContent="center" flexWrap="wrap">
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+              {/* Botón Fácil */}
               <Button
-                variant="contained"
-                color="success"
-                size="small"
                 onClick={() => onReview(1)}
                 disabled={disabled || loading}
                 sx={{
-                  minWidth: 80,
+                  position: 'relative',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  minWidth: 140,
+                  p: 2,
+                  borderRadius: '12px',
+                  border: '2px solid transparent',
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
                   textTransform: 'none',
-                  fontSize: '0.85rem',
-                  py: 0.5,
-                  position: 'relative'
+                  '&:hover': {
+                    bgcolor: 'rgba(16, 185, 129, 0.15)',
+                    borderColor: '#10B981',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)'
+                  },
+                  '&:active': {
+                    transform: 'translateY(0)'
+                  }
                 }}
               >
-                Fácil
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: -6,
-                    right: -6,
-                    bgcolor: 'background.paper',
-                    color: 'text.secondary',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 0.5,
-                    px: 0.5,
-                    py: 0.25,
-                    fontSize: '0.6rem',
-                    fontWeight: 600,
-                    minWidth: 16,
-                    textAlign: 'center',
-                    boxShadow: 1
-                  }}
-                >
+                {/* Badge numérico esquina superior derecha */}
+                <Box sx={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 24,
+                  height: 24,
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  bgcolor: '#10B981',
+                  color: '#FFFFFF'
+                }}>
                   1
                 </Box>
+                {/* Label principal */}
+                <Typography sx={{ fontSize: '18px', fontWeight: 600, color: '#FFFFFF', lineHeight: 1.2 }}>
+                  Fácil
+                </Typography>
+                {/* Intervalo */}
+                <Typography sx={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.6)', lineHeight: 1.2 }}>
+                  Revisar en 7 días
+                </Typography>
               </Button>
 
+              {/* Botón Normal */}
               <Button
-                variant="contained"
-                color="warning"
-                size="small"
                 onClick={() => onReview(2)}
                 disabled={disabled || loading}
                 sx={{
-                  minWidth: 80,
+                  position: 'relative',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  minWidth: 140,
+                  p: 2,
+                  borderRadius: '12px',
+                  border: '2px solid transparent',
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
                   textTransform: 'none',
-                  fontSize: '0.85rem',
-                  py: 0.5,
-                  position: 'relative'
+                  '&:hover': {
+                    bgcolor: 'rgba(245, 158, 11, 0.15)',
+                    borderColor: '#F59E0B',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)'
+                  },
+                  '&:active': {
+                    transform: 'translateY(0)'
+                  }
                 }}
               >
-                Normal
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: -6,
-                    right: -6,
-                    bgcolor: 'background.paper',
-                    color: 'text.secondary',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 0.5,
-                    px: 0.5,
-                    py: 0.25,
-                    fontSize: '0.6rem',
-                    fontWeight: 600,
-                    minWidth: 16,
-                    textAlign: 'center',
-                    boxShadow: 1
-                  }}
-                >
+                <Box sx={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 24,
+                  height: 24,
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  bgcolor: '#F59E0B',
+                  color: '#FFFFFF'
+                }}>
                   2
                 </Box>
+                <Typography sx={{ fontSize: '18px', fontWeight: 600, color: '#FFFFFF', lineHeight: 1.2 }}>
+                  Normal
+                </Typography>
+                <Typography sx={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.6)', lineHeight: 1.2 }}>
+                  Revisar en 3 días
+                </Typography>
               </Button>
 
+              {/* Botón Difícil */}
               <Button
-                variant="contained"
-                color="error"
-                size="small"
                 onClick={() => onReview(3)}
                 disabled={disabled || loading}
                 sx={{
-                  minWidth: 80,
+                  position: 'relative',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  minWidth: 140,
+                  p: 2,
+                  borderRadius: '12px',
+                  border: '2px solid transparent',
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
                   textTransform: 'none',
-                  fontSize: '0.85rem',
-                  py: 0.5,
-                  position: 'relative'
+                  '&:hover': {
+                    bgcolor: 'rgba(239, 68, 68, 0.15)',
+                    borderColor: '#EF4444',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)'
+                  },
+                  '&:active': {
+                    transform: 'translateY(0)'
+                  }
                 }}
               >
-                Difícil
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: -6,
-                    right: -6,
-                    bgcolor: 'background.paper',
-                    color: 'text.secondary',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 0.5,
-                    px: 0.5,
-                    py: 0.25,
-                    fontSize: '0.6rem',
-                    fontWeight: 600,
-                    minWidth: 16,
-                    textAlign: 'center',
-                    boxShadow: 1
-                  }}
-                >
+                <Box sx={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 24,
+                  height: 24,
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  bgcolor: '#EF4444',
+                  color: '#FFFFFF'
+                }}>
                   3
                 </Box>
+                <Typography sx={{ fontSize: '18px', fontWeight: 600, color: '#FFFFFF', lineHeight: 1.2 }}>
+                  Difícil
+                </Typography>
+                <Typography sx={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.6)', lineHeight: 1.2 }}>
+                  Revisar pronto
+                </Typography>
               </Button>
             </Box>
           </Box>

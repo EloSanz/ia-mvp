@@ -112,30 +112,8 @@ const StudyControls = ({
                   disabled={loading || paused}
                   color="default"
                   size="medium"
-                  sx={{ position: 'relative' }}
                 >
                   <SkipIcon />
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: -4,
-                      right: -4,
-                      bgcolor: 'background.paper',
-                      color: 'text.secondary',
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: 0.5,
-                      px: 0.5,
-                      py: 0.25,
-                      fontSize: '0.6rem',
-                      fontWeight: 600,
-                      minWidth: 16,
-                      textAlign: 'center',
-                      boxShadow: 1
-                    }}
-                  >
-                    →
-                  </Box>
                 </IconButton>
               </Tooltip>
             )}
@@ -149,6 +127,7 @@ const StudyControls = ({
                 <RefreshIcon />
               </IconButton>
             </Tooltip>
+
 
             {/* Botón Finalizar */}
             <Tooltip title="Finalizar sesión">
