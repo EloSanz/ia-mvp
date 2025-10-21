@@ -3,7 +3,7 @@ import { Container, Alert, Box, Button } from '@mui/material';
 
 export default function SessionError({ onBack }) {
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
+    <Container maxWidth="xl" sx={{ mt: 4 }}>
       <Alert severity="error">
         Error al cargar la sesión de estudio. Por favor, intenta nuevamente.
       </Alert>

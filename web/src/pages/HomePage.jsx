@@ -38,7 +38,10 @@ import {
   GitHub as GitHubIcon,
   Email as EmailIcon,
   Info as InfoIcon,
-  ArrowForward as ArrowForwardIcon
+  ArrowForward as ArrowForwardIcon,
+  AutoAwesome as AIIcon,
+  Create as CreateIcon,
+  AutoFixHigh as AutoFixHighIcon
 } from '@mui/icons-material';
 import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
@@ -52,6 +55,7 @@ import DeckSorting from '../components/DeckSorting';
 import { useTheme as useMuiTheme } from '@mui/material';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
 import DecksGridCard from '../components/DecksGridCard';
+import AIDeckGeneratorModal from '../components/AIDeckGeneratorModal';
 const HomePage = () => {
   const muiTheme = useMuiTheme();
   const { themeName } = useAppTheme();
@@ -94,6 +98,9 @@ const HomePage = () => {
 
   // Modal para contacto
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
+
+  // Modal para generación de deck con IA
+  const [aiDeckGeneratorOpen, setAiDeckGeneratorOpen] = useState(false);
 
   //Monitoreo de deck para portada IA
   const [deckMonitory, setDeckMonitory] = useState(null);
@@ -218,9 +225,15 @@ const HomePage = () => {
     setEditDialogOpen(true);
   };
 
+  const handleAIDeckGenerated = (result) => {
+    console.log('Deck generado con IA:', result);
+    loadDecks(); // Recargar la lista
+    showToast(`Deck "${result.deck.name}" creado exitosamente con ${result.flashcards.length} flashcards`);
+  };
+
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+      <Container maxWidth="xl" sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <CircularProgress />
       </Container>
     );
@@ -230,11 +243,12 @@ const HomePage = () => {
     <>
       <Navigation />
       <Container
-        maxWidth="lg"
+        maxWidth="xl"
         sx={{
-          py: 2,
+          pt: 2,
+          pb: 1, // Reducir padding inferior
           backgroundColor: muiTheme.palette.background.default,
-          minHeight: '100vh',
+          minHeight: 'calc(100vh - 64px)', // Restar la altura del header de navegación
           position: 'relative',
           fontFamily: muiTheme.fontFamily
         }}
@@ -249,19 +263,21 @@ const HomePage = () => {
               severity="info"
               icon={<SchoolIcon />}
               action={
-                <Button
-                  color="inherit"
-                  size="small"
-                  onClick={goToLastDeck}
-                  startIcon={<ArrowForwardIcon />}
-                  sx={{ 
-                    fontWeight: 'bold',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}
-                >
-                  Continuar
-                </Button>
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={goToLastDeck}
+                    endIcon={<ArrowForwardIcon />}
+                    sx={{ 
+                      fontWeight: 'bold',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}
+                  >
+                    Continuar
+                  </Button>
+                </Box>
               }
               sx={{
                 backgroundColor: themeName === 'github' ? '#21262d' : undefined,
@@ -277,9 +293,8 @@ const HomePage = () => {
                 }
               }}
             >
-              <AlertTitle>Continuar estudiando</AlertTitle>
-              Estabas estudiando el deck "
-              {decksList.find((d) => d.id === lastDeckId)?.name || `ID: ${lastDeckId}`}". Haz clic
+              <AlertTitle>Continuar estudiando</AlertTitle>              
+              Estabas estudiando el deck <strong>{decksList.find((d) => d.id === lastDeckId)?.name || `ID: ${lastDeckId}`}</strong>. Haz clic
               en "Continuar" para retomar tu sesión.
             </Alert>
           </Box>
@@ -308,7 +323,7 @@ const HomePage = () => {
               font-family: ${themeName === 'kyoto' ? '"Sawarabi Mincho", "Noto Serif JP", serif' : themeName === 'tokyo' ? '"M PLUS 1p", "Noto Sans JP", sans-serif' : 'inherit'};
               letter-spacing: ${themeName === 'kyoto' ? '0.08em' : themeName === 'tokyo' ? '0.12em' : 'normal'};
               font-weight: ${themeName === 'kyoto' ? '600' : themeName === 'tokyo' ? '700' : 'normal'};
-              color: ${themeName === 'kyoto' ? '#6d4c41' : themeName === 'tokyo' ? '#00eaff' : 'inherit'};
+              color: ${themeName === 'kyoto' ? '#6d4c41' : themeName === 'tokyo' ? '#00eaff' : themeName === 'light' ? '#222' : themeName === 'dark' ? '#e0e0e0' : themeName === 'github' ? '#c9d1d9' : 'inherit'};
               text-shadow: ${themeName === 'kyoto' ? '0 2px 8px #f7cac9' : themeName === 'tokyo' ? '0 2px 12px #ff00cc' : 'none'};
             }
           `}
@@ -405,24 +420,89 @@ const HomePage = () => {
             />
           </>
         )}
-        {/* FAB para crear nuevo deck */}
-        <Fab
-          color="primary"
-          aria-label="add"
+        {/* Botones de acción flotantes */}
+        <Box
           sx={{
             position: 'fixed',
             bottom: 24,
             right: 24,
-            width: 64,
-            height: 64,
-            '& .MuiSvgIcon-root': {
-              fontSize: 32
-            }
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2
           }}
-          onClick={() => setCreateDialogOpen(true)}
         >
-          <AddIcon />
-        </Fab>
+          {/* Botón para crear deck con IA */}
+          <Button
+            variant="contained"
+            startIcon={<AutoFixHighIcon />}
+            onClick={() => setAiDeckGeneratorOpen(true)}
+            sx={{
+              borderRadius: '50px',
+              px: 3,
+              py: 1.5,
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              textTransform: 'none',
+              // Neumorphism/Glassy effect
+              background: (theme) => 
+                theme.palette.mode === 'dark'
+                  ? `linear-gradient(145deg, ${theme.palette.secondary.main}15, ${theme.palette.secondary.main}25)`
+                  : `linear-gradient(145deg, ${theme.palette.secondary.main}20, ${theme.palette.secondary.main}30)`,
+              backgroundColor: 'secondary.main',
+              backdropFilter: 'blur(10px)',
+              border: (theme) => 
+                theme.palette.mode === 'dark'
+                  ? `1px solid ${theme.palette.secondary.main}40`
+                  : `1px solid ${theme.palette.secondary.main}30`,
+              boxShadow: (theme) => 
+                theme.palette.mode === 'dark'
+                  ? `0 8px 32px ${theme.palette.secondary.main}20, inset 0 1px 0 ${theme.palette.secondary.main}30`
+                  : `0 8px 32px ${theme.palette.secondary.main}15, inset 0 1px 0 ${theme.palette.secondary.main}20`,
+              '&:hover': {
+                background: (theme) => 
+                  theme.palette.mode === 'dark'
+                    ? `linear-gradient(145deg, ${theme.palette.secondary.main}25, ${theme.palette.secondary.main}35)`
+                    : `linear-gradient(145deg, ${theme.palette.secondary.main}30, ${theme.palette.secondary.main}40)`,
+                boxShadow: (theme) => 
+                  theme.palette.mode === 'dark'
+                    ? `0 12px 40px ${theme.palette.secondary.main}30, inset 0 1px 0 ${theme.palette.secondary.main}40`
+                    : `0 12px 40px ${theme.palette.secondary.main}25, inset 0 1px 0 ${theme.palette.secondary.main}30`,
+                transform: 'translateY(-2px)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              },
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              color: (theme) => 
+                theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.secondary.contrastText || '#ffffff'
+            }}
+          >
+            Crear con IA
+          </Button>
+          
+          {/* Botón para crear deck manual */}
+          <Button
+            variant="contained"
+            startIcon={<CreateIcon />}
+            onClick={() => setCreateDialogOpen(true)}
+            sx={{
+              borderRadius: '50px',
+              px: 3,
+              py: 1.5,
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              textTransform: 'none',
+              boxShadow: 3,
+              backgroundColor: 'primary.main',
+              '&:hover': {
+                boxShadow: 6,
+                backgroundColor: 'primary.dark'
+              },
+              color: (theme) => 
+                theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.primary.contrastText || '#ffffff'
+            }}
+          >
+            Crear Manual
+          </Button>
+        </Box>
 
         {/* Modal para crear deck */}
         <Dialog
@@ -568,6 +648,13 @@ const HomePage = () => {
           size="xs"
         />
 
+        {/* Modal para generación de deck con IA */}
+        <AIDeckGeneratorModal
+          open={aiDeckGeneratorOpen}
+          onClose={() => setAiDeckGeneratorOpen(false)}
+          onGenerate={handleAIDeckGenerated}
+        />
+
         {/* Toast de confirmación */}
         <Snackbar
           open={toast.open}
@@ -592,6 +679,90 @@ const HomePage = () => {
             {toast.message}
           </Alert>
         </Snackbar>
+
+        {/* Botones de acción flotantes */}
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2
+          }}
+        >
+          {/* Botón para crear deck con IA */}
+          <Button
+            variant="contained"
+            startIcon={<AutoFixHighIcon />}
+            onClick={() => setAiDeckGeneratorOpen(true)}
+            sx={{
+              borderRadius: '50px',
+              px: 3,
+              py: 1.5,
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              textTransform: 'none',
+              // Neumorphism/Glassy effect
+              background: (theme) => 
+                theme.palette.mode === 'dark'
+                  ? `linear-gradient(145deg, ${theme.palette.secondary.main}15, ${theme.palette.secondary.main}25)`
+                  : `linear-gradient(145deg, ${theme.palette.secondary.main}20, ${theme.palette.secondary.main}30)`,
+              backgroundColor: 'secondary.main',
+              backdropFilter: 'blur(10px)',
+              border: (theme) => 
+                theme.palette.mode === 'dark'
+                  ? `1px solid ${theme.palette.secondary.main}40`
+                  : `1px solid ${theme.palette.secondary.main}30`,
+              boxShadow: (theme) => 
+                theme.palette.mode === 'dark'
+                  ? `0 8px 32px ${theme.palette.secondary.main}20, inset 0 1px 0 ${theme.palette.secondary.main}30`
+                  : `0 8px 32px ${theme.palette.secondary.main}15, inset 0 1px 0 ${theme.palette.secondary.main}20`,
+              '&:hover': {
+                background: (theme) => 
+                  theme.palette.mode === 'dark'
+                    ? `linear-gradient(145deg, ${theme.palette.secondary.main}25, ${theme.palette.secondary.main}35)`
+                    : `linear-gradient(145deg, ${theme.palette.secondary.main}30, ${theme.palette.secondary.main}40)`,
+                boxShadow: (theme) => 
+                  theme.palette.mode === 'dark'
+                    ? `0 12px 40px ${theme.palette.secondary.main}30, inset 0 1px 0 ${theme.palette.secondary.main}40`
+                    : `0 12px 40px ${theme.palette.secondary.main}25, inset 0 1px 0 ${theme.palette.secondary.main}30`,
+                transform: 'translateY(-2px)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              },
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              color: (theme) => 
+                theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.secondary.contrastText || '#ffffff'
+            }}
+          >
+            Crear con IA
+          </Button>
+          
+          {/* Botón para crear deck manual */}
+          <Button
+            variant="contained"
+            startIcon={<CreateIcon />}
+            onClick={() => setCreateDialogOpen(true)}
+            sx={{
+              borderRadius: '50px',
+              px: 3,
+              py: 1.5,
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              textTransform: 'none',
+              boxShadow: 3,
+              backgroundColor: 'primary.main',
+              '&:hover': {
+                boxShadow: 6,
+                backgroundColor: 'primary.dark'
+              },
+              color: (theme) => 
+                theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.primary.contrastText || '#ffffff'
+            }}
+          >
+            Crear Manual
+          </Button>
+        </Box>
       </Container>
     </>
   );

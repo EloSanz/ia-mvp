@@ -89,7 +89,7 @@ export default function StudyPage() {
   return (
     <>
       <Navigation />
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+      <Container maxWidth="xl" sx={{ mt: 4, mb: 8 }}>
         <Breadcrumbs />
         <StudyHeader />
 

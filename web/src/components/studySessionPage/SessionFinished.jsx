@@ -3,7 +3,7 @@ import { Container, Box, Button, Typography, Fade } from '@mui/material';
 
 export default function SessionFinished({ stats, formatTime, onRestart, onHome }) {
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+    <Container maxWidth="xl" sx={{ mt: 4, mb: 8 }}>
       <Fade in timeout={500}>
         <Box textAlign="center">
           <Typography variant="h3" component="h1" fontWeight={700} gutterBottom>
