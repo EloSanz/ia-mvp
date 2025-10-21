@@ -24,7 +24,6 @@ import {
   Pause as PauseIcon,
   Stop as StopIcon,
   SkipNext as SkipIcon,
-  Home as HomeIcon,
   Refresh as RefreshIcon
 } from '@mui/icons-material';
 
@@ -36,7 +35,6 @@ const StudyControls = ({
   onFinish,
   onSkip,
   onRestart,
-  onGoHome,
   loading = false,
   paused = false,
   canSkip = true,
@@ -114,8 +112,30 @@ const StudyControls = ({
                   disabled={loading || paused}
                   color="default"
                   size="medium"
+                  sx={{ position: 'relative' }}
                 >
                   <SkipIcon />
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: -4,
+                      right: -4,
+                      bgcolor: 'background.paper',
+                      color: 'text.secondary',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 0.5,
+                      px: 0.5,
+                      py: 0.25,
+                      fontSize: '0.6rem',
+                      fontWeight: 600,
+                      minWidth: 16,
+                      textAlign: 'center',
+                      boxShadow: 1
+                    }}
+                  >
+                    →
+                  </Box>
                 </IconButton>
               </Tooltip>
             )}
@@ -144,12 +164,6 @@ const StudyControls = ({
               </Button>
             </Tooltip>
 
-            {/* Botón Inicio */}
-            <Tooltip title="Volver al inicio">
-              <IconButton onClick={onGoHome} disabled={loading} color="default" size="large">
-                <HomeIcon />
-              </IconButton>
-            </Tooltip>
           </Box>
         </Box>
       </Box>

@@ -2,7 +2,7 @@
  * StudyCard Component
  *
  * Componente principal para mostrar flashcards durante las sesiones de estudio
- * Maneja la transición entre pregunta y respuesta con animaciones
+ * Maneja la transición entre pregunta y respuesta con animación 3D de volteo
  */
 
 import React from 'react';
@@ -15,8 +15,7 @@ import {
   Chip,
   IconButton,
   Tooltip,
-  LinearProgress,
-  Fade
+  LinearProgress
 } from '@mui/material';
 import {
   Flip as FlipIcon,
@@ -31,6 +30,7 @@ const StudyCard = ({
   loading = false,
   disabled = false
 }) => {
+
   if (!card) {
     return (
       <Card
@@ -72,223 +72,353 @@ const StudyCard = ({
   };
 
   return (
-    <Card
+    <Box
       sx={{
-        minHeight: 500,
-        position: 'relative',
-        transition: 'all 0.3s ease-in-out',
-        transform: showingAnswer ? 'scale(1.02)' : 'scale(1)',
-        boxShadow: showingAnswer ? 8 : 2,
-        border: showingAnswer ? '2px solid' : 'none',
-        borderColor: showingAnswer ? 'primary.main' : 'transparent'
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: 400,
+        perspective: '1000px'
       }}
     >
-      {/* Header con información de la card */}
-      <Box sx={{ p: 2, pb: 0 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Box display="flex" gap={1} alignItems="center">
-            <Chip
-              size="small"
-              label={getDifficultyLabel(card.difficulty)}
-              color={getDifficultyColor(card.difficulty)}
-              variant="outlined"
-            />
-            {card.reviewCount > 0 && (
+      {/* Contenedor de la tarjeta con animación 3D */}
+      <Box
+        sx={{
+          position: 'relative',
+          width: 700,
+          height: 400,
+          transformStyle: 'preserve-3d',
+          transition: 'transform 0.6s ease-in-out',
+          transform: showingAnswer ? 'rotateY(180deg)' : 'rotateY(0deg)',
+          cursor: !showingAnswer ? 'pointer' : 'default'
+        }}
+        onClick={!showingAnswer && !disabled && !loading ? onShowAnswer : undefined}
+      >
+        {/* Cara frontal (pregunta) */}
+        <Card
+          sx={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            backfaceVisibility: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            p: 3,
+            boxShadow: 4,
+            borderRadius: 3
+          }}
+        >
+          {/* Header con información de la card */}
+          <Box sx={{ position: 'absolute', top: 16, left: 16, right: 16 }}>
+            <Box display="flex" gap={1} alignItems="center" justifyContent="flex-start">
               <Chip
                 size="small"
-                label={`${card.reviewCount} repeticiones`}
+                label={getDifficultyLabel(card.difficulty)}
+                color={getDifficultyColor(card.difficulty)}
                 variant="outlined"
-                icon={<PsychologyIcon />}
               />
-            )}
+              {card.reviewCount > 0 && (
+                <Chip
+                  size="small"
+                  label={`${card.reviewCount} repeticiones`}
+                  variant="outlined"
+                  icon={<PsychologyIcon />}
+                />
+              )}
+            </Box>
           </Box>
 
-        </Box>
-      </Box>
+          {/* Barra de progreso para mostrar que se está cargando */}
+          {loading && (
+            <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
+              <LinearProgress />
+            </Box>
+          )}
 
-      {/* Contenido principal */}
-      <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 3 }}>
-        {/* Barra de progreso para mostrar que se está cargando */}
-        {loading && (
-          <Box sx={{ mb: 2 }}>
-            <LinearProgress />
+          {/* Contenido de la pregunta */}
+          <Box sx={{ textAlign: 'center', px: 2, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Typography
+              variant="h4"
+              component="div"
+              sx={{
+                fontWeight: 600,
+                fontSize: '2rem', // 32px
+                lineHeight: 1.3,
+                color: '#FFFFFF',
+                textAlign: 'center',
+                mb: 3,
+                textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+              }}
+            >
+              {card.front}
+            </Typography>
           </Box>
-        )}
 
-        {/* Área de contenido principal */}
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          {/* PREGUNTA */}
-          <Fade in={!showingAnswer} timeout={300}>
-            <Box sx={{ textAlign: 'center', mb: 3 }}>
+          {/* Botón en la parte inferior */}
+          <Box sx={{ position: 'absolute', bottom: 20, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
+            <Button
+              variant="contained"
+              size="large"
+              disabled={disabled || loading}
+              startIcon={<FlipIcon />}
+              sx={{
+                px: 4,
+                py: 1.5,
+                borderRadius: 3,
+                textTransform: 'none',
+                fontSize: '1.1rem',
+                position: 'relative'
+              }}
+            >
+              Mostrar Respuesta
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: -8,
+                  right: -8,
+                  bgcolor: 'background.paper',
+                  color: 'text.secondary',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  px: 0.5,
+                  py: 0.25,
+                  fontSize: '0.7rem',
+                  fontWeight: 600,
+                  minWidth: 20,
+                  textAlign: 'center',
+                  boxShadow: 1
+                }}
+              >
+                ESPACIO
+              </Box>
+            </Button>
+          </Box>
+        </Card>
+
+        {/* Cara trasera (respuesta) */}
+        <Card
+          sx={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            backfaceVisibility: 'hidden',
+            transform: 'rotateY(180deg)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            p: 3,
+            boxShadow: 4,
+            borderRadius: 3
+          }}
+        >
+          {/* Header con información de la card */}
+          <Box sx={{ position: 'absolute', top: 16, left: 16, right: 16 }}>
+            <Box display="flex" gap={1} alignItems="center" justifyContent="flex-start">
+              <Chip
+                size="small"
+                label={getDifficultyLabel(card.difficulty)}
+                color={getDifficultyColor(card.difficulty)}
+                variant="outlined"
+              />
+              {card.reviewCount > 0 && (
+                <Chip
+                  size="small"
+                  label={`${card.reviewCount} repeticiones`}
+                  variant="outlined"
+                  icon={<PsychologyIcon />}
+                />
+              )}
+            </Box>
+          </Box>
+
+          {/* Contenido de la respuesta */}
+          <Box sx={{ textAlign: 'center', px: 2, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontSize: '0.9rem' }}>
+              Pregunta:
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                mb: 2,
+                fontWeight: 500,
+                color: 'text.secondary',
+                fontStyle: 'italic',
+                fontSize: '0.9rem'
+              }}
+            >
+              {card.front}
+            </Typography>
+
+            <Box sx={{
+              my: 2,
+              py: 2,
+              px: 2,
+              bgcolor: 'background.paper',
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: 'divider',
+              boxShadow: 1
+            }}>
               <Typography
-                variant="h4"
+                variant="body2"
+                color="text.secondary"
+                sx={{ mb: 1, fontSize: '0.9rem', fontWeight: 500 }}
+              >
+                Respuesta:
+              </Typography>
+              <Typography
+                variant="h6"
                 component="div"
                 sx={{
-                  mb: 3,
                   fontWeight: 600,
                   lineHeight: 1.4,
-                  minHeight: 120,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                   color: 'text.primary',
                   textAlign: 'center'
                 }}
               >
-                {card.front}
+                {card.back}
               </Typography>
-
-              {!showingAnswer && (
-                <Button
-                  variant="contained"
-                  size="large"
-                  onClick={onShowAnswer}
-                  disabled={disabled || loading}
-                  startIcon={<FlipIcon />}
-                  sx={{
-                    mt: 2,
-                    px: 4,
-                    py: 1.5,
-                    borderRadius: 3,
-                    textTransform: 'none',
-                    fontSize: '1.1rem'
-                  }}
-                >
-                  Mostrar Respuesta
-                </Button>
-              )}
             </Box>
-          </Fade>
+          </Box>
 
-          {/* RESPUESTA */}
-          <Fade in={showingAnswer} timeout={300}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 2, fontSize: '0.95rem', fontWeight: 500 }}>
-                Pregunta:
-              </Typography>
+          {/* Botones de dificultad en la parte inferior */}
+          <Box sx={{ position: 'absolute', bottom: 20, left: 0, right: 0, px: 2 }}>
+            <Typography
+              variant="body2"
+              color="text.primary"
+              sx={{
+                mb: 2,
+                fontWeight: 500,
+                textAlign: 'center',
+                fontSize: '0.9rem'
+              }}
+            >
+              ¿Qué tan fácil fue recordar esta respuesta?
+            </Typography>
 
-              <Typography
-                variant="body1"
+            <Box display="flex" gap={1.5} justifyContent="center" flexWrap="wrap">
+              <Button
+                variant="contained"
+                color="success"
+                size="small"
+                onClick={() => onReview(1)}
+                disabled={disabled || loading}
                 sx={{
-                  mb: 3,
-                  fontWeight: 500,
-                  minHeight: 80,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'text.secondary',
-                  fontStyle: 'italic'
+                  minWidth: 80,
+                  textTransform: 'none',
+                  fontSize: '0.85rem',
+                  py: 0.5,
+                  position: 'relative'
                 }}
               >
-                {card.front}
-              </Typography>
-
-              <Box sx={{
-                my: 3,
-                py: 3,
-                px: 2,
-                bgcolor: 'background.paper',
-                borderRadius: 2,
-                border: '1px solid',
-                borderColor: 'divider',
-                boxShadow: 1
-              }}>
-                <Typography
-                  variant="body1"
-                  color="text.secondary"
-                  sx={{ mb: 2, fontSize: '0.95rem', fontWeight: 500 }}
-                >
-                  Respuesta:
-                </Typography>
-
-                <Typography
-                  variant="h5"
-                  component="div"
+                Fácil
+                <Box
                   sx={{
+                    position: 'absolute',
+                    top: -6,
+                    right: -6,
+                    bgcolor: 'background.paper',
+                    color: 'text.secondary',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: 0.5,
+                    px: 0.5,
+                    py: 0.25,
+                    fontSize: '0.6rem',
                     fontWeight: 600,
-                    lineHeight: 1.5,
-                    minHeight: 100,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'text.primary',
-                    textAlign: 'center'
+                    minWidth: 16,
+                    textAlign: 'center',
+                    boxShadow: 1
                   }}
                 >
-                  {card.back}
-                </Typography>
-              </Box>
-
-              {/* Botones de dificultad */}
-              <Box sx={{ mt: 4 }}>
-                <Typography
-                  variant="h6"
-                  color="text.primary"
-                  sx={{
-                    mb: 3,
-                    fontWeight: 500,
-                    textAlign: 'center'
-                  }}
-                >
-                  ¿Qué tan fácil fue recordar esta respuesta?
-                </Typography>
-
-                <Box display="flex" gap={2} justifyContent="center" flexWrap="wrap">
-                  <Button
-                    variant="contained"
-                    color="success"
-                    size="large"
-                    onClick={() => onReview(1)}
-                    disabled={disabled || loading}
-                    sx={{
-                      minWidth: 120,
-                      textTransform: 'none',
-                      fontSize: '1rem',
-                      py: 1
-                    }}
-                  >
-                    Fácil
-                  </Button>
-
-                  <Button
-                    variant="contained"
-                    color="warning"
-                    size="large"
-                    onClick={() => onReview(2)}
-                    disabled={disabled || loading}
-                    sx={{
-                      minWidth: 120,
-                      textTransform: 'none',
-                      fontSize: '1rem',
-                      py: 1
-                    }}
-                  >
-                    Normal
-                  </Button>
-
-                  <Button
-                    variant="contained"
-                    color="error"
-                    size="large"
-                    onClick={() => onReview(3)}
-                    disabled={disabled || loading}
-                    sx={{
-                      minWidth: 120,
-                      textTransform: 'none',
-                      fontSize: '1rem',
-                      py: 1
-                    }}
-                  >
-                    Difícil
-                  </Button>
+                  1
                 </Box>
-              </Box>
-            </Box>
-          </Fade>
-        </Box>
-      </CardContent>
+              </Button>
 
-    </Card>
+              <Button
+                variant="contained"
+                color="warning"
+                size="small"
+                onClick={() => onReview(2)}
+                disabled={disabled || loading}
+                sx={{
+                  minWidth: 80,
+                  textTransform: 'none',
+                  fontSize: '0.85rem',
+                  py: 0.5,
+                  position: 'relative'
+                }}
+              >
+                Normal
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: -6,
+                    right: -6,
+                    bgcolor: 'background.paper',
+                    color: 'text.secondary',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: 0.5,
+                    px: 0.5,
+                    py: 0.25,
+                    fontSize: '0.6rem',
+                    fontWeight: 600,
+                    minWidth: 16,
+                    textAlign: 'center',
+                    boxShadow: 1
+                  }}
+                >
+                  2
+                </Box>
+              </Button>
+
+              <Button
+                variant="contained"
+                color="error"
+                size="small"
+                onClick={() => onReview(3)}
+                disabled={disabled || loading}
+                sx={{
+                  minWidth: 80,
+                  textTransform: 'none',
+                  fontSize: '0.85rem',
+                  py: 0.5,
+                  position: 'relative'
+                }}
+              >
+                Difícil
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: -6,
+                    right: -6,
+                    bgcolor: 'background.paper',
+                    color: 'text.secondary',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: 0.5,
+                    px: 0.5,
+                    py: 0.25,
+                    fontSize: '0.6rem',
+                    fontWeight: 600,
+                    minWidth: 16,
+                    textAlign: 'center',
+                    boxShadow: 1
+                  }}
+                >
+                  3
+                </Box>
+              </Button>
+            </Box>
+          </Box>
+        </Card>
+      </Box>
+    </Box>
   );
 };
 

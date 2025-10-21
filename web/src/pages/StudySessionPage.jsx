@@ -174,7 +174,23 @@ export default function StudySessionPage() {
     }
   };
 
-  const handleRestart = () => navigate('/study');
+  const handleRestart = async () => {
+    try {
+      // Finalizar sesión actual
+      if (session) {
+        await finishSession();
+      }
+      // Iniciar nueva sesión con el mismo deck
+      await initializeSession();
+      setSnackbar({ open: true, message: 'Sesión reiniciada', severity: 'success' });
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: err.message || 'Error al reiniciar la sesión',
+        severity: 'error'
+      });
+    }
+  };
   const handleGoHome = () => navigate('/');
   const handlePause = () => {
     setPaused(true);
@@ -222,7 +238,7 @@ export default function StudySessionPage() {
     <>
       <Navigation />
       <Container maxWidth="xl" sx={{ mt: 4, mb: 12 }}>
-        <Breadcrumbs />
+        <Breadcrumbs deckName={session?.deckName} />
 
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
@@ -252,15 +268,178 @@ export default function StudySessionPage() {
             disabled={paused || loading}
           />
 
-          {/* Ayuda de teclado */}
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+          {/* Instrucciones de teclado mejoradas */}
+          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ 
+              display: 'flex', 
+              gap: 1, 
+              flexWrap: 'wrap', 
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
               {!showingAnswer ? (
-                <>Presiona <strong>ESPACIO</strong> para mostrar la respuesta</>
+                <>
+                  <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
+                    Presiona
+                  </Typography>
+                  <Box sx={{ 
+                    bgcolor: 'primary.main', 
+                    color: 'white', 
+                    px: 1.5, 
+                    py: 0.5, 
+                    borderRadius: 1,
+                    fontWeight: 600,
+                    fontSize: '0.8rem'
+                  }}>
+                    ESPACIO
+                  </Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                    para voltear la tarjeta
+                  </Typography>
+                </>
               ) : (
-                <>Presiona <strong>1</strong> (Fácil), <strong>2</strong> (Normal), o <strong>3</strong> (Difícil)</>
+                <>
+                  <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
+                    Califica la dificultad:
+                  </Typography>
+                  <Box sx={{ 
+                    bgcolor: 'success.main', 
+                    color: 'white', 
+                    px: 1, 
+                    py: 0.5, 
+                    borderRadius: 1,
+                    fontWeight: 600,
+                    fontSize: '0.8rem'
+                  }}>
+                    1
+                  </Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                    Fácil
+                  </Typography>
+                  <Box sx={{ 
+                    bgcolor: 'warning.main', 
+                    color: 'white', 
+                    px: 1, 
+                    py: 0.5, 
+                    borderRadius: 1,
+                    fontWeight: 600,
+                    fontSize: '0.8rem'
+                  }}>
+                    2
+                  </Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                    Normal
+                  </Typography>
+                  <Box sx={{ 
+                    bgcolor: 'error.main', 
+                    color: 'white', 
+                    px: 1, 
+                    py: 0.5, 
+                    borderRadius: 1,
+                    fontWeight: 600,
+                    fontSize: '0.8rem'
+                  }}>
+                    3
+                  </Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                    Difícil
+                  </Typography>
+                </>
               )}
+            </Box>
+          </Box>
+
+          {/* Leyenda de atajos agrandada en esquina inferior */}
+          <Box sx={{ 
+            position: 'fixed', 
+            bottom: 100, 
+            right: 20, 
+            bgcolor: 'background.paper',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 2,
+            p: 2,
+            boxShadow: 3,
+            zIndex: 1000,
+            minWidth: 200
+          }}>
+            <Typography variant="subtitle2" color="text.primary" sx={{ fontSize: '0.9rem', display: 'block', mb: 1.5, fontWeight: 600 }}>
+              ⌨️ Atajos de teclado
             </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ 
+                  bgcolor: 'primary.main', 
+                  color: 'white', 
+                  px: 1, 
+                  py: 0.5, 
+                  borderRadius: 1,
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  minWidth: 60,
+                  textAlign: 'center'
+                }}>
+                  ESPACIO
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                  Voltear tarjeta
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ 
+                  bgcolor: 'success.main', 
+                  color: 'white', 
+                  px: 1, 
+                  py: 0.5, 
+                  borderRadius: 1,
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  minWidth: 20,
+                  textAlign: 'center'
+                }}>
+                  1
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                  Fácil
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ 
+                  bgcolor: 'warning.main', 
+                  color: 'white', 
+                  px: 1, 
+                  py: 0.5, 
+                  borderRadius: 1,
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  minWidth: 20,
+                  textAlign: 'center'
+                }}>
+                  2
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                  Normal
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ 
+                  bgcolor: 'error.main', 
+                  color: 'white', 
+                  px: 1, 
+                  py: 0.5, 
+                  borderRadius: 1,
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  minWidth: 20,
+                  textAlign: 'center'
+                }}>
+                  3
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                  Difícil
+                </Typography>
+              </Box>
+            </Box>
           </Box>
         </Box>
 
@@ -272,7 +451,6 @@ export default function StudySessionPage() {
           onFinish={handleFinish}
           onSkip={handleSkip}
           onRestart={handleRestart}
-          onGoHome={handleGoHome}
           loading={loading}
           paused={paused}
           canSkip={!!currentCard && !showingAnswer}
