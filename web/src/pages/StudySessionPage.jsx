@@ -84,7 +84,13 @@ export default function StudySessionPage() {
 
   const handleReview = async (difficulty) => {
     try {
+      // Primero procesamos la respuesta (esto resetea showingAnswer y inicia la animación de volteo)
       await reviewCard(difficulty);
+      
+      // Esperamos a que termine la animación de volteo (0.6s) antes de cambiar la tarjeta
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Ahora obtenemos la siguiente tarjeta
       const nextCardResult = await nextCard();
       if (nextCardResult === null) setShowFinishDialog(true);
     } catch (err) {
