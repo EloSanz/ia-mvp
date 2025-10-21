@@ -2,8 +2,6 @@ import { Deck } from '../models/deck.js';
 import { DeckDto } from '../dtos/deck.dto.js';
 import { BaseController } from './base.controller.js';
 import { ForbiddenError, NotFoundError } from '../utils/custom.errors.js';
-import fs from "fs";
-import { generateDeckCoverURL } from '../services/aiImage.service.js';
 import { deckGeneratorService } from '../services/deckGenerator.service.js';
 
 export const DeckController = {
@@ -34,44 +32,44 @@ export const DeckController = {
    */
   createDeck: BaseController.wrap(async (req, res) => {
 
-  const { name, description, generateCover } = req.body;
-  const userId = parseInt(req.userId);
+    const { name, description, generateCover } = req.body;
+    const userId = parseInt(req.userId);
 
-  try {
+    try {
 
-    const deck = await Deck.create({
-      name,
-      description,
-      userId,
-      coverUrl: null
-    });
+      const deck = await Deck.create({
+        name,
+        description,
+        userId,
+        coverUrl: null
+      });
 
-    BaseController.success(res, deck, "Deck creado exitosamente", 201);
+      BaseController.success(res, deck, "Deck creado exitosamente", 201);
 
-    let coverBase64 = null;
+      let coverBase64 = null;
 
-    if (generateCover) {
-      (async () => {
-        const { generateDeckCoverBase64 } = await import("../services/aiImage.service.js");
-        const result = await generateDeckCoverBase64(name, description);
+      if (generateCover) {
+        (async () => {
+          const { generateDeckCoverBase64 } = await import("../services/aiImage.service.js");
+          const result = await generateDeckCoverBase64(name, description);
 
-        if (result.base64) {
-          coverBase64 = result.base64
-          await Deck.update(deck.id, { coverUrl: result.base64 });
-          // TODO: emitir evento con socket.io o notificación al front
-           console.log("Portada generada correctamente");
-        } else {
-          console.error("❌ Error al generar portada IA:", result.error);
-        }
-      })();
+          if (result.base64) {
+            coverBase64 = result.base64
+            await Deck.update(deck.id, { coverUrl: result.base64 });
+            // TODO: emitir evento con socket.io o notificación al front
+            console.log("Portada generada correctamente");
+          } else {
+            console.error("❌ Error al generar portada IA:", result.error);
+          }
+        })();
+      }
+
+
+    } catch (error) {
+      console.error("Error creating deck:", error);
+      throw error;
     }
 
-
-  } catch (error) {
-    console.error("Error creating deck:", error);
-    throw error;
-  }
-  
   }),
 
   /**
@@ -122,7 +120,7 @@ export const DeckController = {
     const { count = 3 } = req.body;
 
     const suggestions = await deckGeneratorService.suggestTopicsFromUserDecks(userId, count);
-    
+
     BaseController.success(res, { topics: suggestions }, 'Temas sugeridos exitosamente');
   }),
 
@@ -138,7 +136,7 @@ export const DeckController = {
     }
 
     let result;
-    
+
     try {
       if (mode === 'free') {
         // Modo tema libre

@@ -4,11 +4,19 @@ import { Card, CardContent, CardActions, Box, Typography, Chip, Button } from '@
 import { LibraryBooks as BooksIcon, PlayArrow as PlayIcon } from '@mui/icons-material';
 
 export default function DeckCard({ deck, selected, onSelect, onView }) {
-  // Stats mockeadas (mismo cálculo que tenías)
-  const totalCards = deck.cardCount || 0;
-  const dueCards = totalCards > 0 ? Math.floor(Math.random() * totalCards) : 0;
-  const reviewedCards = totalCards > 0 ? Math.floor(Math.random() * (totalCards - dueCards)) : 0;
-  const newCards = Math.max(0, totalCards - dueCards - reviewedCards);
+
+  let totalCards, dueCards, reviewedCards, newCards;
+  if (deck.stats) {
+    totalCards = deck.stats.flashcardsCount;
+    dueCards = deck.stats.newFlashcardsCount;
+    reviewedCards = totalCards - deck.stats.revisionsCount;
+    newCards = Math.abs(totalCards - dueCards - reviewedCards);
+  } else {
+    totalCards = deck.cardCount || 0;
+    dueCards = totalCards > 0 ? Math.floor(Math.random() * totalCards) : 0;
+    reviewedCards = totalCards > 0 ? Math.floor(Math.random() * (totalCards - dueCards)) : 0;
+    newCards = Math.max(0, totalCards - dueCards - reviewedCards);
+  }
 
   return (
     <Card

@@ -14,6 +14,8 @@ export class Deck {
     this.userId = data.userId;
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
+    // Agregado para conservar estadísticas
+    this.stats = data.stats || null;
   }
 
   /**
@@ -52,7 +54,7 @@ export class Deck {
    */
   static async findAll(filter = {}) {
     const entities = await DeckRepository.findAll(filter);
-    return entities.map((entity) => Deck.fromEntity(entity));
+    return entities.map((entity) => Deck.fromEntityWithStast(entity));
   }
 
   /**
@@ -70,7 +72,7 @@ export class Deck {
       ...updateData,
       updatedAt: new Date()
     });
-    
+
 
     updatedDeck.name = updatedDeck.name.trim();
     updatedDeck.description = updatedDeck.description.trim();
@@ -112,6 +114,22 @@ export class Deck {
   }
 
   /**
+  * Convierte una entidad a modelo
+  */
+  static fromEntityWithStast(entity) {
+    return new Deck({
+      id: entity.id,
+      name: entity.name,
+      description: entity.description,
+      coverUrl: entity.coverUrl,
+      userId: entity.userId,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+      stats: entity.stats
+    });
+  }
+
+  /**
    * Convierte el modelo a un objeto plano
    */
   toJSON() {
@@ -122,7 +140,9 @@ export class Deck {
       coverUrl: this.coverUrl,
       userId: this.userId,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
+      // Agregado para enviar stats
+      stats: this.stats
     };
   }
 }

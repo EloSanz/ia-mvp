@@ -15,7 +15,29 @@ export class DeckRepository {
         where: filter,
         orderBy: { createdAt: 'desc' }
       });
-      return decks.map((deck) => DeckEntity.fromPrisma(deck));
+
+      // Para cada deck, obtener estadísticas de flashcards
+      const decksWithStats = await Promise.all(decks.map(async (deck) => {
+        const entity = DeckEntity.fromPrisma(deck);
+
+        // Obtener cantidad total de flashcards asociadas al deck
+        const flashcardsCount = await prisma.flashcard.count({ where: { deckId: entity.id } });
+        // Obtener cantidad de flashcards que no han sido revisadas
+        const newFlashcardsCount = await prisma.flashcard.count({ where: { deckId: entity.id, reviewCount: 0 } });
+
+        // Calcular las revisiones: se asume que las flashcards revisadas son la diferencia
+        const revisionsCount = flashcardsCount - newFlashcardsCount;
+
+        // Agregar el objeto stats a la entidad
+        entity.stats = {
+          flashcardsCount,
+          newFlashcardsCount,
+          revisionsCount
+        };
+
+        return entity;
+      }));
+      return decksWithStats;
     } catch (error) {
       throw new Error(`Error al obtener decks: ${error.message}`);
     }
