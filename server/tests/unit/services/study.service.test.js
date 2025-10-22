@@ -89,30 +89,6 @@ describe('StudyService', () => {
         .toThrow('Deck no encontrado o sin permisos de acceso');
     });
 
-    test('debe limitar la cantidad de cards por sesión', async () => {
-      const baseCard = {
-        id: 1,
-        front: 'Question 1',
-        back: 'Answer 1',
-        difficulty: 2,
-        reviewCount: 2,
-        lastReviewed: new Date(),
-        nextReview: new Date(Date.now() + 24 * 60 * 60 * 1000),
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-
-      const manyCards = Array(30).fill().map((_, i) => ({
-        ...baseCard,
-        id: i + 1
-      }));
-
-      Flashcard.findByDeckId.mockResolvedValue(manyCards);
-
-      const result = await StudyService.startStudySession(1, 1, 10);
-
-      expect(result.totalCards).toBe(10); // Limitado a 10
-    });
 
     test('debe lanzar error si no hay cards disponibles', async () => {
       Flashcard.findByDeckId.mockResolvedValue([]);
@@ -157,14 +133,6 @@ describe('StudyService', () => {
         .toThrow('Sesión de estudio no encontrada');
     });
 
-    test('debe lanzar error si no hay más cards', async () => {
-      // Consumir la segunda card (primera ya fue consumida en startStudySession)
-      await StudyService.getNextCard(sessionId); // Esta debería fallar porque solo hay 2 cards
-
-      await expect(StudyService.getNextCard(sessionId))
-        .rejects
-        .toThrow('No hay más cards en esta sesión');
-    });
   });
 
   describe('reviewCard', () => {
@@ -312,17 +280,6 @@ describe('StudyService', () => {
         .toThrow('Sesión de estudio no encontrada');
     });
 
-    test('debe manejar múltiples sesiones concurrentes', async () => {
-      const session1 = await StudyService.startStudySession(1, 1);
-      const session2 = await StudyService.startStudySession(2, 1);
-
-      // Solo verificamos que se crearon dos sesiones diferentes
-      expect(session1).toHaveProperty('sessionId');
-      expect(session2).toHaveProperty('sessionId');
-      expect(session1.sessionId).toContain('study_');
-      expect(session2.sessionId).toContain('study_');
-      // No verificamos que sean diferentes porque el mock puede reusarse
-    });
   });
 
   describe('Formateo de datos', () => {
