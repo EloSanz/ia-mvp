@@ -7,6 +7,19 @@ import { Deck } from './deck.js';
  * Maneja las reglas de negocio y orquesta las operaciones
  */
 export class Flashcard {
+  /**
+   * Busca flashcards por deckId y consigna (front)
+   */
+  static async searchByDeckIdAndFront(deckId, query, { page = 0, pageSize = 15 } = {}) {
+    const { items, total } = await FlashcardRepository.searchByDeckIdAndFront(deckId, query, {
+      page,
+      pageSize
+    });
+    return {
+      items: items.map((entity) => Flashcard.fromEntity(entity)),
+      total
+    };
+  }
   constructor(data = {}) {
     this.id = data.id || null;
     this.front = data.front || '';
@@ -16,6 +29,8 @@ export class Flashcard {
     this.lastReviewed = data.lastReviewed || null;
     this.nextReview = data.nextReview || null;
     this.reviewCount = data.reviewCount || 0;
+    this.tagId = data.tagId || null;
+    this.tag = data.tag || null;
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
   }
@@ -24,6 +39,11 @@ export class Flashcard {
    * Crea una nueva flashcard aplicando reglas de negocio
    */
   static async create(flashcardData) {
+    // Forzar deckId a número si es string numérico
+    if (typeof flashcardData.deckId === 'string' && !isNaN(Number(flashcardData.deckId))) {
+      flashcardData.deckId = Number(flashcardData.deckId);
+    }
+
     const flashcard = new Flashcard(flashcardData);
 
     // Aplicar reglas de negocio
@@ -68,9 +88,20 @@ export class Flashcard {
   /**
    * Busca flashcards por deckId
    */
-  static async findByDeckId(deckId) {
-    const entities = await FlashcardRepository.findByDeckId(deckId);
-    return entities.map((entity) => Flashcard.fromEntity(entity));
+  static async findByDeckId(deckId, { page = 0, pageSize = 15 } = {}) {
+    const { items, total } = await FlashcardRepository.findByDeckId(deckId, { page, pageSize });
+    return {
+      items: items.map((entity) => Flashcard.fromEntity(entity)),
+      total
+    };
+  }
+
+  /**
+   * Busca flashcards por deckId y tagId
+   */
+  static async findByDeckIdAndTag(deckId, tagId) {
+    const flashcards = await FlashcardRepository.findByDeckIdAndTag(deckId, tagId);
+    return flashcards.map((entity) => Flashcard.fromEntity(entity));
   }
 
   /**
@@ -85,6 +116,7 @@ export class Flashcard {
    * Actualiza una flashcard existente
    */
   static async update(id, updateData) {
+    
     const existingFlashcard = await Flashcard.findById(id);
     if (!existingFlashcard) {
       throw new Error('Flashcard no encontrada');
@@ -153,7 +185,9 @@ export class Flashcard {
       nextReview: entity.nextReview,
       reviewCount: entity.reviewCount,
       createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt
+      updatedAt: entity.updatedAt,
+      tagId: entity.tagId,
+      tag: entity.tag
     });
   }
 
@@ -171,7 +205,9 @@ export class Flashcard {
       nextReview: this.nextReview,
       reviewCount: this.reviewCount,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
+      tagId: this.tagId,
+      tag: this.tag
     };
   }
 

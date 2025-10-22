@@ -1,201 +1,344 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
   Button,
-  Fab,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
   Alert,
   CircularProgress,
   Box,
-  Chip,
+  useTheme as useMuiTheme,
+  Fab,
+  Tooltip,
+  Typography,
   IconButton,
-  Tooltip
+  Stack
 } from '@mui/material';
 import {
-  Add as AddIcon,
   ArrowBack as ArrowBackIcon,
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  PlayArrow as PlayIcon,
-  Search as SearchIcon,
-  AutoFixHigh as AIIcon,
-  AddCard as AddCardIcon
+  AddCard as AddCardIcon,
+  SmartToy as AIIcon,
+  FirstPage as FirstPageIcon,
+  LastPage as LastPageIcon,
+  RestartAlt as RestartAltIcon,
+  ClearAll as ClearAllIcon
 } from '@mui/icons-material';
 import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
-import AIFlashcardsGenerator from '../components/AIFlashcardsGenerator';
+import Breadcrumbs from '../components/Breadcrumbs';
+import { useTheme as useAppTheme } from '../contexts/ThemeContext';
+import FlashcardTable from '../components/deckPage/FlashcardTable';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
+import AIFlashcardsGenerator from '../components/deckPage/AIFlashcardsGenerator';
+import CreateFlashcardModal from '../components/deckPage/CreateFlashcardModal';
+import EditFlashcardModal from '../components/deckPage/EditFlashcardModal';
+import ReviewFlashcardModal from '../components/deckPage/ReviewFlashcardModal';
+import { useFlashcardManager } from '../hooks/useFlashcardManager';
 
 const DeckPage = () => {
+  const muiTheme = useMuiTheme();
+  const { themeName } = useAppTheme();
+  const { token } = useAuth();
   const { deckId } = useParams();
   const navigate = useNavigate();
-  const { flashcards, decks } = useApi();
+  const { flashcards, decks, tags: tagsService } = useApi();
 
+  // Estado
   const [deck, setDeck] = useState(null);
   const [cards, setCards] = useState([]);
+  const [totalCards, setTotalCards] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [_error, setError] = useState(null);
 
-  // Modal para crear flashcard
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [newCard, setNewCard] = useState({ front: '', back: '' });
-  const [creating, setCreating] = useState(false);
+  // Búsqueda y paginación
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchTotal, setSearchTotal] = useState(0);
 
-  // Modal para generar flashcards con IA
-  const [aiGeneratorOpen, setAiGeneratorOpen] = useState(false);
+  // Filtro de dificultad
+  const [difficultyFilter, setDifficultyFilter] = useState('all');
 
-  // Modal para editar flashcard
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [editingCard, setEditingCard] = useState(null);
-  const [editing, setEditing] = useState(false);
+  // Filtro de tags
+  const [tagFilter, setTagFilter] = useState('all');
 
-  // Modal para revisar flashcard
-  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
-  const [reviewingCard, setReviewingCard] = useState(null);
-  const [showAnswer, setShowAnswer] = useState(false);
+  // Filtro de revisiones
+  const [reviewFilter, setReviewFilter] = useState('all');
 
+  // Estados para tags y paginación
+  const [tags, setTags] = useState([]); // Lista de tags disponibles
+  const [newCardTagId, setNewCardTagId] = useState('');
+  const [_editingCardTagId, _setEditingCardTagId] = useState('');
+
+  // Ref para evitar múltiples llamadas al mismo deck
+  const fetchedDeckRef = useRef(new Set());
+
+  // Resetear el ref cuando cambie el deckId
   useEffect(() => {
-    loadDeckAndCards();
+    fetchedDeckRef.current.clear();
   }, [deckId]);
 
-  const loadDeckAndCards = async () => {
+  // Hook personalizado para manejar flashcards
+  const flashcardManager = useFlashcardManager(deckId);
+  const currentPage = flashcardManager.page;
+
+  // Estado local para paginación
+  const getInitialRowsPerPage = () => {
+    const stored = localStorage.getItem('deck_rows_per_page');
+    return stored ? parseInt(stored, 10) : 15;
+  };
+  const [rowsPerPage, setRowsPerPageState] = useState(getInitialRowsPerPage);
+  const [page, setPage] = useState(0);
+
+  // Carga inicial y al cambiar filtros y tags
+  useEffect(() => {
+    // Cargar tags protegidas por token
+    const loadTags = async () => {
+      try {
+        const response = await tagsService.getByDeckId(deckId);
+        const tagsList = Array.isArray(response.data)
+          ? response.data
+          : Array.isArray(response.data?.data)
+            ? response.data.data
+            : [];
+        setTags(tagsList);
+      } catch (error) {
+        console.error('Error cargando tags:', error);
+        setTags([]);
+      }
+    };
+
+    if (token) {
+      loadTags();
+    }
+    // Cargar deck/cards según búsqueda y paginación
+    if (!searchQuery) {
+      loadDeckAndCards(currentPage, rowsPerPage);
+    } else {
+      handleSearch(searchQuery, currentPage, rowsPerPage);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deckId, currentPage, rowsPerPage, searchQuery, token]);
+
+  const loadDeckAndCards = async (p = 0, pageSize = 15) => {
     try {
       setLoading(true);
+
+      const deckKey = `${deckId}_${p}_${pageSize}`;
+
       const [deckResponse, cardsResponse] = await Promise.all([
         decks.getById(deckId),
-        flashcards.getByDeck(deckId)
+        flashcards.getByDeck(deckId, { page: p, pageSize })
       ]);
 
+      // Marcar como fetched
+      fetchedDeckRef.current.add(deckKey);
+
+      // console.debug('✅ Loaded flashcards:', cardsResponse.data?.data?.length || 0);
+
+      // Verificar si la respuesta tiene la estructura correcta
+      const cardsData = cardsResponse.data.data || cardsResponse.data || [];
+      const totalCount = cardsResponse.data.total || cardsResponse.data.length || 0;
+
       setDeck(deckResponse.data.data);
-      setCards(cardsResponse.data.data || []);
+      setCards(Array.isArray(cardsData) ? cardsData : []);
+      setTotalCards(totalCount);
+      setSearchResults([]);
+      setSearchTotal(0);
       setError(null);
     } catch (err) {
       setError('Error al cargar el deck y las flashcards');
-      console.error('Error loading deck and cards:', err);
+      console.error('❌ Error loading deck and cards:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateCard = async () => {
-    if (!newCard.front.trim() || !newCard.back.trim()) return;
-
+  const handleSearch = async (query, p = flashcardManager.page, pageSize = rowsPerPage) => {
     try {
-      setCreating(true);
-      await flashcards.create({
-        ...newCard,
-        deckId: parseInt(deckId)
-      });
-      setCreateDialogOpen(false);
-      setNewCard({ front: '', back: '' });
-      loadDeckAndCards();
+      setSearching(true);
+      const res = await flashcards.searchInDeck(deckId, query, { page: p, pageSize });
+      setSearchResults(res.data.data || []);
+      setSearchTotal(res.data.total || 0);
+      setError(null);
     } catch (err) {
-      console.error('Error creating flashcard:', err);
+      setError('Error al buscar flashcards');
+      setSearchResults([]);
+      setSearchTotal(0);
+      console.error('Error searching flashcards:', err);
     } finally {
-      setCreating(false);
+      setSearching(false);
     }
+  };
+
+  // Función para manejar el cambio en el input de búsqueda
+  const handleSearchInputChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    // Si el query está vacío, volver a cargar todas las cards
+    if (!query.trim()) {
+      loadDeckAndCards(flashcardManager.page, rowsPerPage);
+    } else {
+      // Debounced search - esperar 300ms antes de buscar
+      clearTimeout(window.searchTimeout);
+      window.searchTimeout = setTimeout(() => {
+        if (query.trim()) {
+          handleSearch(query.trim(), 0, rowsPerPage);
+        }
+      }, 300);
+    }
+  };
+
+  // Función para manejar cambios de página durante búsqueda o listado normal
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage);
+    if (searchQuery.trim()) {
+      handleSearch(searchQuery.trim(), newPage, rowsPerPage);
+    } else {
+      loadDeckAndCards(newPage, rowsPerPage);
+    }
+  };
+
+  // Función para manejar cambios en la cantidad de filas por página
+  const setRowsPerPage = (event) => {
+    const newRowsPerPage = parseInt(event.target.value, 10);
+    setRowsPerPageState(newRowsPerPage);
+    localStorage.setItem('deck_rows_per_page', newRowsPerPage);
+    setPage(0);
+    if (searchQuery.trim()) {
+      handleSearch(searchQuery.trim(), 0, newRowsPerPage);
+    } else {
+      loadDeckAndCards(0, newRowsPerPage);
+    }
+  };
+
+  // Función para limpiar la búsqueda
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setSearchTotal(0);
+    setPage(0);
+    loadDeckAndCards(flashcardManager.page, rowsPerPage);
+  };
+
+  // Función para manejar cambios en el filtro de dificultad
+  const handleDifficultyFilterChange = (value) => {
+    setDifficultyFilter(value);
+    setPage(0);
+  };
+
+  // Función para manejar cambios en el filtro de tags
+  const handleTagFilterChange = (value) => {
+    setTagFilter(value);
+    setPage(0);
+  };
+
+  // Función para manejar cambios en el filtro de revisiones
+  const handleReviewFilterChange = (value) => {
+    setReviewFilter(value);
+    setPage(0);
+  };
+
+  const handleCreateCard = async () => {
+    const createData = {
+      ...flashcardManager.newCard,
+      deckId: parseInt(deckId)
+    };
+
+    // Solo incluir tagId si existe
+    if (newCardTagId) {
+      createData.tagId = parseInt(newCardTagId);
+    }
+
+    await flashcardManager.createCard(() => {
+      setNewCardTagId('');
+      setPage(0); // <-- vuelve a la primera página
+      loadDeckAndCards(0, rowsPerPage); // <-- usa el valor actual de rowsPerPage
+    });
   };
 
   const handleGeneratedCards = async (generatedCards) => {
     try {
-      const cardsWithDeckId = generatedCards.map(card => ({
-        ...card,
-        deckId: parseInt(deckId)
-      }));
-      await flashcards.createMany(cardsWithDeckId);
-      loadDeckAndCards();
+      await flashcards.createMany({
+        flashcards: generatedCards.map((card) => ({
+          ...card,
+          deckId: deckId
+        }))
+      });
+      setPage(0); // <-- vuelve a la primera página
+      loadDeckAndCards(0, rowsPerPage); // <-- usa el valor actual de rowsPerPage
     } catch (err) {
-      console.error('Error creating generated flashcards:', err);
+      console.error('❌ Error creating generated flashcards:', err);
     }
   };
 
   const handleEditCard = async () => {
-    if (!editingCard?.front?.trim() || !editingCard?.back?.trim()) return;
-
-    try {
-      setEditing(true);
-      await flashcards.update(editingCard.id, editingCard);
-      setEditDialogOpen(false);
-      setEditingCard(null);
-      loadDeckAndCards();
-    } catch (err) {
-      console.error('Error editing flashcard:', err);
-    } finally {
-      setEditing(false);
-    }
+    await flashcardManager.updateCard(() => {
+      loadDeckAndCards(flashcardManager.page, flashcardManager.rowsPerPage);
+    });
   };
 
-  const handleDeleteCard = async (cardId) => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar esta flashcard?')) return;
+  const handleDeleteCard = (cardId) => {
+    flashcardManager.handleDeleteCard(cardId);
+  };
 
+  const confirmDeleteCard = async () => {
     try {
-      await flashcards.delete(cardId);
-      loadDeckAndCards();
+      await flashcardManager.deleteCard(() => {
+        setError(null);
+        loadDeckAndCards(flashcardManager.page, flashcardManager.rowsPerPage);
+      });
     } catch (err) {
-      console.error('Error deleting flashcard:', err);
+      console.error('❌ Error deleting flashcard:', err);
+
+      // Si la flashcard no existe (404), simplemente refrescar la lista
+      if (err.response?.status === 404 || err.response?.data?.message?.includes('no encontrado')) {
+        flashcardManager.closeAllModals();
+        setError(null);
+        loadDeckAndCards(flashcardManager.page, flashcardManager.rowsPerPage);
+        return;
+      }
+
+      // Para otros errores, mostrar mensaje de error
+      setError('Error al eliminar la flashcard');
     }
   };
 
   const handleReviewCard = async (difficulty) => {
-    if (!reviewingCard) return;
+    await flashcardManager.reviewCard(difficulty, () => {
+      loadDeckAndCards(flashcardManager.page, flashcardManager.rowsPerPage);
+    });
+  };
 
-    try {
-      await flashcards.review(reviewingCard.id, { difficulty });
-      setReviewDialogOpen(false);
-      setReviewingCard(null);
-      setShowAnswer(false);
-      loadDeckAndCards();
-    } catch (err) {
-      console.error('Error reviewing flashcard:', err);
-    }
+  // Función para actualizar localmente la tag de una card
+  const onCardTagUpdated = (cardId, tagId) => {
+    setCards((prev) => prev.map((c) => (c.id === cardId ? { ...c, tagId } : c)));
   };
 
   const openEditDialog = (card) => {
-    setEditingCard({ ...card });
-    setEditDialogOpen(true);
+    flashcardManager.openEditDialog(card);
   };
 
   const openReviewDialog = (card) => {
-    setReviewingCard(card);
-    setReviewDialogOpen(true);
-    setShowAnswer(false);
+    flashcardManager.openReviewDialog(card);
   };
 
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case 1:
-        return 'success';
-      case 2:
-        return 'warning';
-      case 3:
-        return 'error';
-      default:
-        return 'default';
-    }
-  };
+  // Limpiar timeout de búsqueda cuando el componente se desmonte
+  useEffect(() => {
+    return () => {
+      if (window.searchTimeout) {
+        clearTimeout(window.searchTimeout);
+      }
+    };
+  }, []);
 
-  const getDifficultyLabel = (difficulty) => {
-    switch (difficulty) {
-      case 1:
-        return 'Fácil';
-      case 2:
-        return 'Normal';
-      case 3:
-        return 'Difícil';
-      default:
-        return 'Sin dificultad';
-    }
-  };
+  const _getDifficultyColor = (d) =>
+    d === 1 ? 'success' : d === 2 ? 'warning' : d === 3 ? 'error' : 'default';
+  const _getDifficultyLabel = (d) =>
+    d === 1 ? 'Fácil' : d === 2 ? 'Normal' : d === 3 ? 'Difícil' : 'Sin dificultad';
 
+  // Loading
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -204,9 +347,32 @@ const DeckPage = () => {
     );
   }
 
+  // Deck no encontrado
   if (!deck) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container
+        maxWidth="lg"
+        sx={{
+          py: 4,
+          backgroundColor: muiTheme.palette.background.default,
+          minHeight: '100vh',
+          position: 'relative'
+        }}
+      >
+        {(themeName === 'kyoto' || themeName === 'tokyo') && (
+          <Box
+            sx={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: -1,
+              width: '100vw',
+              height: '100vh',
+              background: `url(${themeName === 'kyoto' ? '/kyoto.png' : '/tokyo.png'}) center/cover no-repeat`,
+              filter: 'blur(8px) brightness(1.08)',
+              opacity: 0.7
+            }}
+          />
+        )}
         <Alert severity="error">Deck no encontrado</Alert>
         <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/')} sx={{ mt: 2 }}>
           Volver al Inicio
@@ -215,95 +381,142 @@ const DeckPage = () => {
     );
   }
 
+  // Render principal cuando el deck existe
   return (
     <>
       <Navigation />
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box display="flex" alignItems="center" mb={4}>
-          <IconButton onClick={() => navigate('/')} sx={{ mr: 2 }}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Box>
-            <Typography variant="h4" component="h1" gutterBottom>
+      <Container
+        maxWidth="lg"
+        sx={{
+          py: 4,
+          position: 'relative',
+          minHeight: '100vh',
+          fontFamily: muiTheme.fontFamily,
+          backgroundColor: muiTheme.palette.background.default
+        }}
+      >
+        {/* Breadcrumbs para navegación contextual */}
+        <Breadcrumbs />
+
+        {/* Información del deck */}
+        {deck && (
+          <Box sx={{ mb: 1 }}>
+            <Typography
+              variant="h4"
+              component="h1"
+              gutterBottom
+              sx={{ fontFamily: muiTheme.fontFamily, fontWeight: 'bold' }}
+            >
               {deck.name}
             </Typography>
-            <Typography variant="body1" color="text.secondary">
-              {deck.description || 'Sin descripción'}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {cards.length} flashcards
-            </Typography>
+            {deck.description && (
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                sx={{ fontFamily: muiTheme.fontFamily }}
+              >
+                {deck.description}
+              </Typography>
+            )}
           </Box>
-        </Box>
+        )}
 
-        {error && (
+        {/* Error message */}
+        {_error && (
           <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
+            {_error}
           </Alert>
         )}
 
-        <Grid container spacing={3}>
-          {cards.map((card) => (
-            <Grid item xs={12} sm={6} md={4} key={card.id}>
-              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography variant="h6" component="div" gutterBottom>
-                    {card.front}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    {card.back}
-                  </Typography>
-                  <Box display="flex" gap={1} flexWrap="wrap">
-                    <Chip
-                      label={getDifficultyLabel(card.difficulty)}
-                      color={getDifficultyColor(card.difficulty)}
-                      size="small"
-                    />
-                    {card.reviewCount > 0 && (
-                      <Chip
-                        label={`${card.reviewCount} revisiones`}
-                        variant="outlined"
-                        size="small"
-                      />
-                    )}
-                  </Box>
-                </CardContent>
-                <CardActions>
-                  <Tooltip title="Revisar">
-                    <IconButton size="small" color="primary" onClick={() => openReviewDialog(card)}>
-                      <PlayIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Editar">
-                    <IconButton size="small" color="secondary" onClick={() => openEditDialog(card)}>
-                      <EditIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Eliminar">
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={() => handleDeleteCard(card.id)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-
-        {cards.length === 0 && !loading && (
-          <Box textAlign="center" mt={6}>
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              No hay flashcards en este deck
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Crea tu primera flashcard para comenzar a estudiar
-            </Typography>
-          </Box>
+        {(themeName === 'kyoto' || themeName === 'tokyo') && (
+          <Box
+            sx={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: -1,
+              width: '100vw',
+              height: '100vh',
+              background: `url(${themeName === 'kyoto' ? '/kyoto.png' : '/tokyo.png'}) center/cover no-repeat`,
+              filter: 'blur(8px) brightness(1.08)',
+              opacity: 0.7
+            }}
+          />
         )}
+
+        <FlashcardTable
+          cards={cards}
+          tags={tags}
+          muiTheme={muiTheme}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          totalCards={totalCards}
+          searchQuery={searchQuery}
+          searchResults={searchResults}
+          searchTotal={searchTotal}
+          searching={searching}
+          onSearchChange={handleSearchInputChange}
+          onClearSearch={handleClearSearch}
+          difficultyFilter={difficultyFilter}
+          onDifficultyFilterChange={handleDifficultyFilterChange}
+          tagFilter={tagFilter}
+          onTagFilterChange={handleTagFilterChange}
+          reviewFilter={reviewFilter}
+          onReviewFilterChange={handleReviewFilterChange}
+          openReviewDialog={openReviewDialog}
+          openEditDialog={openEditDialog}
+          handleDeleteCard={handleDeleteCard}
+          setPage={handlePageChange}
+          setRowsPerPage={setRowsPerPage}
+          flashcards={flashcards}
+          setTags={setTags}
+          loadDeckAndCards={loadDeckAndCards}
+          tagsService={tagsService}
+          onCardTagUpdated={onCardTagUpdated}
+        />
+        {/* Modal de revisión de flashcards */}
+        <ReviewFlashcardModal
+          open={flashcardManager.reviewDialogOpen}
+          onClose={() => {
+            flashcardManager.setReviewDialogOpen(false);
+            flashcardManager.setReviewingCard(null);
+            flashcardManager.setShowAnswer(false);
+          }}
+          reviewingCard={flashcardManager.reviewingCard}
+          showAnswer={flashcardManager.showAnswer}
+          setShowAnswer={flashcardManager.setShowAnswer}
+          onReview={handleReviewCard}
+          muiTheme={muiTheme}
+        />
+
+        {/* Modal de edición de flashcards */}
+        <EditFlashcardModal
+          open={flashcardManager.editDialogOpen}
+          onClose={() => {
+            flashcardManager.setEditDialogOpen(false);
+            flashcardManager.setEditingCard(null);
+          }}
+          editingCard={flashcardManager.editingCard}
+          setEditingCard={flashcardManager.setEditingCard}
+          onEdit={handleEditCard}
+          editing={flashcardManager.editing}
+          muiTheme={muiTheme}
+        />
+
+        {/* Modal de confirmación de eliminación */}
+        <ConfirmDeleteModal
+          open={flashcardManager.deleteDialogOpen}
+          onClose={() => {
+            flashcardManager.setDeleteDialogOpen(false);
+            flashcardManager.setCardToDelete(null);
+          }}
+          onConfirm={confirmDeleteCard}
+          title="Eliminar Flashcard"
+          message="¿Estás seguro de que quieres eliminar esta flashcard?"
+          itemName={flashcardManager.cardToDelete?.front}
+          confirmText="Eliminar"
+          cancelText="Cancelar"
+          size="sm"
+        />
 
         {/* FABs para crear flashcards */}
         <Box sx={{ position: 'fixed', bottom: 24, right: 24, display: 'flex', gap: 2 }}>
@@ -311,8 +524,8 @@ const DeckPage = () => {
             <Fab
               color="primary"
               aria-label="add manually"
-              onClick={() => setCreateDialogOpen(true)}
-              sx={{ 
+              onClick={() => flashcardManager.setCreateDialogOpen(true)}
+              sx={{
                 width: 64,
                 height: 64,
                 '& .MuiSvgIcon-root': {
@@ -327,8 +540,8 @@ const DeckPage = () => {
             <Fab
               color="secondary"
               aria-label="generate with ai"
-              onClick={() => setAiGeneratorOpen(true)}
-              sx={{ 
+              onClick={() => flashcardManager.setAiGeneratorOpen(true)}
+              sx={{
                 width: 64,
                 height: 64,
                 '& .MuiSvgIcon-root': {
@@ -342,145 +555,20 @@ const DeckPage = () => {
         </Box>
 
         {/* Modal para crear flashcard */}
-        <Dialog
-          open={createDialogOpen}
-          onClose={() => setCreateDialogOpen(false)}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>Crear Nueva Flashcard</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Anverso (pregunta)"
-              fullWidth
-              multiline
-              rows={3}
-              variant="outlined"
-              value={newCard.front}
-              onChange={(e) => setNewCard({ ...newCard, front: e.target.value })}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              margin="dense"
-              label="Reverso (respuesta)"
-              fullWidth
-              multiline
-              rows={3}
-              variant="outlined"
-              value={newCard.back}
-              onChange={(e) => setNewCard({ ...newCard, back: e.target.value })}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setCreateDialogOpen(false)}>Cancelar</Button>
-            <Button
-              onClick={handleCreateCard}
-              variant="contained"
-              disabled={!newCard.front.trim() || !newCard.back.trim() || creating}
-            >
-              {creating ? <CircularProgress size={20} /> : 'Crear'}
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Modal para editar flashcard */}
-        <Dialog
-          open={editDialogOpen}
-          onClose={() => setEditDialogOpen(false)}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>Editar Flashcard</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Anverso (pregunta)"
-              fullWidth
-              multiline
-              rows={3}
-              variant="outlined"
-              value={editingCard?.front || ''}
-              onChange={(e) => setEditingCard({ ...editingCard, front: e.target.value })}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              margin="dense"
-              label="Reverso (respuesta)"
-              fullWidth
-              multiline
-              rows={3}
-              variant="outlined"
-              value={editingCard?.back || ''}
-              onChange={(e) => setEditingCard({ ...editingCard, back: e.target.value })}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setEditDialogOpen(false)}>Cancelar</Button>
-            <Button
-              onClick={handleEditCard}
-              variant="contained"
-              disabled={!editingCard?.front?.trim() || !editingCard?.back?.trim() || editing}
-            >
-              {editing ? <CircularProgress size={20} /> : 'Guardar'}
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Modal para revisar flashcard */}
-        <Dialog
-          open={reviewDialogOpen}
-          onClose={() => setReviewDialogOpen(false)}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>Revisar Flashcard</DialogTitle>
-          <DialogContent>
-            <Typography variant="h6" gutterBottom>
-              {reviewingCard?.front}
-            </Typography>
-
-            {!showAnswer ? (
-              <Box textAlign="center" mt={3}>
-                <Button variant="contained" onClick={() => setShowAnswer(true)}>
-                  Mostrar Respuesta
-                </Button>
-              </Box>
-            ) : (
-              <Box>
-                <Typography variant="body1" sx={{ mb: 3 }}>
-                  {reviewingCard?.back}
-                </Typography>
-
-                <Typography variant="h6" gutterBottom>
-                  ¿Qué tan fácil fue recordar esta respuesta?
-                </Typography>
-
-                <Box display="flex" gap={1} justifyContent="center" mt={2}>
-                  <Button variant="contained" color="success" onClick={() => handleReviewCard(1)}>
-                    Fácil
-                  </Button>
-                  <Button variant="contained" color="warning" onClick={() => handleReviewCard(2)}>
-                    Normal
-                  </Button>
-                  <Button variant="contained" color="error" onClick={() => handleReviewCard(3)}>
-                    Difícil
-                  </Button>
-                </Box>
-              </Box>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setReviewDialogOpen(false)}>Cerrar</Button>
-          </DialogActions>
-        </Dialog>
+        <CreateFlashcardModal
+          open={flashcardManager.createDialogOpen}
+          onClose={() => flashcardManager.setCreateDialogOpen(false)}
+          newCard={flashcardManager.newCard}
+          setNewCard={flashcardManager.setNewCard}
+          onCreate={handleCreateCard}
+          creating={flashcardManager.creating}
+          muiTheme={muiTheme}
+        />
 
         {/* Modal para generar flashcards con IA */}
         <AIFlashcardsGenerator
-          open={aiGeneratorOpen}
-          onClose={() => setAiGeneratorOpen(false)}
+          open={flashcardManager.aiGeneratorOpen}
+          onClose={() => flashcardManager.setAiGeneratorOpen(false)}
           onGenerate={handleGeneratedCards}
         />
       </Container>

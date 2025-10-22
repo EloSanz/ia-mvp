@@ -1,4 +1,4 @@
-FROM node:18-bullseye-slim
+FROM node:20-bullseye-slim
 
 WORKDIR /usr/src/app
 
@@ -7,4 +7,4 @@ RUN npm install
 
 COPY . .
 
-CMD ["node", "src/index.js"]
+CMD ["npm", "run", "dockerStart"]

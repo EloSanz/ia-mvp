@@ -12,6 +12,8 @@ export class FlashcardDto {
     this.lastReviewed = data.lastReviewed || null;
     this.nextReview = data.nextReview || null;
     this.reviewCount = data.reviewCount || 0;
+    this.tagId = data.tagId || null;
+    this.tag = data.tag || null; // Objeto TagDto
     this.createdAt = data.createdAt || null;
     this.updatedAt = data.updatedAt || null;
     this.deck = data.deck || null; // Información del deck relacionado
@@ -30,6 +32,8 @@ export class FlashcardDto {
       lastReviewed: flashcardModel.lastReviewed,
       nextReview: flashcardModel.nextReview,
       reviewCount: flashcardModel.reviewCount,
+      tagId: flashcardModel.tagId,
+      tag: flashcardModel.tag,
       createdAt: flashcardModel.createdAt,
       updatedAt: flashcardModel.updatedAt
     });
@@ -48,6 +52,11 @@ export class FlashcardDto {
   static validateCreate(data) {
     const errors = [];
 
+    // Forzar deckId a número si es string numérico
+    if (typeof data.deckId === 'string' && !isNaN(Number(data.deckId))) {
+      data.deckId = Number(data.deckId);
+    }
+
     if (!data.front || typeof data.front !== 'string') {
       errors.push('El anverso (front) es requerido y debe ser una cadena de texto');
     } else if (data.front.trim().length === 0) {
@@ -64,12 +73,21 @@ export class FlashcardDto {
       errors.push('El reverso no puede tener más de 1000 caracteres');
     }
 
-    if (!data.deckId || typeof data.deckId !== 'number' || data.deckId <= 0) {
+    if (
+      data.deckId === undefined ||
+      data.deckId === null ||
+      typeof data.deckId !== 'number' ||
+      data.deckId <= 0
+    ) {
       errors.push('El deckId es requerido y debe ser un número positivo');
     }
 
     if (data.difficulty !== undefined && (data.difficulty < 1 || data.difficulty > 3)) {
       errors.push('La dificultad debe estar entre 1 y 3');
+    }
+
+    if (data.tagId !== undefined && data.tagId !== null && isNaN(Number(data.tagId))) {
+      errors.push('El tagId debe ser un número válido o null');
     }
 
     if (errors.length > 0) {
@@ -80,7 +98,8 @@ export class FlashcardDto {
       front: data.front.trim(),
       back: data.back.trim(),
       deckId: data.deckId,
-      difficulty: data.difficulty || 2
+      difficulty: data.difficulty || 2,
+      tagId: data.tagId || null
     });
   }
 
@@ -88,6 +107,9 @@ export class FlashcardDto {
    * Valida los datos de entrada para actualizar una flashcard
    */
   static validateUpdate(data) {
+    if (data.tagId !== undefined && data.tagId !== null && isNaN(Number(data.tagId))) {
+      errors.push('El tagId debe ser un número válido o null');
+    }
     const errors = [];
 
     if (data.front !== undefined) {
@@ -129,6 +151,7 @@ export class FlashcardDto {
     if (data.back !== undefined) updateData.back = data.back.trim();
     if (data.deckId !== undefined) updateData.deckId = data.deckId;
     if (data.difficulty !== undefined) updateData.difficulty = data.difficulty;
+    if (data.tagId !== undefined) updateData.tagId = data.tagId;
 
     return new FlashcardDto(updateData);
   }
@@ -148,7 +171,9 @@ export class FlashcardDto {
       reviewCount: this.reviewCount,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
-      deck: this.deck
+      deck: this.deck,
+      tagId: this.tagId,
+      tag: this.tag
     };
   }
 
@@ -161,6 +186,7 @@ export class FlashcardDto {
       front: this.front,
       back: this.back,
       deckId: this.deckId,
+      tagId: this.tagId,
       difficulty: this.difficulty,
       lastReviewed: this.lastReviewed,
       nextReview: this.nextReview,

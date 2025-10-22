@@ -4,40 +4,53 @@ import { CustomError } from '../utils/custom.errors.js';
  * Middleware global para manejo de errores
  */
 export const errorHandler = (error, req, res, next) => {
-  console.error('Error capturado por middleware:', error);
+  // Log interno para debug, nunca mostrar al usuario
+  if (process.env.NODE_ENV === 'development') {
+    console.error('Error capturado por middleware:', error);
+  }
 
-  // Si ya se envió una respuesta, no hacer nada
   if (res.headersSent) {
     return next(error);
   }
 
-  // Si es un error personalizado, usar su código de estado
+  // Error personalizado
   if (error instanceof CustomError) {
     return res.status(error.statusCode).json({
       success: false,
       message: error.message,
-      statusCode: error.statusCode
+      statusCode: error.statusCode,
+      timestamp: new Date().toISOString(),
+      ...(error.errors ? { errors: error.errors } : {})
     });
   }
 
-  // Manejar errores de Prisma
+  // Prisma: recurso no encontrado
   if (error.code === 'P2025') {
     return res.status(404).json({
       success: false,
       message: 'Recurso no encontrado',
-      statusCode: 404
+      statusCode: 404,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  // Errores de autenticación y validación
+  if (error.name === 'AuthError' || error.name === 'ValidationError') {
+    return res.status(error.statusCode || 400).json({
+      success: false,
+      message: error.message || 'Error de autenticación/validación',
+      statusCode: error.statusCode || 400,
+      timestamp: new Date().toISOString(),
+      ...(error.errors ? { errors: error.errors } : {})
     });
   }
 
   // Error genérico del servidor
-  const message = process.env.NODE_ENV === 'development' 
-    ? error.message 
-    : 'Error interno del servidor';
-    
   res.status(500).json({
     success: false,
-    message,
-    statusCode: 500
+    message: 'Error interno del servidor',
+    statusCode: 500,
+    timestamp: new Date().toISOString()
   });
 };
 

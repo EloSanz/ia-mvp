@@ -8,6 +8,7 @@ export class DeckEntity {
     this.name = data.name || '';
     this.description = data.description || '';
     this.userId = data.userId;
+    this.coverUrl= data.coverUrl|| null;
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
   }
@@ -21,6 +22,7 @@ export class DeckEntity {
       name: this.name,
       description: this.description,
       userId: this.userId,
+      coverUrl: this.coverUrl,  
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };
@@ -35,6 +37,7 @@ export class DeckEntity {
       name: prismaData.name,
       description: prismaData.description,
       userId: prismaData.userId,
+      coverUrl: prismaData.coverUrl,  
       createdAt: prismaData.createdAt,
       updatedAt: prismaData.updatedAt
     });

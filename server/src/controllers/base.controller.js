@@ -4,6 +4,7 @@ import {
   createListResponse,
   createErrorResponse
 } from '../middlewares/error.middleware.js';
+import { NotFoundError } from '../utils/custom.errors.js';
 
 /**
  * Controlador base con métodos comunes y manejo de errores
@@ -62,9 +63,7 @@ export class BaseController {
    * Maneja errores de recursos no encontrados
    */
   static handleNotFound(resource = 'Recurso') {
-    const error = new Error(`${resource} no encontrado`);
-    error.statusCode = 404;
-    throw error;
+    throw new NotFoundError(resource);
   }
 
   /**

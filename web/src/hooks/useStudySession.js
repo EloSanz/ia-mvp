@@ -1,0 +1,281 @@
+/**
+ * useStudySession Hook
+ *
+ * Hook personalizado para manejar sesiones de estudio de flashcards
+ * Gestiona el estado completo de una sesión de estudio con repetición espaciada
+ */
+
+import React, { useState, useEffect, useCallback } from 'react';
+import { useApi } from '../contexts/ApiContext';
+
+export const useStudySession = () => {
+  const { study } = useApi();
+
+  // Estado de la sesión
+  const [session, setSession] = useState(null);
+  const [currentCard, setCurrentCard] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+
+  // Estado de respuesta
+  const [showingAnswer, setShowingAnswer] = useState(false);
+
+  // Estadísticas en tiempo real
+  const [sessionStats, setSessionStats] = useState({
+    cardsReviewed: 0,
+    easyCount: 0,
+    normalCount: 0,
+    hardCount: 0,
+    timeSpent: 0,
+    averageResponseTime: 0
+  });
+
+  /**
+   * Iniciar nueva sesión de estudio
+   */
+  const startSession = useCallback(
+    async (deckId, limit = null, tagId = null) => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await study.startSession(deckId, limit, tagId);
+        const sessionData = response.data.data;
+
+        setSession({
+          id: sessionData.sessionId,
+          deckName: sessionData.deckName,
+          totalCards: sessionData.totalCards,
+          status: 'active'
+        });
+
+        setCurrentCard(sessionData.currentCard);
+        setSessionStats(sessionData.sessionStats);
+        setShowingAnswer(false);
+
+        return sessionData;
+      } catch (err) {
+        setError(err.response?.data?.message || 'Error al iniciar sesión');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [study]
+  );
+
+  /**
+   * Mostrar respuesta de la card actual
+   */
+  const showAnswer = useCallback(() => {
+    if (currentCard && !showingAnswer) {
+      setShowingAnswer(true);
+    }
+  }, [currentCard, showingAnswer]);
+
+  /**
+   * Revisar card con dificultad
+   */
+  const reviewCard = useCallback(
+    async (difficulty) => {
+      if (!session?.id || !currentCard?.id) {
+        throw new Error('Sesión o card no válida');
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await study.reviewCard(
+          session.id,
+          currentCard.id,
+          difficulty,
+          0 // Sin tiempo de respuesta por ahora
+        );
+
+        const reviewData = response.data.data;
+
+        // Actualizar estadísticas
+        setSessionStats(reviewData.sessionStats);
+
+        // Resetear estado para siguiente card
+        setShowingAnswer(false);
+
+        return reviewData;
+      } catch (err) {
+        setError(err.response?.data?.message || 'Error al revisar card');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [session, currentCard, study]
+  );
+
+  /**
+   * Obtener siguiente card
+   */
+  const nextCard = useCallback(async () => {
+    if (!session?.id) {
+      throw new Error('No hay sesión activa');
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await study.getNextCard(session.id);
+      const nextData = response.data.data;
+
+      // Si la sesión terminó, devolver null para indicar fin
+      if (nextData.sessionFinished) {
+        return null;
+      }
+
+      setCurrentCard(nextData.currentCard);
+      setSessionStats(nextData.sessionStats);
+      setShowingAnswer(false);
+
+      return nextData;
+      } catch (err) {
+        setError(err.response?.data?.message || 'Error al obtener siguiente card');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+  }, [session, study]);
+
+  /**
+   * Obtener estado actual de la sesión
+   */
+  const getSessionStatus = useCallback(async () => {
+    if (!session?.id) {
+      return null;
+    }
+
+    try {
+      const response = await study.getSessionStatus(session.id);
+      const statusData = response.data.data;
+
+      setSessionStats(statusData.sessionStats);
+      return statusData;
+    } catch (err) {
+      if (err.response?.status === 404) {
+        // Sesión expirada o no encontrada
+        setSession(null);
+        setCurrentCard(null);
+        setError('Sesión expirada');
+      }
+      throw err;
+    }
+  }, [session, study]);
+
+  /**
+   * Finalizar sesión
+   */
+  const finishSession = useCallback(async () => {
+    if (!session?.id) {
+      return null;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await study.finishSession(session.id);
+      const finishData = response.data.data;
+
+      // Limpiar estado
+      setSession(null);
+      setCurrentCard(null);
+      setShowingAnswer(false);
+      setSessionStats({
+        cardsReviewed: 0,
+        easyCount: 0,
+        normalCount: 0,
+        hardCount: 0,
+        timeSpent: 0,
+        averageResponseTime: 0
+      });
+
+      return finishData;
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error al finalizar sesión');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [session, study]);
+
+  /**
+   * Calcular progreso de la sesión
+   */
+  const getProgress = useCallback(() => {
+    if (!session?.totalCards || !sessionStats) return { current: 0, total: 0, percentage: 0 };
+
+    const current = sessionStats.cardsReviewed;
+    const total = session.totalCards;
+    const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
+
+    return { current, total, percentage };
+  }, [session, sessionStats]);
+
+  /**
+   * Formatear tiempo para display
+   */
+  const formatTime = useCallback((milliseconds) => {
+    const seconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+
+    if (minutes > 0) {
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+    return `${remainingSeconds}s`;
+  }, []);
+
+  /**
+   * Limpiar estado al desmontar
+   */
+  useEffect(() => {
+    return () => {
+      // Cleanup si es necesario
+    };
+  }, []);
+
+  return {
+    // Estado
+    session,
+    currentCard,
+    loading,
+    error,
+    showingAnswer,
+    sessionStats: sessionStats || {
+      cardsReviewed: 0,
+      easyCount: 0,
+      normalCount: 0,
+      hardCount: 0,
+      timeSpent: 0,
+      averageResponseTime: 0
+    },
+
+    // Acciones
+    startSession,
+    showAnswer,
+    reviewCard,
+    nextCard,
+    getSessionStatus,
+    finishSession,
+
+    // Utilidades
+    getProgress,
+    formatTime,
+
+    // Helpers
+    hasActiveSession: !!session?.id,
+    canShowAnswer: !!currentCard && !showingAnswer,
+    canReview: !!currentCard && showingAnswer,
+    hasNextCard: !!currentCard
+  };
+};

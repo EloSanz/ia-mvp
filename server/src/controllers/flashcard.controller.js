@@ -1,8 +1,31 @@
 import { Flashcard } from '../models/flashcard.js';
 import { FlashcardDto } from '../dtos/flashcard.dto.js';
 import { BaseController } from './base.controller.js';
+import { generateFromAI } from '../services/flashcard.service.js';
 
 export const FlashcardController = {
+  /**
+   * Busca flashcards por consigna (front) dentro de un deck
+   */
+  searchFlashcardsInDeck: BaseController.wrap(async (req, res) => {
+    const { deckId } = req.params;
+    const q = req.query.q || '';
+    const page = parseInt(req.query.page || '0');
+    const pageSize = parseInt(req.query.pageSize || '15');
+    const parsedDeckId = BaseController.validateId(deckId);
+    const { items, total } = await Flashcard.searchByDeckIdAndFront(parsedDeckId, q, {
+      page,
+      pageSize
+    });
+    res.json({
+      success: true,
+      data: items,
+      total,
+      page,
+      pageSize,
+      message: 'Búsqueda de flashcards en deck'
+    });
+  }),
   /**
    * Obtiene todas las flashcards
    */
@@ -64,6 +87,7 @@ export const FlashcardController = {
    */
   deleteFlashcard: BaseController.wrap(async (req, res) => {
     const { id } = req.params;
+
     const result = await BaseController.findAndExecute(
       Flashcard.findById.bind(Flashcard),
       id,
@@ -72,7 +96,7 @@ export const FlashcardController = {
     );
 
     if (result.success) {
-      BaseController.success(res, null, result.message);
+      BaseController.success(res, undefined, result.message);
     }
   }),
 
@@ -82,9 +106,17 @@ export const FlashcardController = {
   getFlashcardsByDeck: BaseController.wrap(async (req, res) => {
     const { deckId } = req.params;
     const parsedDeckId = BaseController.validateId(deckId);
-
-    const flashcards = await Flashcard.findByDeckId(parsedDeckId);
-    BaseController.successList(res, flashcards, 'Flashcards del deck obtenidas exitosamente');
+    const page = parseInt(req.query.page || '0');
+    const pageSize = parseInt(req.query.pageSize || '15');
+    const { items, total } = await Flashcard.findByDeckId(parsedDeckId, { page, pageSize });
+    res.json({
+      success: true,
+      data: items,
+      total,
+      page,
+      pageSize,
+      message: 'Flashcards del deck obtenidas exitosamente'
+    });
   }),
 
   /**
@@ -126,16 +158,41 @@ export const FlashcardController = {
   }),
 
   /**
+   * Genera flashcards usando OpenAI a partir de texto
+   */
+  generateAIFlashcards: async (req, res, _next) => {
+    try {
+      const { text } = req.body;
+      if (!text || typeof text !== 'string' || !text.trim()) {
+        return res.status(400).json({ error: 'Texto requerido para generar flashcards.' });
+      }
+
+      // Llama al servicio que integra OpenAI
+      const generatedCards = await generateFromAI(text);
+      console.log("🚀 ~ generateAIFlashcards:", generatedCards)
+      return res.status(200).json({ flashcards: generatedCards });
+    } catch (error) {
+      console.error('Error generando flashcards con IA:', error);
+      return res.status(500).json({ error: 'Error generando flashcards con IA.' });
+    }
+  },
+
+  /**
    * Busca flashcards por contenido
    */
   /**
    * Crea múltiples flashcards
    */
   createManyFlashcards: BaseController.wrap(async (req, res) => {
+    // Ayuda de depuración: muestra cómo llega el cuerpo
+    console.log('POST /api/flashcards/batch req.body:', req.body);
+
     const { flashcards } = req.body;
 
     if (!Array.isArray(flashcards) || flashcards.length === 0) {
-      return BaseController.error(res, 'Se requiere un array de flashcards', 400, [
+      // Mensaje adicional para ayudar al frontend
+      console.warn('⚠️ Estructura esperada: { flashcards: [ ... ] }');
+      return BaseController.error(res, 'Se requiere un array de flashcards en la propiedad "flashcards" del body. Ejemplo: { flashcards: [ ... ] }', 400, [
         'Array de flashcards vacío o inválido'
       ]);
     }
@@ -147,13 +204,18 @@ export const FlashcardController = {
         const validatedData = await FlashcardDto.validateCreate(flashcard);
         validatedFlashcards.push(validatedData);
       } catch (err) {
-        return BaseController.error(res, 'Error de validación en una o más flashcards', 400, err.errors);
+        return BaseController.error(
+          res,
+          'Error de validación en una o más flashcards',
+          400,
+          err.errors
+        );
       }
     }
 
     // Crear todas las flashcards
     const createdFlashcards = await Promise.all(
-      validatedFlashcards.map(flashcard => Flashcard.create(flashcard))
+      validatedFlashcards.map((flashcard) => Flashcard.create(flashcard))
     );
 
     BaseController.success(

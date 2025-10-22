@@ -1,10 +1,9 @@
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../config/database.js';
 import { generateToken } from '../middlewares/auth.middleware.js';
-import { ValidationError, AuthenticationError } from '../utils/custom.errors.js';
+import { ValidationError } from '../utils/custom.errors.js';
 import { asyncHandler } from '../middlewares/error.middleware.js';
-
-const prisma = new PrismaClient();
+import { BaseController } from './base.controller.js';
 
 export const AuthController = {
   /**
@@ -12,11 +11,6 @@ export const AuthController = {
    */
   register: asyncHandler(async (req, res) => {
     const { username, password } = req.body;
-
-    // Validar datos
-    if (!username || !password) {
-      throw new ValidationError('Username y password son requeridos');
-    }
 
     // Verificar si el usuario ya existe
     const existingUser = await prisma.user.findUnique({
@@ -41,14 +35,16 @@ export const AuthController = {
     // Generar token
     const token = generateToken(user.id);
 
-    res.status(201).json({
-      success: true,
-      data: {
+    BaseController.success(
+      res,
+      {
         id: user.id,
         username: user.username,
         token
-      }
-    });
+      },
+      'Usuario registrado exitosamente',
+      201
+    );
   }),
 
   /**
@@ -68,25 +64,28 @@ export const AuthController = {
     });
 
     if (!user) {
+      console.warn(`Intento de login fallido: usuario no existe -> ${username}`);
       throw new ValidationError('Credenciales inválidas');
     }
 
     // Verificar password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
+      console.warn(`Intento de login fallido: contraseña incorrecta -> ${username}`);
       throw new ValidationError('Credenciales inválidas');
     }
 
     // Generar token
     const token = generateToken(user.id);
 
-    res.json({
-      success: true,
-      data: {
+    BaseController.success(
+      res,
+      {
         id: user.id,
         username: user.username,
         token
-      }
-    });
+      },
+      'Login exitoso'
+    );
   })
 };

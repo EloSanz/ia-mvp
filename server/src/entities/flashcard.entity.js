@@ -12,6 +12,8 @@ export class FlashcardEntity {
     this.lastReviewed = data.lastReviewed || null;
     this.nextReview = data.nextReview || null;
     this.reviewCount = data.reviewCount || 0;
+    this.tagId = data.tagId || null;
+    this.tag = data.tag || null; // Objeto TagEntity
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
   }
@@ -29,6 +31,7 @@ export class FlashcardEntity {
       lastReviewed: this.lastReviewed,
       nextReview: this.nextReview,
       reviewCount: this.reviewCount,
+      tagId: this.tagId,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };
@@ -43,6 +46,10 @@ export class FlashcardEntity {
       front: prismaData.front,
       back: prismaData.back,
       deckId: prismaData.deckId,
+      tagId: prismaData.tagId ?? prismaData.tag?.id ?? null,
+      tag: prismaData.tag
+        ? { id: prismaData.tag.id, name: prismaData.tag.name }
+        : null,
       difficulty: prismaData.difficulty,
       lastReviewed: prismaData.lastReviewed,
       nextReview: prismaData.nextReview,

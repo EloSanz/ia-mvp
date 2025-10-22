@@ -7,6 +7,8 @@ export class DeckDto {
     this.id = data.id || null;
     this.name = data.name || '';
     this.description = data.description || '';
+    this.coverUrl = data.coverUrl || null;
+    this.generateCover = data.generateCover ?? false;
     this.createdAt = data.createdAt || null;
     this.updatedAt = data.updatedAt || null;
   }
@@ -19,6 +21,7 @@ export class DeckDto {
       id: deckModel.id,
       name: deckModel.name,
       description: deckModel.description,
+      coverUrl: deckModel.coverUrl,
       createdAt: deckModel.createdAt,
       updatedAt: deckModel.updatedAt
     });
@@ -49,6 +52,10 @@ export class DeckDto {
       errors.push('La descripción debe ser una cadena de texto');
     } else if (data.description && data.description.length > 1000) {
       errors.push('La descripción no puede tener más de 1000 caracteres');
+    }
+
+    if (typeof data.generateCover !== 'undefined' && typeof data.generateCover !== 'boolean') {
+      errors.push('El parámetro generateCover debe ser booleano');
     }
 
     if (errors.length > 0) {

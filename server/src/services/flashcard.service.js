@@ -1,3 +1,12 @@
+import { openaiService } from './openai.service.js';
+/**
+ * Genera flashcards usando OpenAI a partir de texto
+ * @param {string} text
+ * @returns {Promise<Array<{front: string, back: string}>>}
+ */
+export async function generateFromAI(text) {
+  return await openaiService.generateFlashcards(text);
+}
 import { AnkiAdapter } from '../adapters/anki.adapter.js';
 import { Flashcard } from '../models/flashcard.js';
 

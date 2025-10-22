@@ -10,6 +10,7 @@ export class Deck {
     this.id = data.id || null;
     this.name = data.name || '';
     this.description = data.description || '';
+    this.coverUrl = data.coverUrl || null;
     this.userId = data.userId;
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
@@ -69,6 +70,7 @@ export class Deck {
       ...updateData,
       updatedAt: new Date()
     });
+    
 
     updatedDeck.name = updatedDeck.name.trim();
     updatedDeck.description = updatedDeck.description.trim();
@@ -102,6 +104,7 @@ export class Deck {
       id: entity.id,
       name: entity.name,
       description: entity.description,
+      coverUrl: entity.coverUrl,
       userId: entity.userId,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt
@@ -116,6 +119,7 @@ export class Deck {
       id: this.id,
       name: this.name,
       description: this.description,
+      coverUrl: this.coverUrl,
       userId: this.userId,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
