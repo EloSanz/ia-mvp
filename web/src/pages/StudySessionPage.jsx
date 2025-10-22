@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Container, Box, Alert, Snackbar, Typography } from '@mui/material';
+import { Container, Box, Alert, Snackbar, Typography, Button, Tooltip } from '@mui/material';
+import { Keyboard as KeyboardIcon } from '@mui/icons-material';
 
 import Navigation from '../components/Navigation';
 import Breadcrumbs from '../components/Breadcrumbs';
@@ -47,6 +48,7 @@ export default function StudySessionPage() {
   const [finalStats, setFinalStats] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [showFinishDialog, setShowFinishDialog] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
 
   // Ref para evitar múltiples inicializaciones de sesión
   const initializedRef = useRef(new Set());
@@ -55,6 +57,18 @@ export default function StudySessionPage() {
   useEffect(() => {
     initializedRef.current.clear();
   }, [deckId]);
+
+  // Cerrar shortcuts al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showShortcuts && !event.target.closest('[data-shortcuts-container]')) {
+        setShowShortcuts(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showShortcuts]);
 
   // Solo inicializar sesión una vez por deckId
   useEffect(() => {
@@ -70,7 +84,13 @@ export default function StudySessionPage() {
 
   const handleReview = async (difficulty) => {
     try {
+      // Primero procesamos la respuesta (esto resetea showingAnswer y inicia la animación de volteo)
       await reviewCard(difficulty);
+      
+      // Esperamos a que termine la animación de volteo (0.6s) antes de cambiar la tarjeta
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Ahora obtenemos la siguiente tarjeta
       const nextCardResult = await nextCard();
       if (nextCardResult === null) setShowFinishDialog(true);
     } catch (err) {
@@ -174,7 +194,23 @@ export default function StudySessionPage() {
     }
   };
 
-  const handleRestart = () => navigate('/study');
+  const handleRestart = async () => {
+    try {
+      // Finalizar sesión actual
+      if (session) {
+        await finishSession();
+      }
+      // Iniciar nueva sesión con el mismo deck
+      await initializeSession();
+      setSnackbar({ open: true, message: 'Sesión reiniciada', severity: 'success' });
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: err.message || 'Error al reiniciar la sesión',
+        severity: 'error'
+      });
+    }
+  };
   const handleGoHome = () => navigate('/');
   const handlePause = () => {
     setPaused(true);
@@ -222,7 +258,7 @@ export default function StudySessionPage() {
     <>
       <Navigation />
       <Container maxWidth="xl" sx={{ mt: 4, mb: 12 }}>
-        <Breadcrumbs />
+        <Breadcrumbs deckName={session?.deckName} />
 
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
@@ -252,16 +288,6 @@ export default function StudySessionPage() {
             disabled={paused || loading}
           />
 
-          {/* Ayuda de teclado */}
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
-              {!showingAnswer ? (
-                <>Presiona <strong>ESPACIO</strong> para mostrar la respuesta</>
-              ) : (
-                <>Presiona <strong>1</strong> (Fácil), <strong>2</strong> (Normal), o <strong>3</strong> (Difícil)</>
-              )}
-            </Typography>
-          </Box>
         </Box>
 
         <StudyControls
@@ -272,12 +298,171 @@ export default function StudySessionPage() {
           onFinish={handleFinish}
           onSkip={handleSkip}
           onRestart={handleRestart}
-          onGoHome={handleGoHome}
           loading={loading}
           paused={paused}
           canSkip={!!currentCard && !showingAnswer}
           canFinish
         />
+
+        {/* Botón flotante de Atajos */}
+        <Box sx={{ position: 'relative' }} data-shortcuts-container>
+          <Tooltip title="Atajos de teclado">
+            <Button
+              color="inherit"
+              startIcon={<KeyboardIcon />}
+              onClick={() => setShowShortcuts(!showShortcuts)}
+              sx={{
+                position: 'fixed',
+                bottom: 100, // Arriba del botón Finalizar
+                right: 20,
+                textTransform: 'none',
+                borderRadius: '25px',
+                px: 3,
+                py: 1.5,
+                fontSize: '14px',
+                fontWeight: 600,
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                bgcolor: 'rgba(0, 0, 0, 0.7)',
+                backdropFilter: 'blur(8px)',
+                zIndex: 1000,
+                minHeight: 48,
+                '&:hover': {
+                  bgcolor: 'rgba(0, 0, 0, 0.8)',
+                  borderColor: 'rgba(255, 255, 255, 0.2)'
+                }
+              }}
+            >
+              Atajos
+            </Button>
+          </Tooltip>
+          
+          {showShortcuts && (
+            <Box sx={{
+              position: 'fixed',
+              bottom: 160, // Arriba del botón Atajos
+              right: 20,
+              minWidth: 280,
+              bgcolor: '#1A1F2E',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '12px',
+              p: 2,
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+              zIndex: 1001,
+              animation: 'tooltipFadeIn 0.2s ease',
+              '@keyframes tooltipFadeIn': {
+                from: { opacity: 0, transform: 'translateY(4px)' },
+                to: { opacity: 1, transform: 'translateY(0)' }
+              },
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                top: '100%',
+                right: '12px',
+                width: 0,
+                height: 0,
+                borderLeft: '6px solid transparent',
+                borderRight: '6px solid transparent',
+                borderTop: '6px solid #1A1F2E'
+              }
+            }}>
+              <Typography variant="subtitle2" sx={{ 
+                fontSize: '14px', 
+                fontWeight: 600, 
+                color: '#FFFFFF', 
+                mb: 1.5 
+              }}>
+                ⌨️ Atajos de teclado
+              </Typography>
+              
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ 
+                    bgcolor: 'rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '4px',
+                    px: 1,
+                    py: 0.5,
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    fontFamily: 'monospace',
+                    color: '#FFFFFF',
+                    textTransform: 'uppercase',
+                    minWidth: 60,
+                    textAlign: 'center'
+                  }}>
+                    ESPACIO
+                  </Box>
+                  <Typography variant="body2" sx={{ fontSize: '13px', color: '#9CA3AF' }}>
+                    Voltear tarjeta
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ 
+                    bgcolor: 'rgba(16, 185, 129, 0.2)',
+                    border: '1px solid #10B981',
+                    borderRadius: '4px',
+                    px: 1,
+                    py: 0.5,
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    fontFamily: 'monospace',
+                    color: '#10B981',
+                    minWidth: 20,
+                    textAlign: 'center'
+                  }}>
+                    1
+                  </Box>
+                  <Typography variant="body2" sx={{ fontSize: '13px', color: '#9CA3AF' }}>
+                    Fácil
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ 
+                    bgcolor: 'rgba(245, 158, 11, 0.2)',
+                    border: '1px solid #F59E0B',
+                    borderRadius: '4px',
+                    px: 1,
+                    py: 0.5,
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    fontFamily: 'monospace',
+                    color: '#F59E0B',
+                    minWidth: 20,
+                    textAlign: 'center'
+                  }}>
+                    2
+                  </Box>
+                  <Typography variant="body2" sx={{ fontSize: '13px', color: '#9CA3AF' }}>
+                    Normal
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ 
+                    bgcolor: 'rgba(239, 68, 68, 0.2)',
+                    border: '1px solid #EF4444',
+                    borderRadius: '4px',
+                    px: 1,
+                    py: 0.5,
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    fontFamily: 'monospace',
+                    color: '#EF4444',
+                    minWidth: 20,
+                    textAlign: 'center'
+                  }}>
+                    3
+                  </Box>
+                  <Typography variant="body2" sx={{ fontSize: '13px', color: '#9CA3AF' }}>
+                    Difícil
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          )}
+        </Box>
       </Container>
 
       <Snackbar
