@@ -1,7 +1,7 @@
 # Nginx configuration template for SPA + API proxy
 # Replace ${API_UPSTREAM} at container start using envsubst
 server {
-  listen 80;
+  listen 5173;
   server_name _;
 
   # Serve static files
