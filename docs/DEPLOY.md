@@ -2,6 +2,49 @@
 
 Este documento resume los pasos para construir imágenes Docker del frontend y backend, etiquetarlas, subirlas a Azure Container Registry (ACR) y desplegarlas en Azure App Service o mediante docker-compose en producción. Incluye comandos y fallos comunes para facilitar el trabajo del equipo.
 
+## Nota sobre el ACR usado en este proyecto
+
+En este repositorio usamos el registro de contenedores `icardflash.azurecr.io` (creado desde el Portal de Azure). En todas las instrucciones de este documento puedes sustituir `icardflash` por el nombre de tu propio ACR si vas a usar un registry distinto.
+
+Si prefieres que cada desarrollador tenga su propio registry para pruebas, cualquiera puede crear uno con Azure CLI. Ejemplo:
+
+```powershell
+# Crear un Azure Container Registry (reemplaza <ACR_NAME> y <RG_NAME>)
+az acr create --resource-group <RG_NAME> --name <ACR_NAME> --sku Basic --location "Canada Central"
+
+# Ejemplo real:
+az acr create --resource-group rg-icardflash --name willianicardacr --sku Basic --location "Canada Central"
+```
+
+Autenticación y push de imágenes:
+
+```powershell
+# Login recomendado usando Azure CLI (no necesita exponer credenciales):
+az acr login --name <ACR_NAME>
+
+# Alternativa (activar usuario admin del ACR y obtener credenciales):
+az acr update --name <ACR_NAME> --admin-enabled true
+az acr credential show --name <ACR_NAME>
+
+# Luego (si usas credenciales):
+docker login <ACR_NAME>.azurecr.io --username <username> --password <password>
+docker push <ACR_NAME>.azurecr.io/frontend:v1
+docker push <ACR_NAME>.azurecr.io/backend:v1
+```
+
+Dar permisos a un desarrollador o service principal para que pueda pushear (rol `AcrPush`):
+
+```powershell
+# Obtener el id del ACR
+ACR_ID=$(az acr show --name <ACR_NAME> --resource-group <RG_NAME> --query id -o tsv)
+
+# Asignar rol AcrPush a un usuario o SP (reemplaza <ASSIGNEE> por UPN o objectId)
+az role assignment create --assignee <ASSIGNEE> --role AcrPush --scope $ACR_ID
+```
+
+Recomendación de nombres: usa un prefijo con tu usuario o initials para evitar colisiones, por ejemplo `willian-icard-acr`.
+
+
 ## 1) Construir las imágenes (local)
 
 - Frontend (produce una imagen que sirve con Nginx):
