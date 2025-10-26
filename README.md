@@ -159,7 +159,10 @@ The database schema is not empty. Read more about how to baseline an existing pr
 3. Luego ejecuta:
    ```sh
    docker-compose exec backend npx prisma migrate deploy
-   ```
+   Para un resumen detallado sobre cómo construir, etiquetar y publicar las imágenes Docker y pasos de despliegue en Azure, consulta:
+
+   - `docs/DEPLOY.md`
+
 
 **Importante:**
 - El baseline solo se ejecuta una vez por base de datos. No lo pongas en scripts de arranque ni Dockerfile.
