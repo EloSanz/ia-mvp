@@ -15,9 +15,9 @@ import {
 } from '@mui/icons-material';
 import { useNavigation } from '../hooks/useNavigation';
 
-const Breadcrumbs = ({ showOnHome = false }) => {
+const Breadcrumbs = ({ showOnHome = false, deckName = null }) => {
   const { getBreadcrumbItems, isOnHome } = useNavigation();
-  const breadcrumbs = getBreadcrumbItems();
+  const breadcrumbs = getBreadcrumbItems(deckName);
 
   // Si estamos en home y no queremos mostrar breadcrumbs, no renderizar
   if (isOnHome && !showOnHome) {
