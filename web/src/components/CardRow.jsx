@@ -39,7 +39,7 @@ const CardRow = ({
         }
       }}
       sx={{
-        backgroundColor: muiTheme?.palette?.background?.paper || '#ffffff',
+        backgroundColor: muiTheme?.palette?.paper?.main || muiTheme?.palette?.background?.default || '#fffff2',
         cursor: 'pointer',
         transition: 'all 0.2s ease-in-out',
         '&:hover': {
