@@ -69,11 +69,13 @@ const FlashcardTable = ({
     }
 
     if (tagFilter !== 'all') {
-      if (tagFilter === '') {
+      if (tagFilter === 'no-tag') {
         // Filtrar cards que NO tienen tag asignado (tagId es null, undefined, o vacío)
         filtered = filtered.filter((card) => !card.tagId);
       } else {
-        filtered = filtered.filter((card) => card.tagId === tagFilter);
+        // Convertir ambos valores a números para comparar
+        const tagFilterNum = Number(tagFilter);
+        filtered = filtered.filter((card) => Number(card.tagId) === tagFilterNum);
       }
     }
 
@@ -196,16 +198,16 @@ const FlashcardTable = ({
               <TableCell sx={{ py: 1 }}>
                 <FormControl size="small" sx={{ minWidth: 160 }}>
                   <Select
-                    value={tagFilter || 'all'}
+                    value={tagFilter}
                     onChange={(e) => onTagFilterChange(e.target.value)}
                     sx={{ fontSize: '0.875rem' }}
                   >
                     <MenuItem value="all">Todas</MenuItem>
-                    <MenuItem value="">
+                    <MenuItem value="no-tag">
                       <em>Sin tag</em>
                     </MenuItem>
                     {safeTags.map((tag) => (
-                      <MenuItem key={tag.id} value={tag.id}>
+                      <MenuItem key={tag.id} value={tag.id.toString()}>
                         {tag.name}
                       </MenuItem>
                     ))}

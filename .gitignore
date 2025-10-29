@@ -83,3 +83,5 @@ npm-shrinkwrap.json
 .DS_Store
 Thumbs.db
 .github/prompts/ia-mvp.code-workspace
+docs/stitch_landing_page_de_icards/*
+

@@ -101,21 +101,36 @@ export const FlashcardController = {
   }),
 
   /**
-   * Obtiene flashcards por deckId
+   * Obtiene flashcards por deckId, opcionalmente filtradas por tagId
    */
   getFlashcardsByDeck: BaseController.wrap(async (req, res) => {
     const { deckId } = req.params;
     const parsedDeckId = BaseController.validateId(deckId);
     const page = parseInt(req.query.page || '0');
     const pageSize = parseInt(req.query.pageSize || '15');
-    const { items, total } = await Flashcard.findByDeckId(parsedDeckId, { page, pageSize });
+    const tagId = req.query.tagId ? parseInt(req.query.tagId) : null;
+
+    let items, total;
+    if (tagId) {
+      // Filtrar por deck y tag
+      const flashcards = await Flashcard.findByDeckIdAndTag(parsedDeckId, tagId);
+      // Implementar paginación manual para resultados filtrados
+      const startIndex = page * pageSize;
+      const endIndex = startIndex + pageSize;
+      items = flashcards.slice(startIndex, endIndex);
+      total = flashcards.length;
+    } else {
+      // Obtener todas las cards del deck
+      ({ items, total } = await Flashcard.findByDeckId(parsedDeckId, { page, pageSize }));
+    }
+
     res.json({
       success: true,
       data: items,
       total,
       page,
       pageSize,
-      message: 'Flashcards del deck obtenidas exitosamente'
+      message: tagId ? 'Flashcards del deck filtradas por tag obtenidas exitosamente' : 'Flashcards del deck obtenidas exitosamente'
     });
   }),
 

@@ -108,10 +108,11 @@ export const ApiProvider = ({ children }) => {
   const flashcards = {
     getAll: () => api.get('/api/flashcards'),
     getById: (id) => api.get(`/api/flashcards/${id}`),
-    getByDeck: (deckId, { page = 0, pageSize = 15 } = {}) => {
+    getByDeck: (deckId, { page = 0, pageSize = 15, tagId = null } = {}) => {
       const params = {};
       if (page !== undefined && page !== null) params.page = page;
       if (pageSize !== undefined && pageSize !== null) params.pageSize = pageSize;
+      if (tagId !== undefined && tagId !== null) params.tagId = tagId;
 
       return api.get(`/api/flashcards/deck/${deckId}`, { params });
     },

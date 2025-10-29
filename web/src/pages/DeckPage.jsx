@@ -229,9 +229,33 @@ const DeckPage = () => {
   };
 
   // Función para manejar cambios en el filtro de tags
-  const handleTagFilterChange = (value) => {
+  const handleTagFilterChange = async (value) => {
     setTagFilter(value);
     setPage(0);
+
+    // Si se selecciona una tag específica, recargar las cards filtradas
+    if (value !== 'all' && value !== 'no-tag') {
+      try {
+        setLoading(true);
+        // Usar el endpoint existente con parámetro tagId
+        const tagId = parseInt(value, 10);
+        const response = await flashcards.getByDeck(deckId, { page: 0, pageSize: rowsPerPage, tagId });
+        const cardsData = response.data.data || response.data || [];
+        const totalCount = response.data.total || cardsData.length || 0;
+
+        setCards(Array.isArray(cardsData) ? cardsData : []);
+        setTotalCards(totalCount);
+      } catch (error) {
+        console.error('Error cargando cards filtradas por tag:', error);
+        setCards([]);
+        setTotalCards(0);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Para "all" o "no-tag", recargar normalmente
+      loadDeckAndCards(0, rowsPerPage);
+    }
   };
 
   // Función para manejar cambios en el filtro de revisiones
