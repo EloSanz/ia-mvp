@@ -106,7 +106,7 @@ export const useNavigation = () => {
   };
 
   // Funciones de breadcrumb
-  const getBreadcrumbItems = () => {
+  const getBreadcrumbItems = (deckName = null) => {
     const items = [];
 
     if (isOnDeckPage) {
@@ -120,10 +120,11 @@ export const useNavigation = () => {
       );
     } else if (currentPath.startsWith('/study/session/')) {
       const sessionId = currentSessionId;
+      const sessionLabel = deckName ? deckName : `Sesión ${sessionId}`;
       items.push(
         { label: 'Mis Decks', path: '/', onClick: goToDecks },
         { label: 'Estudiar', path: '/study', onClick: goToStudy },
-        { label: `Sesión ${sessionId}`, path: currentPath }
+        { label: sessionLabel, path: currentPath }
       );
     } else if (currentPath === '/') {
       items.push({ label: 'Inicio', path: '/' });

@@ -227,8 +227,15 @@ const HomePage = () => {
 
   const handleAIDeckGenerated = (result) => {
     console.log('Deck generado con IA:', result);
-    loadDecks(); // Recargar la lista
-    showToast(`Deck "${result.deck.name}" creado exitosamente con ${result.flashcards.length} flashcards`);
+    // Recargar la lista
+    loadDecks();
+
+    // Si el deck fue creado pero aún no tiene portada, monitorizarlo para actualizar la portada cuando el backend la genere
+    if (result && result.deck && !result.deck.coverUrl) {
+      setDeckMonitory(result.deck);
+    }
+
+    showToast(`Deck "${result.deck?.name || 'sin nombre'}" creado exitosamente con ${result.flashcards?.length || 0} flashcards`);
   };
 
   if (loading) {
@@ -269,7 +276,7 @@ const HomePage = () => {
                     size="small"
                     onClick={goToLastDeck}
                     endIcon={<ArrowForwardIcon />}
-                    sx={{ 
+                    sx={{
                       fontWeight: 'bold',
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px'
@@ -293,7 +300,7 @@ const HomePage = () => {
                 }
               }}
             >
-              <AlertTitle>Continuar estudiando</AlertTitle>              
+              <AlertTitle>Continuar estudiando</AlertTitle>
               Estabas estudiando el deck <strong>{decksList.find((d) => d.id === lastDeckId)?.name || `ID: ${lastDeckId}`}</strong>. Haz clic
               en "Continuar" para retomar tu sesión.
             </Alert>
@@ -398,7 +405,7 @@ const HomePage = () => {
               sortOrder={sortOrder}
               onSortChange={handleSortChange}
             />
-            
+
             {/* Grid de decks */}
             <DecksGridCard
               decks={paginatedDecks}
@@ -407,7 +414,7 @@ const HomePage = () => {
               onDelete={handleDeleteDeck}
               onNavigate={(id) => navigate(`/decks/${id}`)}
             />
-            
+
             {/* Paginación */}
             <Pagination
               currentPage={currentPage}
@@ -444,26 +451,26 @@ const HomePage = () => {
               fontWeight: 'bold',
               textTransform: 'none',
               // Neumorphism/Glassy effect
-              background: (theme) => 
+              background: (theme) =>
                 theme.palette.mode === 'dark'
                   ? `linear-gradient(145deg, ${theme.palette.secondary.main}15, ${theme.palette.secondary.main}25)`
                   : `linear-gradient(145deg, ${theme.palette.secondary.main}20, ${theme.palette.secondary.main}30)`,
               backgroundColor: 'secondary.main',
               backdropFilter: 'blur(10px)',
-              border: (theme) => 
+              border: (theme) =>
                 theme.palette.mode === 'dark'
                   ? `1px solid ${theme.palette.secondary.main}40`
                   : `1px solid ${theme.palette.secondary.main}30`,
-              boxShadow: (theme) => 
+              boxShadow: (theme) =>
                 theme.palette.mode === 'dark'
                   ? `0 8px 32px ${theme.palette.secondary.main}20, inset 0 1px 0 ${theme.palette.secondary.main}30`
                   : `0 8px 32px ${theme.palette.secondary.main}15, inset 0 1px 0 ${theme.palette.secondary.main}20`,
               '&:hover': {
-                background: (theme) => 
+                background: (theme) =>
                   theme.palette.mode === 'dark'
                     ? `linear-gradient(145deg, ${theme.palette.secondary.main}25, ${theme.palette.secondary.main}35)`
                     : `linear-gradient(145deg, ${theme.palette.secondary.main}30, ${theme.palette.secondary.main}40)`,
-                boxShadow: (theme) => 
+                boxShadow: (theme) =>
                   theme.palette.mode === 'dark'
                     ? `0 12px 40px ${theme.palette.secondary.main}30, inset 0 1px 0 ${theme.palette.secondary.main}40`
                     : `0 12px 40px ${theme.palette.secondary.main}25, inset 0 1px 0 ${theme.palette.secondary.main}30`,
@@ -471,13 +478,13 @@ const HomePage = () => {
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
               },
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              color: (theme) => 
+              color: (theme) =>
                 theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.secondary.contrastText || '#ffffff'
             }}
           >
             Crear con IA
           </Button>
-          
+
           {/* Botón para crear deck manual */}
           <Button
             variant="contained"
@@ -496,7 +503,7 @@ const HomePage = () => {
                 boxShadow: 6,
                 backgroundColor: 'primary.dark'
               },
-              color: (theme) => 
+              color: (theme) =>
                 theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.primary.contrastText || '#ffffff'
             }}
           >
@@ -666,7 +673,7 @@ const HomePage = () => {
           <Alert
             onClose={() => setToast({ ...toast, open: false })}
             severity={toast.severity}
-            sx={{ 
+            sx={{
               width: '100%',
               minWidth: '300px',
               fontSize: '1rem',
@@ -704,26 +711,26 @@ const HomePage = () => {
               fontWeight: 'bold',
               textTransform: 'none',
               // Neumorphism/Glassy effect
-              background: (theme) => 
+              background: (theme) =>
                 theme.palette.mode === 'dark'
                   ? `linear-gradient(145deg, ${theme.palette.secondary.main}15, ${theme.palette.secondary.main}25)`
                   : `linear-gradient(145deg, ${theme.palette.secondary.main}20, ${theme.palette.secondary.main}30)`,
               backgroundColor: 'secondary.main',
               backdropFilter: 'blur(10px)',
-              border: (theme) => 
+              border: (theme) =>
                 theme.palette.mode === 'dark'
                   ? `1px solid ${theme.palette.secondary.main}40`
                   : `1px solid ${theme.palette.secondary.main}30`,
-              boxShadow: (theme) => 
+              boxShadow: (theme) =>
                 theme.palette.mode === 'dark'
                   ? `0 8px 32px ${theme.palette.secondary.main}20, inset 0 1px 0 ${theme.palette.secondary.main}30`
                   : `0 8px 32px ${theme.palette.secondary.main}15, inset 0 1px 0 ${theme.palette.secondary.main}20`,
               '&:hover': {
-                background: (theme) => 
+                background: (theme) =>
                   theme.palette.mode === 'dark'
                     ? `linear-gradient(145deg, ${theme.palette.secondary.main}25, ${theme.palette.secondary.main}35)`
                     : `linear-gradient(145deg, ${theme.palette.secondary.main}30, ${theme.palette.secondary.main}40)`,
-                boxShadow: (theme) => 
+                boxShadow: (theme) =>
                   theme.palette.mode === 'dark'
                     ? `0 12px 40px ${theme.palette.secondary.main}30, inset 0 1px 0 ${theme.palette.secondary.main}40`
                     : `0 12px 40px ${theme.palette.secondary.main}25, inset 0 1px 0 ${theme.palette.secondary.main}30`,
@@ -731,13 +738,13 @@ const HomePage = () => {
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
               },
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              color: (theme) => 
+              color: (theme) =>
                 theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.secondary.contrastText || '#ffffff'
             }}
           >
             Crear con IA
           </Button>
-          
+
           {/* Botón para crear deck manual */}
           <Button
             variant="contained"
@@ -756,7 +763,7 @@ const HomePage = () => {
                 boxShadow: 6,
                 backgroundColor: 'primary.dark'
               },
-              color: (theme) => 
+              color: (theme) =>
                 theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.primary.contrastText || '#ffffff'
             }}
           >

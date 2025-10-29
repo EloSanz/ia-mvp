@@ -23,7 +23,8 @@ import {
   Person as PersonIcon,
   Code as GithubIcon,
   Psychology as StudyIcon,
-  LibraryBooks as LibraryIcon
+  LibraryBooks as LibraryIcon,
+  Keyboard as KeyboardIcon
 } from '@mui/icons-material';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -34,6 +35,7 @@ const Navigation = () => {
   const location = useLocation();
   const { themeName, setTheme } = useTheme();
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [showShortcuts, setShowShortcuts] = React.useState(false);
   const open = Boolean(anchorEl);
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -46,6 +48,18 @@ const Navigation = () => {
     handleMenuClose();
   };
   const { user, logout } = useAuth();
+
+  // Cerrar shortcuts al hacer click fuera
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showShortcuts && !event.target.closest('[data-shortcuts-container]')) {
+        setShowShortcuts(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showShortcuts]);
 
   // Usar el hook de navegación inteligente
   const { isOnHome, navigationButtonText, navigationButtonAction } = useNavigation();
@@ -172,6 +186,7 @@ const Navigation = () => {
               Kyoto
             </MenuItem>
           </Menu>
+
 
           {user && (
             <>
