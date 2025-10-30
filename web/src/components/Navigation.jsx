@@ -67,10 +67,21 @@ const Navigation = () => {
   return (
     <AppBar position="static" elevation={1}>
       <Toolbar>
-        <Box display="flex" alignItems="center" sx={{ flexGrow: 1 }}>
+        <Box
+          display="flex"
+          alignItems="center"
+          sx={{ flexGrow: 1, cursor: 'pointer' }}
+          onClick={() => navigate('/')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') navigate('/');
+          }}
+          aria-label="Ir al inicio"
+        >
           <SchoolIcon sx={{ mr: 2 }} />
           <Typography variant="h6" component="div">
-            IA Flashcards MVP
+            ICard - estudia inteligente
           </Typography>
           <Chip label="Beta" size="small" color="secondary" sx={{ ml: 2 }} />
         </Box>
