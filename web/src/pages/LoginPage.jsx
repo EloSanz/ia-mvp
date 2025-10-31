@@ -7,7 +7,7 @@ export const LoginPage = () => {
   return (
     <Box>
       <LoginForm />
-      <Box sx={{ mt: 2, textAlign: 'center' }}>
+      <Box sx={{ mt: 1, textAlign: 'center' }}>
         <Typography variant="body2">
           ¿No tienes una cuenta?{' '}
           <Link component={RouterLink} to="/register">

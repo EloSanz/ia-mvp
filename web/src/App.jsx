@@ -5,6 +5,7 @@ import { ApiProvider } from './contexts/ApiContext';
 import { ThemeProvider, ThemeContext } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
 import DeckPage from './pages/DeckPage';
 import StudyPage from './pages/StudyPage';
@@ -43,10 +44,11 @@ export default function App() {
           </ThemeContext.Consumer>
           <Router>
             <Routes>
+              <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route
-                path="/"
+                path="/home"
                 element={
                   <ProtectedRoute>
                     <HomePage />
