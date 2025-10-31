@@ -66,7 +66,11 @@ export const useNavigation = () => {
 
   // Funciones de navegación inteligente
   const goToDecks = () => {
-    navigate('/');
+    navigate('/home');
+  };
+
+  const goToHome = () => {
+    navigate('/home');
   };
 
   const goToDeck = (deckId) => {
@@ -84,6 +88,10 @@ export const useNavigation = () => {
 
   const goToStudy = () => {
     navigate('/study');
+  };
+
+  const goToLandig = () => {
+    navigate('/');
   };
 
   const goToCurrentDeck = () => {
@@ -146,17 +154,24 @@ export const useNavigation = () => {
 
   // Determinar la acción del botón de navegación principal
   const getNavigationButtonAction = () => {
-    if (isOnDeckPage || isOnStudyPage) {
-      // Si estamos en páginas específicas, ir a la lista de decks
-      return goToDecks;
-    } else {
-      // Si estamos en home y tenemos un último deck visitado que existe, ir directamente a ese deck
-      if (lastDeckExists) {
-        return goToLastDeck;
-      } else {
+    // Validación solicitada:
+    // - Si estamos en una página de deck o de estudio, el botón debe llevar al listado de decks ('/').
+    // - En caso contrario, si existe un último deck válido, ir a ese deck.
+    // - Si no existe un último deck válido, ir al listado de decks.
+    // Esta lógica se aplica sólo cuando hay sesión (token). Si no hay sesión, llevar al landing público.
+    if (token) {
+      if (isOnDeckPage || isOnStudyPage) {
         return goToDecks;
+      } else {
+        if (lastDeckExists) {
+          return goToLastDeck;
+        } else {
+          return goToHome;
+        }
       }
     }
+
+    return goToLandig;
   };
 
   return {
