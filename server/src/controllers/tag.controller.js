@@ -12,9 +12,9 @@ export class TagController {
       // Verificar que el deck pertenece al usuario
       const isOwner = await TagRepository.validateDeckOwnership(deckId, userId);
       if (!isOwner) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           success: false,
-          error: 'Access denied. Deck does not belong to user.' 
+          error: 'Access denied. Deck does not belong to user.'
         });
       }
 
@@ -29,10 +29,10 @@ export class TagController {
       });
     } catch (error) {
       console.error('Error getting tags by deck:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: 'Error interno del servidor',
-        message: error.message 
+        error: 'Internal server error',
+        message: error.message
       });
     }
   }
@@ -46,9 +46,9 @@ export class TagController {
       // Verificar ownership del deck
       const isOwner = await TagRepository.validateDeckOwnership(deckId, userId);
       if (!isOwner) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           success: false,
-          error: 'Access denied. Deck does not belong to user.' 
+          error: 'Access denied. Deck does not belong to user.'
         });
       }
 
@@ -67,10 +67,10 @@ export class TagController {
       });
     } catch (error) {
       console.error('Error getting tag by id:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: 'Error interno del servidor',
-        message: error.message 
+        error: 'Internal server error',
+        message: error.message
       });
     }
   }
@@ -85,9 +85,9 @@ export class TagController {
       // Verificar ownership del deck
       const isOwner = await TagRepository.validateDeckOwnership(deckId, userId);
       if (!isOwner) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           success: false,
-          error: 'Access denied. Deck does not belong to user.' 
+          error: 'Access denied. Deck does not belong to user.'
         });
       }
 
@@ -108,10 +108,10 @@ export class TagController {
         });
       }
 
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: 'Error interno del servidor',
-        message: error.message 
+        error: 'Internal server error',
+        message: error.message
       });
     }
   }
@@ -125,9 +125,9 @@ export class TagController {
       // Verificar ownership del deck
       const isOwner = await TagRepository.validateDeckOwnership(deckId, userId);
       if (!isOwner) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           success: false,
-          error: 'Access denied. Deck does not belong to user.' 
+          error: 'Access denied. Deck does not belong to user.'
         });
       }
 
@@ -155,10 +155,10 @@ export class TagController {
         });
       }
 
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: 'Error interno del servidor',
-        message: error.message 
+        error: 'Internal server error',
+        message: error.message
       });
     }
   }
@@ -172,9 +172,9 @@ export class TagController {
       // Verificar ownership del deck
       const isOwner = await TagRepository.validateDeckOwnership(deckId, userId);
       if (!isOwner) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           success: false,
-          error: 'Access denied. Deck does not belong to user.' 
+          error: 'Access denied. Deck does not belong to user.'
         });
       }
 
@@ -194,10 +194,10 @@ export class TagController {
         });
       }
 
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: 'Error interno del servidor',
-        message: error.message 
+        error: 'Internal server error',
+        message: error.message
       });
     }
   }
@@ -214,9 +214,9 @@ export class TagController {
       });
     } catch (error) {
       console.error('Error getting tags:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: 'Error interno del servidor' 
+        error: 'Internal server error'
       });
     }
   }
