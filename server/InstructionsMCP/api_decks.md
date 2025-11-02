@@ -45,6 +45,38 @@ description: "Deck management endpoints for creating, reading, updating and dele
 }
 ```
 
+## GET /api/decks/mcp
+
+**Purpose:** Retrieves all decks owned by the authenticated user (MCP optimized - without coverUrl).
+
+This endpoint is specifically designed for MCP tools to reduce payload size and improve performance by excluding cover images from the database query itself.
+
+**Authentication:** Required (JWT token)
+
+**Query Parameters:** None
+
+**Response (Success - 200):**
+```json
+{
+  "success": true,
+  "message": "Decks obtenidos exitosamente (sin coverUrl)",
+  "data": [
+    {
+      "id": 1,
+      "name": "Spanish Vocabulary",
+      "description": "Basic Spanish words and phrases",
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T11:00:00.000Z"
+    }
+  ],
+  "count": 1
+}
+```
+
+**Note:** This endpoint excludes `coverUrl` field at the database level for better performance in MCP contexts.
+
+**Error Responses:** Same as GET /api/decks
+
 ## GET /api/decks/:id
 
 **Purpose:** Retrieves a specific deck with ownership verification.

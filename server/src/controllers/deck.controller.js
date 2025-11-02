@@ -14,6 +14,14 @@ export const DeckController = {
   }),
 
   /**
+   * Obtiene todos los decks del usuario sin coverUrl (optimizado para MCP)
+   */
+  getAllDecksForMcp: BaseController.wrap(async (req, res) => {
+    const decks = await Deck.findAllWithoutCoverUrl({ userId: req.userId });
+    BaseController.successList(res, decks, 'Decks obtenidos exitosamente (sin coverUrl)');
+  }),
+
+  /**
    * Obtiene un deck por ID
    */
   getDeckById: BaseController.wrap(async (req, res) => {

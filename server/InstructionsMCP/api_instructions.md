@@ -81,6 +81,7 @@ For complete entity and model documentation, see: **[api_domain.md](api_domain.m
 | Resource | Endpoint | Description |
 |----------|----------|-------------|
 | **User decks** | `GET /api/decks` | Lists all authenticated user's decks |
+| **User decks (MCP)** | `GET /api/decks/mcp` | Lists all decks without cover images (optimized for MCP) |
 | **Specific deck** | `GET /api/decks/:id` | Gets deck by ID with ownership verification |
 | **Deck flashcards** | `GET /api/flashcards/deck/:deckId` | Lists deck flashcards with pagination |
 | **Specific flashcard** | `GET /api/flashcards/:id` | Gets flashcard by ID |

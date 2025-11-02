@@ -58,6 +58,14 @@ export class Deck {
   }
 
   /**
+   * Obtiene todos los decks sin coverUrl (optimizado para MCP)
+   */
+  static async findAllWithoutCoverUrl(filter = {}) {
+    const entities = await DeckRepository.findAllWithoutCoverUrl(filter);
+    return entities.map((entity) => Deck.fromEntityWithStast(entity));
+  }
+
+  /**
    * Actualiza un deck existente
    */
   static async update(id, updateData) {

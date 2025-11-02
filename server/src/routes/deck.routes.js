@@ -8,6 +8,7 @@ const router = Router();
 router.use(authMiddleware);
 
 router.get('/', DeckController.getAllDecks);
+router.get('/mcp', DeckController.getAllDecksForMcp);
 router.get('/:id', DeckController.getDeckById);
 router.post('/', DeckController.createDeck);
 router.put('/:id', DeckController.updateDeck);
