@@ -7,7 +7,6 @@ export default defineConfig(({ mode }) => {
 
   // Leer hosts permitidos desde VITE_ALLOWED_HOSTS (coma-separados) o usar el host conocido
   const allowedHosts = [
-    'icards-djfeb7c0cvdxhpav.canadacentral-01.azurewebsites.net',
     ...(env.VITE_ALLOWED_HOSTS ? env.VITE_ALLOWED_HOSTS.split(',').map(s => s.trim()) : [])
   ];
 
