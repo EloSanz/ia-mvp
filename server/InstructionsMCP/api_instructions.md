@@ -89,7 +89,7 @@ For complete entity and model documentation, see: **[api_domain.md](api_domain.m
 | **Deck flashcards by tag** | `GET /api/decks/:deckId/flashcards-by-tag` | Gets flashcards count by tag for a specific deck |
 | **Deck untagged flashcards** | `GET /api/decks/:deckId/untagged-flashcards-count` | Gets untagged flashcards count for a specific deck |
 | **Specific deck** | `GET /api/decks/:id` | Gets deck by ID with ownership verification |
-| **Deck flashcards** | `GET /api/flashcards/deck/:deckId` | Lists deck flashcards with pagination |
+| **Deck flashcards** | `GET /api/flashcards/deck/:deckId` | Lists deck flashcards with pagination (default 50 per page, use ?all=true for all) |
 | **Specific flashcard** | `GET /api/flashcards/:id` | Gets flashcard by ID |
 | **All flashcards** | `GET /api/flashcards` | Lists all flashcards (debug/admin) |
 | **Deck tags** | `GET /api/decks/:deckId/tags` | Lists all tags for a specific deck |

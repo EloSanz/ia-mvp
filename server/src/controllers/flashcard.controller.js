@@ -39,9 +39,9 @@ export const FlashcardController = {
    *           type: integer
    *           minimum: 1
    *           maximum: 100
-   *           default: 15
+   *           default: 50
    *         description: Number of items per page
-   *         example: 15
+   *         example: 50
    *     responses:
    *       200:
    *         description: Search completed successfully
@@ -65,7 +65,7 @@ export const FlashcardController = {
    *                   example: 0
    *                 pageSize:
    *                   type: integer
-   *                   example: 15
+   *                   example: 50
    *                 message:
    *                   type: string
    *                   example: Búsqueda de flashcards en deck
@@ -124,7 +124,7 @@ export const FlashcardController = {
    *                     $ref: '#/components/schemas/Flashcard'
    *                 count:
    *                   type: integer
-   *                   example: 150
+   *                   example: 500
    *                 timestamp:
    *                   type: string
    *                   format: date-time
@@ -375,13 +375,89 @@ export const FlashcardController = {
   }),
 
   /**
-   * Obtiene flashcards por deckId, opcionalmente filtradas por tagId
+   * @swagger
+   * /api/flashcards/deck/{deckId}:
+   *   get:
+   *     summary: Get flashcards by deck ID
+   *     description: Retrieves flashcards for a specific deck with optional pagination and tag filtering
+   *     tags: [Flashcards]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: deckId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Deck ID to get flashcards for
+   *         example: 1
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           minimum: 0
+   *           default: 0
+   *         description: Page number for pagination
+   *         example: 0
+   *       - in: query
+   *         name: pageSize
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 100
+   *           default: 50
+   *         description: Number of items per page
+   *         example: 50
+   *       - in: query
+   *         name: all
+   *         schema:
+   *           type: string
+   *           enum: [true]
+   *         description: Set to 'true' to get ALL flashcards without pagination
+   *         example: true
+   *       - in: query
+   *         name: tagId
+   *         schema:
+   *           type: integer
+   *         description: Filter flashcards by tag ID
+   *         example: 1
+   *     responses:
+   *       200:
+   *         description: Flashcards retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Flashcard'
+   *                 total:
+   *                   type: integer
+   *                   example: 63
+   *                 page:
+   *                   type: integer
+   *                   example: 0
+   *                 pageSize:
+   *                   type: integer
+   *                   example: 50
+   *                 message:
+   *                   type: string
+   *                   example: Flashcards obtenidas exitosamente
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *       404:
+   *         description: Deck not found
    */
   getFlashcardsByDeck: BaseController.wrap(async (req, res) => {
     const { deckId } = req.params;
     const parsedDeckId = BaseController.validateId(deckId);
     const page = parseInt(req.query.page || '0');
-    const pageSize = parseInt(req.query.pageSize || '15');
+    const pageSize = req.query.all === 'true' ? null : parseInt(req.query.pageSize || '50');
     const tagId = req.query.tagId ? parseInt(req.query.tagId) : null;
 
     let items, total;
@@ -389,13 +465,26 @@ export const FlashcardController = {
       // Filtrar por deck y tag
       const flashcards = await Flashcard.findByDeckIdAndTag(parsedDeckId, tagId);
       // Implementar paginación manual para resultados filtrados
-      const startIndex = page * pageSize;
-      const endIndex = startIndex + pageSize;
-      items = flashcards.slice(startIndex, endIndex);
-      total = flashcards.length;
+      if (pageSize === null) {
+        // Devolver todas las flashcards sin paginado
+        items = flashcards;
+        total = flashcards.length;
+      } else {
+        const startIndex = page * pageSize;
+        const endIndex = startIndex + pageSize;
+        items = flashcards.slice(startIndex, endIndex);
+        total = flashcards.length;
+      }
     } else {
       // Obtener todas las cards del deck
-      ({ items, total } = await Flashcard.findByDeckId(parsedDeckId, { page, pageSize }));
+      if (pageSize === null) {
+        // Devolver todas las flashcards sin paginado
+        const allFlashcards = await Flashcard.findByDeckIdAll(parsedDeckId);
+        items = allFlashcards;
+        total = allFlashcards.length;
+      } else {
+        ({ items, total } = await Flashcard.findByDeckId(parsedDeckId, { page, pageSize }));
+      }
     }
 
     res.json({

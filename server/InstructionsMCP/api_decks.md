@@ -460,6 +460,21 @@ curl -X GET http://localhost:3000/api/decks/1/untagged-flashcards-count \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
+### Flashcards by Deck (with Pagination Control)
+```bash
+# Default pagination (50 flashcards per page)
+curl -X GET http://localhost:3000/api/flashcards/deck/1 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+# Custom page size
+curl -X GET "http://localhost:3000/api/flashcards/deck/1?pageSize=25" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+# Get ALL flashcards (no pagination)
+curl -X GET "http://localhost:3000/api/flashcards/deck/1?all=true" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
 ---
 
 ## API Robustness Features
@@ -469,7 +484,16 @@ The decks API now supports specialized queries using Prisma ORM for efficient da
 - **Tag counting**: Optimized queries for counting tags per deck
 - **Flashcard distribution**: Detailed breakdowns of flashcards by tag
 - **Untagged content tracking**: Specialized endpoints for untagged flashcards
+- **Flexible pagination**: Default 50 flashcards per page (upgraded from 15), with `?all=true` for unlimited results
 - **Performance optimization**: Direct database-level queries without unnecessary data loading
 - **Ownership verification**: All endpoints include user ownership checks
+- **Comprehensive statistics**: Multiple endpoints for different types of counts and aggregations
+
+### Pagination Behavior
+
+- **Default limit**: 50 flashcards per page (increased from 15 for better user experience)
+- **All results**: Use `?all=true` parameter to bypass pagination and get all flashcards
+- **Custom limits**: Use `?pageSize=N` for custom page sizes (max 100)
+- **Page navigation**: Use `?page=N` for specific page numbers
 
 These specialized endpoints allow for granular data analysis and efficient querying without loading unnecessary data.
