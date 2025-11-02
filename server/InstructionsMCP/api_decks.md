@@ -45,6 +45,62 @@ description: "Deck management endpoints for creating, reading, updating and dele
 }
 ```
 
+## GET /api/decks/stats
+
+**Purpose:** Retrieves detailed statistics for all decks owned by the authenticated user.
+
+This endpoint provides comprehensive statistics including tag counts, untagged flashcards, and flashcard distributions across all user decks.
+
+**Authentication:** Required (JWT token)
+
+**Query Parameters:** None
+
+**Response (Success - 200):**
+```json
+{
+  "success": true,
+  "message": "Detailed deck statistics retrieved successfully",
+  "data": {
+    "totalDecks": 3,
+    "totalFlashcards": 85,
+    "totalTags": 12,
+    "decks": [
+      {
+        "id": 1,
+        "name": "Spanish Vocabulary",
+        "stats": {
+          "flashcardsCount": 30,
+          "tagsCount": 5,
+          "untaggedFlashcardsCount": 8,
+          "flashcardsByTag": [
+            {
+              "tagId": 1,
+              "tagName": "Grammar",
+              "count": 10
+            },
+            {
+              "tagId": 2,
+              "tagName": "Vocabulary",
+              "count": 12
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+**Error Responses:**
+
+**Unauthorized (401):**
+```json
+{
+  "success": false,
+  "message": "Token de autenticación requerido"
+}
+```
+
 ## GET /api/decks/mcp
 
 **Purpose:** Retrieves all decks owned by the authenticated user (MCP optimized - without coverUrl).
@@ -372,4 +428,48 @@ curl -X POST http://localhost:3000/api/decks/suggest-topics \
   -d '{"count": 5}'
 ```
 
+## Specialized Count Endpoints
+
+### Flashcards Count by Deck
+```bash
+curl -X GET http://localhost:3000/api/decks/flashcards-count \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+### Untagged Flashcards Count (All Decks)
+```bash
+curl -X GET http://localhost:3000/api/decks/untagged-flashcards-count \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+### Tag Count for Specific Deck
+```bash
+curl -X GET http://localhost:3000/api/decks/1/tag-count \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+### Flashcards by Tag for Specific Deck
+```bash
+curl -X GET http://localhost:3000/api/decks/1/flashcards-by-tag \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+### Untagged Flashcards Count for Specific Deck
+```bash
+curl -X GET http://localhost:3000/api/decks/1/untagged-flashcards-count \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
 ---
+
+## API Robustness Features
+
+The decks API now supports specialized queries using Prisma ORM for efficient database operations:
+
+- **Tag counting**: Optimized queries for counting tags per deck
+- **Flashcard distribution**: Detailed breakdowns of flashcards by tag
+- **Untagged content tracking**: Specialized endpoints for untagged flashcards
+- **Performance optimization**: Direct database-level queries without unnecessary data loading
+- **Ownership verification**: All endpoints include user ownership checks
+
+These specialized endpoints allow for granular data analysis and efficient querying without loading unnecessary data.

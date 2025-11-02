@@ -338,6 +338,108 @@ const options = {
               example: 1
             }
           }
+        },
+        LoginRequest: {
+          type: 'object',
+          required: ['username', 'password'],
+          properties: {
+            username: {
+              type: 'string',
+              minLength: 3,
+              maxLength: 30,
+              example: 'admin'
+            },
+            password: {
+              type: 'string',
+              minLength: 6,
+              maxLength: 128,
+              example: 'admin123'
+            }
+          }
+        },
+        LoginResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true
+            },
+            message: {
+              type: 'string',
+              example: 'Login successful'
+            },
+            data: {
+              type: 'object',
+              properties: {
+                token: {
+                  type: 'string',
+                  example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                },
+                user: {
+                  type: 'object',
+                  properties: {
+                    id: {
+                      type: 'integer',
+                      example: 2
+                    },
+                    username: {
+                      type: 'string',
+                      example: 'admin'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        RegisterRequest: {
+          type: 'object',
+          required: ['username', 'password'],
+          properties: {
+            username: {
+              type: 'string',
+              minLength: 3,
+              maxLength: 30,
+              example: 'newuser'
+            },
+            password: {
+              type: 'string',
+              minLength: 6,
+              maxLength: 128,
+              example: 'securepassword123'
+            }
+          }
+        },
+        RegisterResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true
+            },
+            message: {
+              type: 'string',
+              example: 'User registered successfully'
+            },
+            data: {
+              type: 'object',
+              properties: {
+                user: {
+                  type: 'object',
+                  properties: {
+                    id: {
+                      type: 'integer',
+                      example: 3
+                    },
+                    username: {
+                      type: 'string',
+                      example: 'newuser'
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -348,7 +450,95 @@ const options = {
   apis: [
     './src/routes/*.js',
     './src/controllers/*.js'
-  ]
+  ],
+  paths: {
+    '/api/auth/register': {
+      post: {
+        tags: ['Authentication'],
+        summary: 'Register a new user',
+        description: 'Creates a new user account and returns a JWT token',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/RegisterRequest'
+              },
+              example: {
+                username: 'newuser',
+                password: 'securepassword123'
+              }
+            }
+          }
+        },
+        responses: {
+          201: {
+            description: 'User registered successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/RegisterResponse'
+                }
+              }
+            }
+          },
+          400: {
+            description: 'Bad request - Invalid input data or user already exists',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Error'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/auth/login': {
+      post: {
+        tags: ['Authentication'],
+        summary: 'Login user',
+        description: 'Authenticates a user and returns a JWT token for API access',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/LoginRequest'
+              },
+              example: {
+                username: 'admin',
+                password: 'admin123'
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Login successful',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/LoginResponse'
+                }
+              }
+            }
+          },
+          400: {
+            description: 'Bad request - Invalid credentials',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Error'
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 };
 
 const specs = swaggerJSDoc(options);

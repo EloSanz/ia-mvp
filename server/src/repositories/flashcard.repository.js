@@ -408,4 +408,33 @@ export class FlashcardRepository {
       console.error(`Error al invalidar cache del deck ${deckId}:`, error);
     }
   }
+
+  /**
+   * Cuenta flashcards por tag
+   */
+  static async countByTagId(tagId) {
+    try {
+      return await prisma.flashcard.count({
+        where: { tagId: parseInt(tagId) }
+      });
+    } catch (error) {
+      throw new Error(`Error counting flashcards by tag: ${error.message}`);
+    }
+  }
+
+  /**
+   * Cuenta flashcards sin tag por deck
+   */
+  static async countUntaggedByDeckId(deckId) {
+    try {
+      return await prisma.flashcard.count({
+        where: {
+          deckId: parseInt(deckId),
+          tagId: null
+        }
+      });
+    } catch (error) {
+      throw new Error(`Error counting untagged flashcards by deck: ${error.message}`);
+    }
+  }
 }

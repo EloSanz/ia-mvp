@@ -9,6 +9,11 @@ router.use(authMiddleware);
 
 router.get('/', DeckController.getAllDecks);
 router.get('/mcp', DeckController.getAllDecksForMcp);
+router.get('/flashcards-count', DeckController.getAllFlashcardsCount);
+router.get('/untagged-flashcards-count', DeckController.getAllUntaggedFlashcardsCount);
+router.get('/:deckId/tag-count', DeckController.getDeckTagCount);
+router.get('/:deckId/flashcards-by-tag', DeckController.getDeckFlashcardsByTag);
+router.get('/:deckId/untagged-flashcards-count', DeckController.getDeckUntaggedFlashcardsCount);
 router.get('/:id', DeckController.getDeckById);
 router.post('/', DeckController.createDeck);
 router.put('/:id', DeckController.updateDeck);

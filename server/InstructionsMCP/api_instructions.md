@@ -82,6 +82,12 @@ For complete entity and model documentation, see: **[api_domain.md](api_domain.m
 |----------|----------|-------------|
 | **User decks** | `GET /api/decks` | Lists all authenticated user's decks |
 | **User decks (MCP)** | `GET /api/decks/mcp` | Lists all decks without cover images (optimized for MCP) |
+| **Deck statistics** | `GET /api/decks/stats` | Gets detailed statistics for all user decks including tags and flashcards counts |
+| **All flashcards count** | `GET /api/decks/flashcards-count` | Gets flashcards count for all user decks |
+| **All untagged flashcards** | `GET /api/decks/untagged-flashcards-count` | Gets untagged flashcards count across all user decks |
+| **Deck tag count** | `GET /api/decks/:deckId/tag-count` | Gets tag count for a specific deck |
+| **Deck flashcards by tag** | `GET /api/decks/:deckId/flashcards-by-tag` | Gets flashcards count by tag for a specific deck |
+| **Deck untagged flashcards** | `GET /api/decks/:deckId/untagged-flashcards-count` | Gets untagged flashcards count for a specific deck |
 | **Specific deck** | `GET /api/decks/:id` | Gets deck by ID with ownership verification |
 | **Deck flashcards** | `GET /api/flashcards/deck/:deckId` | Lists deck flashcards with pagination |
 | **Specific flashcard** | `GET /api/flashcards/:id` | Gets flashcard by ID |
