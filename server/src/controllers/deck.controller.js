@@ -6,7 +6,44 @@ import { deckGeneratorService } from '../services/deckGenerator.service.js';
 
 export const DeckController = {
   /**
-   * Obtiene todos los decks del usuario
+   * @swagger
+   * /api/decks:
+   *   get:
+   *     summary: Get all decks for the authenticated user
+   *     description: Retrieves all flashcard decks owned by the authenticated user, including statistics
+   *     tags: [Decks]
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Decks retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Decks obtenidos exitosamente
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Deck'
+   *                 count:
+   *                   type: integer
+   *                   example: 5
+   *                 timestamp:
+   *                   type: string
+   *                   format: date-time
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   getAllDecks: BaseController.wrap(async (req, res) => {
     const decks = await Deck.findAll({ userId: req.userId });
@@ -14,7 +51,44 @@ export const DeckController = {
   }),
 
   /**
-   * Obtiene todos los decks del usuario sin coverUrl (optimizado para MCP)
+   * @swagger
+   * /api/decks/mcp:
+   *   get:
+   *     summary: Get all decks for the authenticated user (MCP optimized)
+   *     description: Retrieves all flashcard decks owned by the authenticated user without cover images, optimized for MCP tools
+   *     tags: [Decks]
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Decks retrieved successfully (without cover images)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Decks obtenidos exitosamente (sin coverUrl)
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/DeckMCP'
+   *                 count:
+   *                   type: integer
+   *                   example: 5
+   *                 timestamp:
+   *                   type: string
+   *                   format: date-time
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   getAllDecksForMcp: BaseController.wrap(async (req, res) => {
     const decks = await Deck.findAllWithoutCoverUrl({ userId: req.userId });
@@ -22,7 +96,56 @@ export const DeckController = {
   }),
 
   /**
-   * Obtiene un deck por ID
+   * @swagger
+   * /api/decks/{id}:
+   *   get:
+   *     summary: Get a specific deck by ID
+   *     description: Retrieves a single deck with ownership verification
+   *     tags: [Decks]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Deck ID to retrieve
+   *         example: 1
+   *     responses:
+   *       200:
+   *         description: Deck retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Deck obtenido exitosamente
+   *                 data:
+   *                   $ref: '#/components/schemas/Deck'
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       403:
+   *         description: Forbidden - User does not own this deck
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       404:
+   *         description: Deck not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   getDeckById: BaseController.wrap(async (req, res) => {
     const { id } = req.params;
@@ -36,7 +159,52 @@ export const DeckController = {
   }),
 
   /**
-   * Crea un nuevo deck
+   * @swagger
+   * /api/decks:
+   *   post:
+   *     summary: Create a new deck
+   *     description: Creates a new flashcard deck with optional AI-generated cover image
+   *     tags: [Decks]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/CreateDeckRequest'
+   *           example:
+   *             name: "Spanish Vocabulary"
+   *             description: "Basic Spanish words and phrases"
+   *             generateCover: true
+   *     responses:
+   *       201:
+   *         description: Deck created successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Deck creado exitosamente
+   *                 data:
+   *                   $ref: '#/components/schemas/Deck'
+   *       400:
+   *         description: Bad request - Invalid input data
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   createDeck: BaseController.wrap(async (req, res) => {
 
@@ -81,7 +249,71 @@ export const DeckController = {
   }),
 
   /**
-   * Actualiza un deck existente
+   * @swagger
+   * /api/decks/{id}:
+   *   put:
+   *     summary: Update an existing deck
+   *     description: Updates a deck's information with ownership verification
+   *     tags: [Decks]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Deck ID to update
+   *         example: 1
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/UpdateDeckRequest'
+   *           example:
+   *             name: "Advanced Spanish"
+   *             description: "Advanced Spanish vocabulary and grammar"
+   *     responses:
+   *       200:
+   *         description: Deck updated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Deck actualizado exitosamente
+   *                 data:
+   *                   $ref: '#/components/schemas/Deck'
+   *       400:
+   *         description: Bad request - Invalid input data
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       403:
+   *         description: Forbidden - User does not own this deck
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       404:
+   *         description: Deck not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   updateDeck: BaseController.wrap(async (req, res) => {
     const { id } = req.params;
@@ -102,7 +334,56 @@ export const DeckController = {
   }),
 
   /**
-   * Elimina un deck
+   * @swagger
+   * /api/decks/{id}:
+   *   delete:
+   *     summary: Delete a deck
+   *     description: Deletes a deck with ownership verification
+   *     tags: [Decks]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Deck ID to delete
+   *         example: 1
+   *     responses:
+   *       200:
+   *         description: Deck deleted successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Deck eliminado exitosamente
+   *                 data:
+   *                   type: null
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       403:
+   *         description: Forbidden - User does not own this deck
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       404:
+   *         description: Deck not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   deleteDeck: BaseController.wrap(async (req, res) => {
     const { id } = req.params;
@@ -121,7 +402,58 @@ export const DeckController = {
   }),
 
   /**
-   * Sugiere temas de decks basados en los decks existentes del usuario
+   * @swagger
+   * /api/decks/suggest-topics:
+   *   post:
+   *     summary: Suggest deck topics based on user history
+   *     description: Generates topic suggestions for new decks based on the user's existing decks
+   *     tags: [Decks, AI]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: false
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               count:
+   *                 type: integer
+   *                 minimum: 1
+   *                 maximum: 10
+   *                 default: 3
+   *                 example: 3
+   *                 description: Number of topics to suggest
+   *           example:
+   *             count: 3
+   *     responses:
+   *       200:
+   *         description: Topics suggested successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Temas sugeridos exitosamente
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     topics:
+   *                       type: array
+   *                       items:
+   *                         type: string
+   *                       example: ["Advanced JavaScript", "React Patterns", "Database Design"]
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   suggestTopics: BaseController.wrap(async (req, res) => {
     const userId = parseInt(req.userId);
@@ -133,7 +465,108 @@ export const DeckController = {
   }),
 
   /**
-   * Genera un deck completo con IA
+   * @swagger
+   * /api/decks/generate-with-ai:
+   *   post:
+   *     summary: Generate a complete deck with AI
+   *     description: Creates a full flashcard deck using AI based on topic, difficulty, and other parameters
+   *     tags: [Decks, AI]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - mode
+   *               - topic
+   *             properties:
+   *               mode:
+   *                 type: string
+   *                 enum: [free, configured, suggested]
+   *                 example: configured
+   *                 description: Generation mode
+   *               topic:
+   *                 type: string
+   *                 minLength: 1
+   *                 example: "Spanish Vocabulary"
+   *                 description: Topic for the deck
+   *               flashcardCount:
+   *                 type: integer
+   *                 minimum: 5
+   *                 maximum: 50
+   *                 default: 10
+   *                 example: 15
+   *                 description: Number of flashcards to generate
+   *               difficulty:
+   *                 type: string
+   *                 enum: [beginner, intermediate, advanced]
+   *                 example: intermediate
+   *                 description: Difficulty level
+   *               tags:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *                 example: ["grammar", "vocabulary"]
+   *                 description: Tags for the flashcards
+   *               generateCover:
+   *                 type: boolean
+   *                 default: true
+   *                 example: true
+   *                 description: Whether to generate AI cover image
+   *           examples:
+   *             free:
+   *               summary: Free topic generation
+   *               value:
+   *                 mode: "free"
+   *                 topic: "Machine Learning"
+   *                 flashcardCount: 10
+   *                 generateCover: true
+   *             configured:
+   *               summary: Configured generation
+   *               value:
+   *                 mode: "configured"
+   *                 topic: "React Components"
+   *                 flashcardCount: 15
+   *                 difficulty: "intermediate"
+   *                 tags: ["react", "frontend"]
+   *                 generateCover: false
+   *     responses:
+   *       201:
+   *         description: Deck generated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Deck generado exitosamente
+   *                 data:
+   *                   $ref: '#/components/schemas/Deck'
+   *       400:
+   *         description: Bad request - Invalid input data
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       500:
+   *         description: Internal server error - AI generation failed
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   generateDeckWithAI: BaseController.wrap(async (req, res) => {
     const userId = parseInt(req.userId);

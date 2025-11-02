@@ -13,6 +13,7 @@ import { errorHandler } from './middlewares/error.middleware.js';
 import { authMiddleware } from './middlewares/auth.middleware.js';
 import { requestLogger, apiLogger, errorLogger } from './middlewares/logging.middleware.js';
 import { getQueryStats } from './config/database.js';
+import { swaggerUi, specs } from './config/swagger.config.js';
 
 const app = express();
 
@@ -23,6 +24,9 @@ app.use(apiLogger);     // Logging específico de API
 // Middlewares
 app.use(cors());
 app.use(express.json());
+
+// Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // Health check route
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
