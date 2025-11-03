@@ -45,62 +45,6 @@ description: "Deck management endpoints for creating, reading, updating and dele
 }
 ```
 
-## GET /api/decks/stats
-
-**Purpose:** Retrieves detailed statistics for all decks owned by the authenticated user.
-
-This endpoint provides comprehensive statistics including tag counts, untagged flashcards, and flashcard distributions across all user decks.
-
-**Authentication:** Required (JWT token)
-
-**Query Parameters:** None
-
-**Response (Success - 200):**
-```json
-{
-  "success": true,
-  "message": "Detailed deck statistics retrieved successfully",
-  "data": {
-    "totalDecks": 3,
-    "totalFlashcards": 85,
-    "totalTags": 12,
-    "decks": [
-      {
-        "id": 1,
-        "name": "Spanish Vocabulary",
-        "stats": {
-          "flashcardsCount": 30,
-          "tagsCount": 5,
-          "untaggedFlashcardsCount": 8,
-          "flashcardsByTag": [
-            {
-              "tagId": 1,
-              "tagName": "Grammar",
-              "count": 10
-            },
-            {
-              "tagId": 2,
-              "tagName": "Vocabulary",
-              "count": 12
-            }
-          ]
-        }
-      }
-    ]
-  }
-}
-```
-
-**Error Responses:**
-
-**Unauthorized (401):**
-```json
-{
-  "success": false,
-  "message": "Token de autenticación requerido"
-}
-```
-
 ## GET /api/decks/mcp
 
 **Purpose:** Retrieves all decks owned by the authenticated user (MCP optimized - without coverUrl).
@@ -428,39 +372,202 @@ curl -X POST http://localhost:3000/api/decks/suggest-topics \
   -d '{"count": 5}'
 ```
 
-## Specialized Count Endpoints
+## GET /api/decks/flashcards-count
 
-### Flashcards Count by Deck
-```bash
-curl -X GET http://localhost:3000/api/decks/flashcards-count \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+**Purpose:** Retrieves the total count of flashcards across all user decks.
+
+**Authentication:** Required (JWT token)
+
+**Query Parameters:** None
+
+**Response (Success - 200):**
+```json
+{
+  "success": true,
+  "message": "Flashcards count for all decks retrieved successfully",
+  "data": {
+    "totalFlashcards": 150,
+    "byDeck": [
+      {
+        "deckId": 1,
+        "deckName": "Spanish Vocabulary",
+        "flashcardsCount": 50
+      },
+      {
+        "deckId": 2,
+        "deckName": "Python Basics",
+        "flashcardsCount": 100
+      }
+    ]
+  }
+}
 ```
 
-### Untagged Flashcards Count (All Decks)
-```bash
-curl -X GET http://localhost:3000/api/decks/untagged-flashcards-count \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+## GET /api/decks/untagged-flashcards-count
+
+**Purpose:** Retrieves the count of untagged flashcards across all user decks.
+
+**Authentication:** Required (JWT token)
+
+**Query Parameters:** None
+
+**Response (Success - 200):**
+```json
+{
+  "success": true,
+  "message": "Untagged flashcards count across all decks retrieved successfully",
+  "data": {
+    "totalUntaggedFlashcards": 25,
+    "byDeck": [
+      {
+        "deckId": 1,
+        "deckName": "Spanish Vocabulary",
+        "untaggedCount": 10
+      },
+      {
+        "deckId": 2,
+        "deckName": "Python Basics",
+        "untaggedCount": 15
+      }
+    ]
+  }
+}
 ```
 
-### Tag Count for Specific Deck
-```bash
-curl -X GET http://localhost:3000/api/decks/1/tag-count \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+## GET /api/decks/:deckId/tag-count
+
+**Purpose:** Retrieves the count of tags for a specific deck.
+
+**Authentication:** Required (JWT token)
+
+**URL Parameters:**
+- `deckId` (integer): Deck ID to count tags for
+
+**Response (Success - 200):**
+```json
+{
+  "success": true,
+  "message": "Tag count retrieved successfully",
+  "data": {
+    "deckId": 1,
+    "tagCount": 5
+  }
+}
 ```
 
-### Flashcards by Tag for Specific Deck
-```bash
-curl -X GET http://localhost:3000/api/decks/1/flashcards-by-tag \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+**Error Responses:**
+- **Forbidden (403):** User does not own this deck
+- **Not Found (404):** Deck not found
+
+## GET /api/decks/:deckId/flashcards-by-tag
+
+**Purpose:** Retrieves the count of flashcards grouped by tag for a specific deck.
+
+**Authentication:** Required (JWT token)
+
+**URL Parameters:**
+- `deckId` (integer): Deck ID to get flashcards by tag for
+
+**Response (Success - 200):**
+```json
+{
+  "success": true,
+  "message": "Flashcards by tag count retrieved successfully",
+  "data": {
+    "deckId": 1,
+    "flashcardsByTag": [
+      {
+        "tagId": 1,
+        "tagName": "Grammar",
+        "count": 15
+      },
+      {
+        "tagId": 2,
+        "tagName": "Vocabulary",
+        "count": 25
+      },
+      {
+        "tagId": 3,
+        "tagName": "Verbs",
+        "count": 10
+      }
+    ]
+  }
+}
 ```
 
-### Untagged Flashcards Count for Specific Deck
-```bash
-curl -X GET http://localhost:3000/api/decks/1/untagged-flashcards-count \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+**Error Responses:**
+- **Forbidden (403):** User does not own this deck
+- **Not Found (404):** Deck not found
+
+## GET /api/decks/:deckId/untagged-flashcards-count
+
+**Purpose:** Retrieves the count of untagged flashcards for a specific deck.
+
+**Authentication:** Required (JWT token)
+
+**URL Parameters:**
+- `deckId` (integer): Deck ID to count untagged flashcards for
+
+**Response (Success - 200):**
+```json
+{
+  "success": true,
+  "message": "Untagged flashcards count retrieved successfully",
+  "data": {
+    "deckId": 1,
+    "untaggedFlashcardsCount": 8
+  }
+}
 ```
 
-### Flashcards by Deck (with Pagination Control)
+**Error Responses:**
+- **Forbidden (403):** User does not own this deck
+- **Not Found (404):** Deck not found
+
+## Flashcards by Deck (with Pagination Control)
+
+**Purpose:** Retrieves flashcards for a specific deck with flexible pagination options.
+
+**Authentication:** Required (JWT token)
+
+**URL Parameters:**
+- `deckId` (integer): Deck ID to get flashcards for
+
+**Query Parameters:**
+- `page` (integer, optional): Page number (default: 0)
+- `pageSize` (integer, optional): Items per page (default: 50, max: 100)
+- `all` (boolean, optional): Set to 'true' to get all flashcards without pagination
+- `tagId` (integer, optional): Filter flashcards by tag ID
+
+**Response (Success - 200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "front": "Hello",
+      "back": "Hola",
+      "deckId": 1,
+      "difficulty": 2,
+      "tagId": 1,
+      "tag": {
+        "id": 1,
+        "name": "Greeting",
+        "color": "#FF6B6B"
+      },
+      "createdAt": "2024-01-15T10:30:00.000Z"
+    }
+  ],
+  "total": 25,
+  "page": 0,
+  "pageSize": 50,
+  "message": "Flashcards obtenidas exitosamente"
+}
+```
+
+**Usage Examples:**
 ```bash
 # Default pagination (50 flashcards per page)
 curl -X GET http://localhost:3000/api/flashcards/deck/1 \
@@ -472,6 +579,10 @@ curl -X GET "http://localhost:3000/api/flashcards/deck/1?pageSize=25" \
 
 # Get ALL flashcards (no pagination)
 curl -X GET "http://localhost:3000/api/flashcards/deck/1?all=true" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+# Filter by tag
+curl -X GET "http://localhost:3000/api/flashcards/deck/1?tagId=2" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 

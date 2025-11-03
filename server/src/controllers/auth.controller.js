@@ -7,7 +7,34 @@ import { BaseController } from './base.controller.js';
 
 export const AuthController = {
   /**
-   * Registra un nuevo usuario
+   * @swagger
+   * /api/auth/register:
+   *   post:
+   *     tags: [Authentication]
+   *     summary: Register a new user
+   *     description: Creates a new user account and returns a JWT token
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/RegisterRequest'
+   *           example:
+   *             username: 'newuser'
+   *             password: 'securepassword123'
+   *     responses:
+   *       201:
+   *         description: User registered successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/RegisterResponse'
+   *       400:
+   *         description: Bad request - Invalid input data or user already exists
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   register: asyncHandler(async (req, res) => {
     const { username, password } = req.body;
@@ -48,7 +75,34 @@ export const AuthController = {
   }),
 
   /**
-   * Inicia sesión de usuario
+   * @swagger
+   * /api/auth/login:
+   *   post:
+   *     tags: [Authentication]
+   *     summary: Login user
+   *     description: Authenticates a user and returns a JWT token for API access
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/LoginRequest'
+   *           example:
+   *             username: 'admin'
+   *             password: 'admin123'
+   *     responses:
+   *       200:
+   *         description: Login successful
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/LoginResponse'
+   *       400:
+   *         description: Bad request - Invalid credentials
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   login: asyncHandler(async (req, res) => {
     const { username, password } = req.body;
