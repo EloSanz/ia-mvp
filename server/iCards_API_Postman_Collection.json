@@ -392,6 +392,52 @@
           }
         },
         {
+          "name": "Get Flashcards by Deck (Custom Page Size)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/flashcards/deck/7?pageSize=25",
+              "host": ["{{base_url}}"],
+              "path": ["api", "flashcards", "deck", "7"],
+              "query": [
+                {
+                  "key": "pageSize",
+                  "value": "25"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get ALL Flashcards by Deck",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/flashcards/deck/7?all=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "flashcards", "deck", "7"],
+              "query": [
+                {
+                  "key": "all",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
           "name": "Get Flashcards by Deck (All)",
           "request": {
             "method": "GET",

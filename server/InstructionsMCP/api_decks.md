@@ -536,8 +536,8 @@ curl -X POST http://localhost:3000/api/decks/suggest-topics \
 
 **Query Parameters:**
 - `page` (integer, optional): Page number (default: 0)
-- `pageSize` (integer, optional): Items per page (default: 50, max: 100)
-- `all` (boolean, optional): Set to 'true' to get all flashcards without pagination
+- `pageSize` (integer, optional): Items per page (default: 50, max: 100). Use `?all=true` to get all flashcards without limit
+- `all` (boolean, optional): Set to 'true' to get all flashcards without pagination (ignores pageSize)
 - `tagId` (integer, optional): Filter flashcards by tag ID
 
 **Response (Success - 200):**
@@ -573,11 +573,11 @@ curl -X POST http://localhost:3000/api/decks/suggest-topics \
 curl -X GET http://localhost:3000/api/flashcards/deck/1 \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-# Custom page size
+# Custom page size (25 flashcards per page)
 curl -X GET "http://localhost:3000/api/flashcards/deck/1?pageSize=25" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-# Get ALL flashcards (no pagination)
+# Get ALL flashcards (no pagination limit)
 curl -X GET "http://localhost:3000/api/flashcards/deck/1?all=true" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
