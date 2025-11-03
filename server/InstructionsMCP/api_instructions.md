@@ -1,6 +1,6 @@
 # Flashcard Learning Platform API - Documentation Index
 
-This is the complete documentation for the REST API of the flashcard learning platform. The API provides functionality for user management, decks, flashcards, spaced repetition study, Anki synchronization, and tag organization.
+This is the complete documentation for the REST API of the flashcard learning platform. The API provides functionality for user management, decks, flashcards, Anki synchronization, and tag organization.
 
 ---
 
@@ -24,15 +24,6 @@ For complete flashcards module documentation, see: **[api_flashcards.md](api_fla
 - Bulk AI generation
 - Difficulty system and reviews
 - Tag association
-
-### 📖 **Study System**
-For spaced repetition study system documentation, see: **[api_study.md](api_study.md)**
-
-**Features:**
-- Personalized study sessions
-- Spaced repetition algorithm
-- Session progress tracking
-- Global system statistics
 
 ### 🔄 **Anki Sync**
 Anki synchronization endpoints for importing/exporting flashcards.
@@ -88,19 +79,16 @@ For complete entity and model documentation, see: **[api_domain.md](api_domain.m
 | **Deck flashcards by tag** | `GET /api/decks/:deckId/flashcards-by-tag` | Gets flashcards count by tag for a specific deck |
 | **Deck untagged flashcards** | `GET /api/decks/:deckId/untagged-flashcards-count` | Gets untagged flashcards count for a specific deck |
 | **Specific deck** | `GET /api/decks/:id` | Gets deck by ID with ownership verification |
-| **Deck flashcards** | `GET /api/flashcards/deck/:deckId` | Lists deck flashcards with pagination (default 50 per page, use ?all=true for all) |
+| **Deck flashcards** | `GET /api/flashcards/deck/:deckId` | Lists all deck flashcards (no pagination by default, returns all available cards) |
 | **Specific flashcard** | `GET /api/flashcards/:id` | Gets flashcard by ID |
 | **All flashcards** | `GET /api/flashcards` | Lists all flashcards (debug/admin) |
 | **Deck tags** | `GET /api/decks/:deckId/tags` | Lists all tags for a specific deck |
 | **Specific tag** | `GET /api/decks/:deckId/tags/:tagId` | Gets specific tag within a deck |
-| **Session status** | `GET /api/study/:sessionId/status` | Gets current study session status |
-| **Next flashcard** | `GET /api/study/:sessionId/next` | Gets next flashcard in study session |
 | **Health check** | `GET /api/health` | Verifies service status |
 | **Detailed health** | `GET /api/health/detailed` | Detailed system information |
 | **Logging stats** | `GET /api/logging/stats` | Database statistics |
 | **Anki status** | `GET /api/sync/anki/status` | Check Anki connection |
 | **Sync stats** | `GET /api/sync/stats` | Study synchronization stats |
-| **Study stats** | `GET /api/study/stats` | Global study system statistics |
 
 ### **Search and filtering**
 
@@ -108,8 +96,6 @@ For complete entity and model documentation, see: **[api_domain.md](api_domain.m
 |----------|-------------|
 | `GET /api/flashcards/deck/:deckId/search?q=term` | Searches flashcards in deck by content |
 | `GET /api/flashcards/search?q=term&deckId=1` | Global flashcard search with optional filters |
-| `GET /api/flashcards/due` | Gets flashcards ready for review |
-| `GET /api/flashcards/due/:deckId` | Gets flashcards for review in specific deck |
 
 ---
 
@@ -176,14 +162,6 @@ curl -X GET http://localhost:3000/api/health
 
 # Search flashcards in deck (no authentication)
 curl -X GET "http://localhost:3000/api/flashcards/deck/1/search?q=spanish"
-
-# Get flashcards for study
-curl -X GET http://localhost:3000/api/flashcards/due/1 \
-  -H "Authorization: Bearer $TOKEN"
-
-# Get study session status
-curl -X GET http://localhost:3000/api/study/study_123/status \
-  -H "Authorization: Bearer $TOKEN"
 ```
 
 ---
