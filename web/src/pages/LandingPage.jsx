@@ -8,7 +8,8 @@ import {
     useTheme,
     Grid,
     Stack,
-    Icon
+    Icon,
+    Card
 } from '@mui/material';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -43,6 +44,36 @@ export default function LandingPage() {
         }
     ];
 
+    const benefits = [
+        {
+            title: 'Estudio Personalizado',
+            description: 'Adapta tus mazos a tus necesidades específicas y maximiza tu aprendizaje.'
+        },
+        {
+            title: 'Acceso Multiplataforma',
+            description: 'Estudia desde cualquier dispositivo, en cualquier momento.'
+        },
+        {
+            title: 'Actualizaciones Constantes',
+            description: 'Disfruta de nuevas funcionalidades y mejoras continuas.'
+        }
+    ];
+
+    const faqs = [
+        {
+            question: '¿Es realmente gratis?',
+            answer: 'Sí, puedes registrarte y crear tu primer mazo sin costo alguno.'
+        },
+        {
+            question: '¿Cómo funciona la generación con IA?',
+            answer: 'Nuestra IA analiza tus notas y documentos para crear flashcards precisas y útiles.'
+        },
+        {
+            question: '¿Puedo compartir mis mazos?',
+            answer: 'Por ahora, los mazos son privados y están diseñados para uso personal.'
+        }
+    ];
+
     return (
         <Box className="font-display">
             {/* Header */}
@@ -58,7 +89,7 @@ export default function LandingPage() {
                     backdropFilter: 'blur(8px)'
                 }}
             >
-                <Container maxWidth="lg">
+                <Container maxWidth="xl">
                     <Box
                         sx={{
                             display: 'flex',
@@ -73,12 +104,6 @@ export default function LandingPage() {
                                     <path
                                         d="M39.5563 34.1455V13.8546C39.5563 15.708 36.8773 17.3437 32.7927 18.3189C30.2914 18.916 27.263 19.2655 24 19.2655C20.737 19.2655 17.7086 18.916 15.2073 18.3189C11.1227 17.3437 8.44365 15.708 8.44365 13.8546V34.1455C8.44365 35.9988 11.1227 37.6346 15.2073 38.6098C17.7086 39.2069 20.737 39.5564 24 39.5564C27.263 39.5564 30.2914 39.2069 32.7927 38.6098C36.8773 37.6346 39.5563 35.9988 39.5563 34.1455Z"
                                         fill="currentColor"
-                                    />
-                                    <path
-                                        clipRule="evenodd"
-                                        d="M10.4485 13.8519C10.4749 13.9271 10.6203 14.246 11.379 14.7361C12.298 15.3298 13.7492 15.9145 15.6717 16.3735C18.0007 16.9296 20.8712 17.2655 24 17.2655C27.1288 17.2655 29.9993 16.9296 32.3283 16.3735C34.2508 15.9145 35.702 15.3298 36.621 14.7361C37.3796 14.246 37.5251 13.9271 37.5515 13.8519C37.5287 13.7876 37.4333 13.5973 37.0635 13.2931C36.5266 12.8516 35.6288 12.3647 34.343 11.9175C31.79 11.0295 28.1333 10.4437 24 10.4437C19.8667 10.4437 16.2099 11.0295 13.657 11.9175C12.3712 12.3647 11.4734 12.8516 10.9365 13.2931C10.5667 13.5973 10.4713 13.7876 10.4485 13.8519ZM37.5563 18.7877C36.3176 19.3925 34.8502 19.8839 33.2571 20.2642C30.5836 20.9025 27.3973 21.2655 24 21.2655C20.6027 21.2655 17.4164 20.9025 14.7429 20.2642C13.1498 19.8839 11.6824 19.3925 10.4436 18.7877V34.1275C10.4515 34.1545 10.5427 34.4867 11.379 35.027C12.298 35.6207 13.7492 36.2054 15.6717 36.6644C18.0007 37.2205 20.8712 37.5564 24 37.5564C27.1288 37.5564 29.9993 37.2205 32.3283 36.6644C34.2508 36.2054 35.702 35.6207 36.621 35.027C37.4573 34.4867 37.5485 34.1546 37.5563 34.1275V18.7877ZM41.5563 13.8546V34.1455C41.5563 36.1078 40.158 37.5042 38.7915 38.3869C37.3498 39.3182 35.4192 40.0389 33.2571 40.5551C30.5836 41.1934 27.3973 41.5564 24 41.5564C20.6027 41.5564 17.4164 41.1934 14.7429 40.5551C12.5808 40.0389 10.6502 39.3182 9.20848 38.3869C7.84205 37.5042 6.44365 36.1078 6.44365 34.1455L6.44365 13.8546C6.44365 12.2684 7.37223 11.0454 8.39581 10.2036C9.43325 9.3505 10.8137 8.67141 12.343 8.13948C15.4203 7.06909 19.5418 6.44366 24 6.44366C28.4582 6.44366 32.5797 7.06909 35.657 8.13948C37.1863 8.67141 38.5667 9.3505 39.6042 10.2036C40.6278 11.0454 41.5563 12.2684 41.5563 13.8546Z"
-                                        fill="currentColor"
-                                        fillRule="evenodd"
                                     />
                                 </svg>
                             </Box>
@@ -148,63 +173,96 @@ export default function LandingPage() {
             </Box>
 
             {/* Hero Section */}
-            <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 8 } }}>
-                <Grid container spacing={6} alignItems="center">
-                    <Grid item xs={12} md={6}>
-                        <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
-                            <Typography
-                                variant="h1"
-                                sx={{
-                                    fontSize: { xs: '2.5rem', sm: '3rem' },
-                                    fontWeight: 900,
-                                    letterSpacing: '-0.033em',
-                                    mb: 2,
-                                    color: 'text.primary'
-                                }}
-                            >
-                                Estudia Inteligente, No Más Duro. El Futuro del Aprendizaje es Hoy.
-                            </Typography>
-                            <Typography
-                                variant="h2"
-                                sx={{
-                                    fontSize: { xs: '1rem', sm: '1.25rem' },
-                                    fontWeight: 'normal',
-                                    color: 'text.secondary',
-                                    mb: 4
-                                }}
-                            >
-                                Crea flashcards al instante, manual o con IA. Nuestro sistema inteligente registra tu progreso
-                                para que domines cualquier tema sin esfuerzo.
-                            </Typography>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                size="large"
-                                onClick={() => navigate(isAuthenticated ? '/home' : '/login')}
-                                sx={{
-                                    px: 4,
-                                    py: 1.5,
-                                    borderRadius: 3,
-                                    textTransform: 'none',
-                                    fontWeight: 'bold',
-                                    alignSelf: { xs: 'center', md: 'flex-start' },
-                                    '&:hover': {
-                                        transform: 'scale(1.05)'
-                                    }
-                                }}
-                            >
-                                {isAuthenticated ? 'Ir a Mis Decks' : 'Crea tu primer mazo gratis'}
-                            </Button>
-                        </Box>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                        <Box
+            <Container maxWidth="xl" sx={{ py: { xs: 6, sm: 8 } }}>
+                <Grid container spacing={6} alignItems="center"
+                    sx={{
+                        flexDirection: { xs: 'column', md: 'column', lg: 'row' }, // apilado en chico, en fila en grande
+                        justifyContent: { xs: 'center', md: 'center', lg: 'space-between' },
+                        textAlign: { xs: 'center', md: 'center', lg: 'left' }, // centra el texto en chico
+                    }}
+                >
+                    {/* Descripción */}
+                    <Grid
+                        item
+                        xs={12}
+                        md={7}
+                        lg={9} // 👈 ocupa más espacio en pantallas grandes
+                        order={{ xs: 2, md: 1 }}
+                        sx={{
+                            textAlign: { xs: 'center', md: 'left' },
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: { xs: 'center', md: 'flex-start' },
+                        }}
+                    >
+                        <Typography
+                            variant="h1"
                             sx={{
-                                width: '100%',
-                                aspectRatio: { xs: '1/1', sm: '16/9' },
+                                fontSize: { xs: '2.2rem', sm: '2.8rem', md: '3.2rem', lg: '3.5rem' },
+                                fontWeight: 900,
+                                letterSpacing: '-0.025em',
+                                mb: 2,
+                                color: 'text.primary',
+                                maxWidth: { xs: '90%', sm: '80%', md: '700px', lg: '850px' }, // 👈 ajusta con el viewport
+                            }}
+                        >
+                            Estudia Inteligente, No Más Duro. El Futuro del Aprendizaje es Hoy.
+                        </Typography>
+
+                        <Typography
+                            variant="h2"
+                            sx={{
+                                fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' },
+                                color: 'text.secondary',
+                                mb: 4,
+                                maxWidth: { xs: '90%', sm: '80%', md: '700px', lg: '800px' }, // 👈 igual que arriba
+                            }}
+                        >
+                            Crea flashcards al instante, manual o con IA. Nuestro sistema inteligente registra tu progreso
+                            para que domines cualquier tema sin esfuerzo.
+                        </Typography>
+
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            size="large"
+                            onClick={() => navigate(isAuthenticated ? '/home' : '/login')}
+                            sx={{
+                                px: 4,
+                                py: 1.5,
+                                borderRadius: 3,
+                                textTransform: 'none',
+                                fontWeight: 'bold',
+                                '&:hover': { transform: 'scale(1.05)' },
+                            }}
+                        >
+                            {isAuthenticated ? 'Ir a Mis Decks' : 'Crea tu primer mazo gratis'}
+                        </Button>
+                    </Grid>
+
+                    {/* Imagen */}
+                    <Grid
+                        item
+                        xs={12}
+                        md={5}
+                        lg={3} // 👈 menos espacio en pantallas grandes
+                        order={{ xs: 2, md: 2 }}
+                        alignItems={{ xs: 'center', md: 'flex-start' }}
+                    >
+                        <Box
+                            component="img"
+                            src="header.png"
+                            alt="Hero Image"
+                            height="auto"
+                            maxWidth={{ xs: 300, md: 400, lg: 480 }}
+                            maxHeight="400"
+                            sx={{
                                 borderRadius: 4,
-                                overflow: 'hidden',
-                                background: `url("https://lh3.googleusercontent.com/aida-public/AB6AXuCTce_f256QvGSxIGHqQrFXj5bmFRS-t7QELNWhsU1gGrkE4sKTnTkpCG5MICiPNYa1YnCbr8dMxb2VKp5dfRuItzKxSM17tEM5_4qWvJg7Up7IIsow0881nTG-ved-ge_YfvcF6rKfWTUhfMTuMqwqhICUrGXIZPzBakIq8mY234EuqSfE09YiAiS331AclqvqO6wZVzR9dQUW-Jw1oEx2Ifw4VY-e-WoLkIRYZnr5OyGTGqDA1siBwomSFkJPcVoizjkdnuA_p9Hr") center/cover no-repeat`
+                                boxShadow: 3,
+                                alignContent: 'center',
+                                justifyContent: 'center',
+                                display: 'flex',
+                                margin: '0 auto',
                             }}
                         />
                     </Grid>
@@ -212,8 +270,91 @@ export default function LandingPage() {
             </Container>
 
             {/* Features Section */}
-            <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 8 } }}>
-                <Box sx={{ maxWidth: '3xl', mb: 6 }}>
+            <Container maxWidth="xl" sx={{ py: { xs: 4, sm: 8 } }}>
+                <Box sx={{ textAlign: { xs: 'center', md: 'left' }, mb: 6 }}>
+                    <Typography
+                        variant="h2"
+                        sx={{
+                            fontSize: { xs: '2rem', sm: '2.5rem' },
+                            fontWeight: { xs: 'bold', sm: 900 },
+                            letterSpacing: 'tight',
+                            color: 'text.primary',
+                            mb: 2,
+                        }}
+                    >
+                        Todo lo que necesitas para aprender
+                    </Typography>
+                    <Typography
+                        variant="body1"
+                        sx={{
+                            fontSize: { xs: '1rem', sm: '1.125rem' },
+                            color: 'text.secondary',
+                            maxWidth: '60rem',
+                            mx: { xs: 'auto', md: 0 },
+                        }}
+                    >
+                        ICards te ofrece un conjunto de herramientas potentes para crear tus mazos de estudio y
+                        monitorear tu aprendizaje.
+                    </Typography>
+                </Box>
+
+                <Grid container spacing={4} justifyContent="center">
+                    {features.map((feature, index) => (
+                        <Grid item xs={12} sm={6} md={3} key={index}>
+                            <Card
+                                sx={{
+                                    p: 4,
+                                    height: '100%',
+                                    display: 'flex',
+                                    maxWidth: 345,
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    textAlign: 'center',
+                                    borderRadius: 4,
+                                    boxShadow: 3,
+                                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                                    '&:hover': {
+                                        transform: 'translateY(-6px)',
+                                        boxShadow: 6,
+                                    },
+                                }}
+                            >
+                                <Icon
+                                    sx={{
+                                        fontSize: '2rem',
+                                        color: 'primary.main',
+                                        mb: 2,
+                                    }}
+                                >
+                                    {feature.icon}
+                                </Icon>
+                                <Typography
+                                    variant="h6"
+                                    sx={{
+                                        mb: 1,
+                                        color: 'text.primary',
+                                        fontWeight: 700,
+                                    }}
+                                >
+                                    {feature.title}
+                                </Typography>
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
+                                    {feature.description}
+                                </Typography>
+                            </Card>
+                        </Grid>
+                    ))}
+                </Grid>
+            </Container>
+
+            {/* Benefits Section */}
+            <Container maxWidth="xl" sx={{ py: { xs: 4, sm: 8 } }}>
+                <Box sx={{ textAlign: { xs: 'center', md: 'left' }, mb: 6 }}>
                     <Typography
                         variant="h2"
                         sx={{
@@ -224,7 +365,7 @@ export default function LandingPage() {
                             mb: 2
                         }}
                     >
-                        Todo lo que necesitas para aprender
+                        Beneficios de Usar ICards
                     </Typography>
                     <Typography
                         variant="body1"
@@ -233,55 +374,144 @@ export default function LandingPage() {
                             color: 'text.secondary'
                         }}
                     >
-                        ICards te ofrece un conjunto de herramientas potentes para crear tus mazos de estudio y
-                        monitorear tu aprendizaje.
+                        Descubre las ventajas de optimizar tu aprendizaje con nuestras herramientas.
                     </Typography>
                 </Box>
 
-                <Grid container spacing={4}>
-                    {features.map((feature, index) => (
+                <Grid container spacing={4} justifyContent="center">
+                    {benefits.map((benefit, index) => (
                         <Grid item xs={12} sm={6} md={3} key={index}>
-                            <Box
-                                sx={{
-                                    p: 4,
-                                    height: '100%',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    textAlign: 'center'
-                                }}
-                            >
-                                <Icon
+                            <Card >
+                                <Box
                                     sx={{
-                                        fontSize: '2rem',
-                                        color: 'primary.main',
-                                        mb: 2
+                                        p: 4,
+                                        maxWidth: '30rem',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        textAlign: 'center',
+                                        borderRadius: 4,
+                                        boxShadow: 3,
                                     }}
                                 >
-                                    {feature.icon}
-                                </Icon>
-                                <Typography
-                                    variant="h6"
-                                    sx={{
-                                        mb: 1,
-                                        color: 'text.primary'
-                                    }}
-                                >
-                                    {feature.title}
-                                </Typography>
-                                <Typography
-                                    variant="body2"
-                                    sx={{
-                                        color: 'text.secondary'
-                                    }}
-                                >
-                                    {feature.description}
-                                </Typography>
-                            </Box>
+                                    <Typography
+                                        variant="h6"
+                                        sx={{
+                                            mb: 1,
+                                            color: 'text.primary',
+                                            fontWeight: 'medium'
+                                        }}
+                                    >
+                                        {benefit.title}
+                                    </Typography>
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
+                                            color: 'text.secondary'
+                                        }}
+                                    >
+                                        {benefit.description}
+                                    </Typography>
+                                </Box>
+                            </Card>
                         </Grid>
+
                     ))}
                 </Grid>
             </Container>
+
+
+            {/* FAQs Section */}
+
+            <Container maxWidth="xl" sx={{ py: { xs: 4, sm: 8 } }}>
+                <Box sx={{ textAlign: { xs: 'center', md: 'left' }, mb: 6 }}>
+                    <Typography
+                        variant="h2"
+                        sx={{
+                            fontSize: { xs: '2rem', sm: '2.5rem' },
+                            fontWeight: { xs: 'bold', sm: 900 },
+                            letterSpacing: 'tight',
+                            color: 'text.primary',
+                            mb: 2
+                        }}
+                    >
+                        Preguntas Frecuentes
+                    </Typography>
+                    <Typography
+                        variant="body1"
+                        sx={{
+                            fontSize: { xs: '1rem', sm: '1.125rem' },
+                            color: 'text.secondary'
+                        }}
+                    >
+                        Aquí tienes algunas preguntas comunes sobre ICards y nuestras respuestas.
+                    </Typography>
+                </Box>
+
+                <Grid container spacing={4} justifyContent="center">
+                    {faqs.map((faq, index) => (
+                        <Grid item xs={12} sm={6} md={3} key={index}>
+                            <Card
+                                sx={{
+                                    p: 4,
+
+                                    maxWidth: '30rem',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    textAlign: 'center',
+                                    borderRadius: 4,
+                                    boxShadow: 3,
+                                }}
+                            >
+                                <Box
+                                >
+                                    <Typography
+                                        variant="h6"
+                                        sx={{
+                                            mb: 1,
+                                            color: 'text.primary',
+                                            fontWeight: 'medium'
+                                        }}
+                                    >
+                                        {faq.question}
+                                    </Typography>
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
+                                            color: 'text.secondary'
+                                        }}
+                                    >
+                                        {faq.answer}
+                                    </Typography>
+                                </Box>
+                            </Card>
+                        </Grid>
+
+                    ))}
+                </Grid>
+            </Container>
+
+            {/* Footer */}
+            <Box
+                component="footer"
+                sx={{
+                    py: 4,
+                    bgcolor: 'background.paper',
+                    borderTop: 1,
+                    borderColor: 'divider'
+                }}
+            >
+                <Container maxWidth="lg">
+                    <Typography
+                        variant="body2"
+                        sx={{
+                            color: 'text.secondary',
+                            textAlign: 'center'
+                        }}
+                    >
+                        © 2025 ICards. Todos los derechos reservados.
+                    </Typography>
+                </Container>
+            </Box>
         </Box>
     );
 }
