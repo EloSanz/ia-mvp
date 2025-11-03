@@ -141,5 +141,64 @@ export const AuthController = {
       },
       'Login exitoso'
     );
+  }),
+
+  /**
+   * @swagger
+   * /api/auth/delete-test-user:
+   *   delete:
+   *     tags: [Authentication]
+   *     summary: Delete test user (for integration tests)
+   *     description: Deletes the currently authenticated test user and all their data
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Test user deleted successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                 message:
+   *                   type: string
+   *       401:
+   *         description: Unauthorized
+   */
+  deleteTestUser: asyncHandler(async (req, res) => {
+    const userId = req.userId;
+
+    // Solo permitir eliminar usuarios de prueba (que empiecen con "test-user-")
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user || !user.username.startsWith('test-user-')) {
+      throw new ValidationError('Solo se pueden eliminar usuarios de prueba');
+    }
+
+    // Eliminar todas las flashcards del usuario
+    await prisma.flashcard.deleteMany({
+      where: { deck: { userId } }
+    });
+
+    // Eliminar todos los tags del usuario
+    await prisma.tag.deleteMany({
+      where: { deck: { userId } }
+    });
+
+    // Eliminar todos los decks del usuario
+    await prisma.deck.deleteMany({
+      where: { userId }
+    });
+
+    // Finalmente eliminar el usuario
+    await prisma.user.delete({
+      where: { id: userId }
+    });
+
+    BaseController.success(res, null, 'Usuario de prueba eliminado exitosamente');
   })
 };

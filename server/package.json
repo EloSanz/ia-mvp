@@ -18,6 +18,7 @@
     "start": "node src/index.js",
     "dockerStart": "npx prisma migrate deploy && npx prisma generate && node src/index.js",
     "test": "jest",
+    "test:e2e": "./test-integration.sh",
     "test:unit": "jest --testMatch=\"**/unit/**/*.test.js\" --testMatch=\"**/src/**/*.test.js\"",
     "test:integration": "jest --testMatch=\"**/integration/**/*.test.js\"",
     "test:all": "jest --testPathIgnorePatterns=\"\" --testMatch=\"**/*.test.js\"",

@@ -251,14 +251,17 @@ export const FlashcardController = {
    *               $ref: '#/components/schemas/Error'
    */
   createFlashcard: BaseController.wrap(async (req, res) => {
-    const result = await BaseController.createWithValidation(
-      FlashcardDto.validateCreate.bind(FlashcardDto),
-      Flashcard.create.bind(Flashcard),
-      req.body,
-      'Flashcard creada exitosamente'
-    );
+    // Validar datos de entrada
+    const validation = FlashcardDto.validateCreate(req.body);
 
-    BaseController.success(res, result.data, result.message, 201);
+    if (!validation.success) {
+      return BaseController.error(res, validation.message, 400, validation.errors);
+    }
+
+    // Crear flashcard
+    const newFlashcard = await Flashcard.create(validation.data.toModel());
+
+    BaseController.success(res, newFlashcard, 'Flashcard creada exitosamente', 201);
   }),
 
   /**
@@ -309,16 +312,24 @@ export const FlashcardController = {
    */
   updateFlashcard: BaseController.wrap(async (req, res) => {
     const { id } = req.params;
-    const result = await BaseController.updateWithValidation(
-      Flashcard.findById.bind(Flashcard),
-      FlashcardDto.validateUpdate.bind(FlashcardDto),
-      Flashcard.update.bind(Flashcard),
-      id,
-      req.body,
-      'Flashcard actualizada exitosamente'
-    );
 
-    BaseController.success(res, result.data, result.message);
+    // Verificar que la flashcard existe
+    const existingFlashcard = await Flashcard.findById(id);
+    if (!existingFlashcard) {
+      return BaseController.error(res, 'Flashcard no encontrada', 404);
+    }
+
+    // Validar datos de entrada
+    const validation = FlashcardDto.validateUpdate(req.body, id);
+
+    if (!validation.success) {
+      return BaseController.error(res, validation.message, 400, validation.errors);
+    }
+
+    // Actualizar flashcard
+    const updatedFlashcard = await Flashcard.update(id, validation.data.toUpdateModel());
+
+    BaseController.success(res, updatedFlashcard, 'Flashcard actualizada exitosamente');
   }),
 
   /**
@@ -577,18 +588,19 @@ export const FlashcardController = {
 
     // Validar cada flashcard
     const validatedFlashcards = [];
-    for (const flashcard of flashcards) {
-      try {
-        const validatedData = await FlashcardDto.validateCreate(flashcard);
-        validatedFlashcards.push(validatedData);
-      } catch (err) {
+    for (const [index, flashcard] of flashcards.entries()) {
+      const validation = FlashcardDto.validateCreate(flashcard);
+
+      if (!validation.success) {
         return BaseController.error(
           res,
-          'Error de validación en una o más flashcards',
+          `Error de validación en la flashcard #${index + 1}`,
           400,
-          err.errors
+          validation.errors
         );
       }
+
+      validatedFlashcards.push(validation.data);
     }
 
     // Crear todas las flashcards

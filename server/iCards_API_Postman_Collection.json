@@ -476,7 +476,12 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"front\": \"Hello\",\n  \"back\": \"Hola\",\n  \"deckId\": 7,\n  \"difficulty\": 2\n}"
+              "raw": "{\n  \"front\": \"Hello\",\n  \"back\": \"Hola\",\n  \"deckId\": 7\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{base_url}}/api/flashcards",
@@ -634,7 +639,12 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"flashcards\": [\n    {\n      \"front\": \"Good morning\",\n      \"back\": \"Buenos días\",\n      \"deckId\": 7,\n      \"difficulty\": 2\n    },\n    {\n      \"front\": \"Good night\",\n      \"back\": \"Buenas noches\",\n      \"deckId\": 7,\n      \"difficulty\": 2\n    }\n  ]\n}"
+              "raw": "{\n  \"flashcards\": [\n    {\n      \"front\": \"Good morning\",\n      \"back\": \"Buenos días\",\n      \"deckId\": 7\n    },\n    {\n      \"front\": \"Good night\",\n      \"back\": \"Buenas noches\",\n      \"deckId\": 7,\n      \"difficulty\": 3\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{base_url}}/api/flashcards/batch",

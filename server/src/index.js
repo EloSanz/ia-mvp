@@ -14,6 +14,7 @@ import { authMiddleware } from './middlewares/auth.middleware.js';
 import { requestLogger, apiLogger, errorLogger } from './middlewares/logging.middleware.js';
 import { getQueryStats } from './config/database.js';
 import { swaggerUi, specs } from './config/swagger.config.js';
+import { BaseController } from './controllers/base.controller.js';
 
 const app = express();
 
@@ -45,7 +46,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
 }));
 
 // Health check route
-app.get('/api/health', (_req, res) => res.json({ ok: true }));
+app.get('/api/health', (_req, res) => BaseController.success(res, { ok: true }, 'Health check exitoso'));
 
 // Enhanced health check with logging info
 app.get('/api/health/detailed', (req, res) => {

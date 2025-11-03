@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { AuthController } from '../controllers/auth.controller.js';
 import { validateBody } from '../middlewares/validate.middleware.js';
+import { authMiddleware } from '../middlewares/auth.middleware.js';
 import Joi from 'joi';
 
 const router = Router();
@@ -17,5 +18,6 @@ const loginSchema = Joi.object({
 
 router.post('/register', validateBody(registerSchema), AuthController.register);
 router.post('/login', validateBody(loginSchema), AuthController.login);
+router.delete('/delete-test-user', authMiddleware, AuthController.deleteTestUser);
 
 export default router;

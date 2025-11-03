@@ -25,12 +25,17 @@ description: "Flashcard management endpoints for creating, reading, updating and
 }
 ```
 
-**Validation Rules:**
+**Validation Rules (using Joi):**
 - `front`: Required, string, 1-1000 characters
 - `back`: Required, string, 1-1000 characters
-- `deckId`: Required, positive integer
-- `difficulty`: Optional, integer 1-3 (default: 2)
-- `tagId`: Optional, positive integer or null
+- `deckId`: Required, number/string, positive integer
+- `difficulty`: Optional, number 1-3 (default: 2 = normal)
+- `tagId`: Optional, number/string, positive integer or null
+
+**Difficulty Levels:**
+- `1` = Easy/Fácil
+- `2` = Normal (default)
+- `3` = Hard/Difícil
 
 **Business Rules:**
 - Deck must exist and be owned by authenticated user
