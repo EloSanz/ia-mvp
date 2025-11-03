@@ -9,8 +9,12 @@ import {
     Grid,
     Stack,
     Icon,
-    Card
+    Card,
+    Avatar
 } from '@mui/material';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import AddBoxIcon from '@mui/icons-material/AddBox';
+import SchoolIcon from '@mui/icons-material/School';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -73,6 +77,47 @@ export default function LandingPage() {
             answer: 'Por ahora, los mazos son privados y están diseñados para uso personal.'
         }
     ];
+
+    const testimonials = [
+        {
+            text: 'La generación de flashcards con IA es increíble. Me ahorra horas de trabajo y me permite enfocarme en lo que realmente importa: aprender.',
+            name: 'Ana G.',
+            role: 'Estudiante de Medicina',
+            img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAQXBp6iSFwfFgiY95hYTW4ubWsUAz6-NzKorGZXnmlMmZkmGqMSRV26GKtcXVpY9wwUbmUA609b0EB4aLOpQwn0b_gkFzFENLuGk3Jxg40N8PXaKx5tLOhUXBBCpSwNq8gusXzQAhgdioXnweHsmH38XQT0jEyzacGJDF63iDTul1RETNymcNOVlL42mPKoT2E03pF9CWervJtGmJic4G5fohi6F0jHRoFIbM1pO4_9XG8d-i1qBr46l9Asxv3R2pBoDBboZhQrzMA',
+        },
+        {
+            text: 'El sistema de seguimiento de progreso me mantiene motivado. Ver cómo mejoro día a día es la mejor recompensa. ¡Totalmente recomendado!',
+            name: 'Carlos R.',
+            role: 'Opositor',
+            img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC80ms12pLrCKoezpIZbEhju7Pxt_3umkHqrGVBAH0fwvbjr2lrWqrErjwN93g-A09HkWqgOr_8BsLfT1SaAnrHcfh7VbPetfUlCeLgmTkGPNtCq3A7kn8Z2jypzc4-EhZ1hWswAKwjzuPM0xdFf-fojeBYis3mHF0-ik66Pjs2QEq_COlXYupHR0_xotDwSoncCG7RCjAqLuNdgCYBefi012AadtcSNc5IeCuuAswCZv6MgzzMXVDR9tZ1JYGn3wsiMP0-ENRYW5uC',
+        },
+        {
+            text: 'Por fin una app de flashcards sencilla y potente. Me encanta el diseño minimalista y que mis mazos sean privados. ¡Justo lo que necesitaba!',
+            name: 'Laura M.',
+            role: 'Estudiante de Idiomas',
+            img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDblOljALJJMb2t0NRjsTg-NRkrgGuJiQ4eXwHkN4f_M0HUC4ll9Lnh9c7STfjAGaSxrSo1GqMRTsre-jiA0yEJsNw9SI0OX1S9x0-zoL-eZvQVlKlv3jAZpeaAmrCMq4JbUAp1UkbbIv0ZiDL9w_Av66QNAQ0mCPqV4vVDdnhuXeh_0Ajfl8VpUTZ4mBLNxOJ0N2xqk3WxrwfwPqA5oZQUc7UNW4Y30H9WWUkL8HE6m6st4e1eHkmb5W6dqxVhtiMsw7sDOTvMxgxe',
+        },
+    ];
+    const testimonios = [
+        {
+            text: '“La generación de flashcards con IA es increíble. Me ahorra horas de trabajo y me permite enfocarme en lo que realmente importa: aprender.”',
+            name: 'Ana G.',
+            role: 'Estudiante de Medicina',
+            img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAQXBp6iSFwfFgiY95hYTW4ubWsUAz6-NzKorGZXnmlMmZkmGqMSRV26GKtcXVpY9wwUbmUA609b0EB4aLOpQwn0b_gkFzFENLuGk3Jxg40N8PXaKx5tLOhUXBBCpSwNq8gusXzQAhgdioXnweHsmH38XQT0jEyzacGJDF63iDTul1RETNymcNOVlL42mPKoT2E03pF9CWervJtGmJic4G5fohi6F0jHRoFIbM1pO4_9XG8d-i1qBr46l9Asxv3R2pBoDBboZhQrzMA',
+        },
+        {
+            text: '“El sistema de seguimiento de progreso me mantiene motivado. Ver cómo mejoro día a día es la mejor recompensa. ¡Totalmente recomendado!”',
+            name: 'Carlos R.',
+            role: 'Opositor',
+            img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC80ms12pLrCKoezpIZbEhju7Pxt_3umkHqrGVBAH0fwvbjr2lrWqrErjwN93g-A09HkWqgOr_8BsLfT1SaAnrHcfh7VbPetfUlCeLgmTkGPNtCq3A7kn8Z2jypzc4-EhZ1hWswAKwjzuPM0xdFf-fojeBYis3mHF0-ik66Pjs2QEq_COlXYupHR0_xotDwSoncCG7RCjAqLuNdgCYBefi012AadtcSNc5IeCuuAswCZv6MgzzMXVDR9tZ1JYGn3wsiMP0-ENRYW5uC',
+        },
+        {
+            text: '“Por fin una app de flashcards sencilla y potente. Me encanta el diseño minimalista y que mis mazos sean privados. ¡Justo lo que necesitaba!”',
+            name: 'Laura M.',
+            role: 'Estudiante de Idiomas',
+            img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDblOljALJJMb2t0NRjsTg-NRkrgGuJiQ4eXwHkN4f_M0HUC4ll9Lnh9c7STfjAGaSxrSo1GqMRTsre-jiA0yEJsNw9SI0OX1S9x0-zoL-eZvQVlKlv3jAZpeaAmrCMq4JbUAp1UkbbIv0ZiDL9w_Av66QNAQ0mCPqV4vVDdnhuXeh_0Ajfl8VpUTZ4mBLNxOJ0N2xqk3WxrwfwPqA5oZQUc7UNW4Y30H9WWUkL8HE6m6st4e1eHkmb5W6dqxVhtiMsw7sDOTvMxgxe',
+        },
+    ]
 
     return (
         <Box className="font-display">
@@ -351,7 +396,276 @@ export default function LandingPage() {
                     ))}
                 </Grid>
             </Container>
+            {/* How It Works Section */}
+            <Box component="section" sx={{ py: { xs: 8, sm: 12 } }}>
+                <Container maxWidth="xl">
+                    <Grid
+                        container
+                        spacing={8}
+                        alignItems="center"
+                        justifyContent="space-between"
+                        sx={{
+                            flexDirection: { xs: "column", md: "row" },
+                            textAlign: { xs: "center", md: "left" },
+                        }}
+                    >
+                        {/* Texto */}
+                        <Grid
+                            item
+                            xs={12}
+                            md={6}
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "center",
+                                alignItems: { xs: "center", md: "flex-start" },
+                            }}
+                        >
+                            <Typography
+                                variant="h2"
+                                sx={{
+                                    fontSize: { xs: "2rem", sm: "2.2rem" },
+                                    fontWeight: 800,
+                                    color: "text.primary",
+                                    mb: 2,
+                                }}
+                            >
+                                ¿Cómo funciona?
+                            </Typography>
 
+                            <Typography
+                                sx={{
+                                    color: "text.secondary",
+                                    fontSize: { xs: "1rem", sm: "1.1rem" },
+                                    mb: 4,
+                                    maxWidth: 750,
+                                }}
+                            >
+                                Comienza en solo unos simples pasos. Tu aprendizaje optimizado está
+                                a minutos de distancia.
+                            </Typography>
+
+                            {/* Pasos */}
+                            <Box sx={{ width: "100%", maxWidth: 750 }}>
+                                {[
+                                    {
+                                        icon: <PersonAddIcon color="primary" />,
+                                        title: "Regístrate Gratis",
+                                        text: "Crea tu cuenta en segundos. No se requiere tarjeta de crédito.",
+                                    },
+                                    {
+                                        icon: <AddBoxIcon color="primary" />,
+                                        title: "Crea tus Flashcards",
+                                        text: "Elige entre creación manual o automática con IA para generar tus mazos de estudio.",
+                                    },
+                                    {
+                                        icon: <SchoolIcon color="primary" />,
+                                        title: "Empieza a Estudiar",
+                                        text: "Utiliza nuestro sistema de estudio inteligente y sigue tu progreso para dominar la materia.",
+                                    },
+                                ].map((step, i) => (
+                                    <Box
+                                        key={i}
+                                        sx={{
+                                            display: "flex",
+                                            gap: 2,
+                                            alignItems: "flex-start",
+                                            justifyContent: { xs: "center", md: "flex-start" },
+                                            mb: 3,
+                                        }}
+                                    >
+                                        <Box
+                                            sx={{
+                                                bgcolor: "#fff",
+                                                borderRadius: "50%",
+                                                p: 1,
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                width: 40,
+                                                height: 40,
+                                                boxShadow: 1,
+                                            }}
+                                        >
+                                            {step.icon}
+                                        </Box>
+                                        <Box sx={{ maxWidth: 400 }}>
+                                            <Typography
+                                                variant="subtitle1"
+                                                sx={{ fontWeight: "bold", color: "text.primary" }}
+                                            >
+                                                {step.title}
+                                            </Typography>
+                                            <Typography sx={{ color: "text.secondary" }}>
+                                                {step.text}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                ))}
+                            </Box>
+                        </Grid>
+
+                        {/* Imagen */}
+                        <Grid
+                            item
+                            xs={12}
+                            md={6}
+                            sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                            }}
+                        >
+                            <Box
+                                component="img"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAw07KPjF6uaw4I_V-TtSOWCD75tDA1y3pMxsYN7GjybT1ZCmRkwaSQvDkwCPZyXohZ5PUeSdr_UBcLZiKLvcEIld-72wxnsJ9aw8qUMqJmDfjHakLBlXvVBeaCLy9Ly-HI7YruHrRXRwt_Bjn0gq-j1TUkpLjePM3Er-QqV1pXY2n6vd8is9qGTns62QGkFdZC6lr2Svaj5vJLHWa_nOtjt-a8gg-oE6j6-L5lS5xhkGJxHCWoRH4pdJoPPRxF_cDYuLgYaNa5OkB"
+                                alt="Demostración del estudio inteligente"
+                                sx={{
+                                    width: { xs: "90%", sm: "80%", md: "100%" },
+                                    maxWidth: 480,
+                                    aspectRatio: "1 / 1",
+                                    objectFit: "cover",
+                                    borderRadius: 3,
+                                    boxShadow: 4,
+                                }}
+                            />
+                        </Grid>
+                    </Grid>
+                </Container>
+            </Box>
+            {/* Testimonio Section */}
+            <Box component="section" sx={{ py: { xs: 10, sm: 20 } }}>
+                <Container>
+                    <Box sx={{ textAlign: 'center', maxWidth: 800, mx: 'auto', mb: 6 }}>
+                        <Typography
+                            variant="h2"
+                            sx={{
+                                fontWeight: 'bold',
+                                fontSize: { xs: '2rem', sm: '2.5rem' },
+                                color: 'text.primary',
+                            }}
+                        >
+                            Amado por estudiantes de todo el mundo
+                        </Typography>
+                        <Typography sx={{ color: 'text.secondary', mt: 2 }}>
+                            Mira lo que dicen nuestros usuarios sobre cómo ICards ha mejorado su forma de estudiar.
+                        </Typography>
+                    </Box>
+
+                    <Grid container spacing={4}>
+                        {testimonials.map((t, i) => (
+                            <Grid item xs={12} md={6} lg={4} key={i}
+                                sx={{
+                                    flexDirection: { xs: 'column', lg: 'row' },
+                                    textAlign: { xs: 'center', lg: 'left' },
+                                }}>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 2,
+                                        p: 4,
+                                        borderRadius: 3,
+                                        border: '1px solid',
+                                        borderColor: 'divider',
+                                        bgcolor: 'background.paper',
+                                        height: '100%',
+                                    }}
+                                >
+                                    <Typography sx={{ color: 'text.primary', flexGrow: 1 }}>{t.text}</Typography>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 2,
+                                            pt: 2,
+                                            borderTop: '1px solid',
+                                            borderColor: 'divider',
+                                        }}
+                                    >
+                                        <Box
+                                            component="img"
+                                            src={t.img}
+                                            alt={t.name}
+                                            sx={{
+                                                width: 40,
+                                                height: 40,
+                                                borderRadius: '50%',
+                                                objectFit: 'cover',
+                                            }}
+                                        />
+                                        <Box>
+                                            <Typography sx={{ fontWeight: 'bold', color: 'text.primary' }}>{t.name}</Typography>
+                                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                                {t.role}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                </Box>
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Container>
+            </Box>
+            <Box component="section" sx={{ py: { xs: 8, sm: 12 } }}>
+                <Container maxWidth="xl">
+                    <Box sx={{ textAlign: 'center', mb: 6 }}>
+                        <Typography
+                            variant="h2"
+                            sx={{
+                                fontSize: { xs: '2rem', sm: '2.2rem' },
+                                fontWeight: 800,
+                                color: 'text.primary',
+                                mb: 2,
+                            }}
+                        >
+                            Amado por estudiantes de todo el mundo
+                        </Typography>
+                        <Typography sx={{ color: 'text.secondary', fontSize: { xs: '1rem', sm: '1.1rem' } }}>
+                            Mira lo que dicen nuestros usuarios sobre cómo ICards ha mejorado su forma de estudiar.
+                        </Typography>
+                    </Box>
+
+                    <Grid container spacing={4}>
+                        {testimonios.map((t, i) => (
+                            <Grid item xs={12} md={6} lg={4} key={i}>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 2,
+                                        p: 4,
+                                        border: '1px solid',
+                                        borderColor: 'divider',
+                                        borderRadius: 3,
+                                        boxShadow: 1,
+                                        bgcolor: 'background.paper',
+                                        height: '100%',
+                                    }}
+                                >
+                                    <Typography sx={{ color: 'text.primary', flexGrow: 1 }}>{t.text}</Typography>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 2,
+                                            pt: 2,
+                                            borderTop: '1px solid',
+                                            borderColor: 'divider',
+                                        }}
+                                    >
+                                        <Avatar src={t.img} alt={t.name} sx={{ width: 40, height: 40 }} />
+                                        <Box>
+                                            <Typography sx={{ fontWeight: 'bold', color: 'text.primary' }}>{t.name}</Typography>
+                                            <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary' }}>{t.role}</Typography>
+                                        </Box>
+                                    </Box>
+                                </Box>
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Container>
+            </Box>
             {/* Benefits Section */}
             <Container maxWidth="xl" sx={{ py: { xs: 4, sm: 8 } }}>
                 <Box sx={{ textAlign: { xs: 'center', md: 'left' }, mb: 6 }}>
