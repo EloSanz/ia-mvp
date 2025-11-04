@@ -39,8 +39,13 @@ export const useNavigation = () => {
           await decks.getById(lastDeckId);
           setLastDeckExists(true);
         } catch (error) {
-          // Si el deck no existe, limpiarlo del localStorage
-          console.warn(`Deck ${lastDeckId} no encontrado, limpiando localStorage`);
+          // Si el deck no existe o no tenemos permiso (403), limpiarlo del localStorage
+          // Esto puede pasar si el usuario visitó un deck de biblioteca antes del fix
+          if (error.response?.status === 403 || error.response?.status === 404) {
+            console.warn(`Deck ${lastDeckId} no accesible, limpiando localStorage`);
+          } else {
+            console.warn(`Error validando deck ${lastDeckId}:`, error.message);
+          }
           clearLastDeck();
           setLastDeckExists(false);
         }

@@ -9,6 +9,7 @@ import syncRoutes from './routes/sync.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import studyRoutes from './routes/study.routes.js';
 import loggingRoutes from './routes/logging.routes.js';
+import libraryRoutes from './routes/library.routes.js';
 import { errorHandler } from './middlewares/error.middleware.js';
 import { authMiddleware } from './middlewares/auth.middleware.js';
 import { requestLogger, apiLogger, errorLogger } from './middlewares/logging.middleware.js';
@@ -70,6 +71,7 @@ app.use('/api/flashcards', flashcardRoutes);
 app.use('/api/sync', syncRoutes);
 app.use('/api/study', studyRoutes);
 app.use('/api/logging', loggingRoutes);
+app.use('/api/library', libraryRoutes);
 // Tags legacy (deprecated)
 app.use('/api/tags', authMiddleware, tagRoutes);
 

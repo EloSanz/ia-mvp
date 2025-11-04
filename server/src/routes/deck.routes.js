@@ -17,4 +17,8 @@ router.delete('/:id', DeckController.deleteDeck);
 router.post('/suggest-topics', DeckController.suggestTopics);
 router.post('/generate-with-ai', DeckController.generateDeckWithAI);
 
+// Rutas para biblioteca
+router.patch('/:id/visibility', DeckController.updateVisibility);
+router.post('/:id/clone', DeckController.cloneDeck);
+
 export default router;

@@ -14,6 +14,7 @@ export const useRouteDetection = () => {
   const isOnDeckPage = location.pathname.startsWith('/decks/');
   const isOnStudyPage = location.pathname.startsWith('/study');
   const isOnHome = location.pathname === '/';
+  const isOnLibraryPage = location.pathname.startsWith('/library');
 
   // Extraer información de la ruta actual
   const getCurrentDeckId = () => {
@@ -37,6 +38,7 @@ export const useRouteDetection = () => {
     isOnDeckPage,
     isOnStudyPage,
     isOnHome,
+    isOnLibraryPage,
     currentDeckId: getCurrentDeckId(),
     currentSessionId: getCurrentStudySessionId(),
     currentPath: location.pathname,

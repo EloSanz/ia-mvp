@@ -147,4 +147,140 @@ export class DeckRepository {
       throw new Error(`Error al contar decks: ${error.message}`);
     }
   }
+
+  /**
+   * Busca todos los decks públicos con información del autor
+   */
+  static async findAllPublic(search = '', sortBy = 'recent') {
+    try {
+      const where = {
+        visibility: 'public',
+        ...(search && {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } }
+          ]
+        })
+      };
+
+      const orderBy = sortBy === 'popularity' 
+        ? { clonesCount: 'desc' }
+        : { createdAt: 'desc' };
+
+      const decks = await prisma.deck.findMany({
+        where,
+        orderBy,
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true
+            }
+          }
+        }
+      });
+
+      // Agregar estadísticas de flashcards
+      const decksWithStats = await Promise.all(decks.map(async (deck) => {
+        const flashcardsCount = await prisma.flashcard.count({ where: { deckId: deck.id } });
+        const newFlashcardsCount = await prisma.flashcard.count({ where: { deckId: deck.id, reviewCount: 0 } });
+        
+        return {
+          ...deck,
+          stats: {
+            flashcardsCount,
+            newFlashcardsCount,
+            revisionsCount: flashcardsCount - newFlashcardsCount
+          }
+        };
+      }));
+
+      return decksWithStats;
+    } catch (error) {
+      throw new Error(`Error al obtener decks públicos: ${error.message}`);
+    }
+  }
+
+  /**
+   * Busca un deck público por ID con información completa
+   */
+  static async findPublicById(id) {
+    try {
+      const deck = await prisma.deck.findFirst({
+        where: {
+          id: parseInt(id),
+          visibility: 'public'
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true
+            }
+          },
+          flashcards: {
+            include: {
+              tag: true
+            },
+            orderBy: { createdAt: 'asc' }
+          },
+          tags: true
+        }
+      });
+
+      if (!deck) return null;
+
+      // Agregar estadísticas
+      const flashcardsCount = deck.flashcards.length;
+      const newFlashcardsCount = deck.flashcards.filter(f => f.reviewCount === 0).length;
+
+      return {
+        ...deck,
+        stats: {
+          flashcardsCount,
+          newFlashcardsCount,
+          revisionsCount: flashcardsCount - newFlashcardsCount
+        }
+      };
+    } catch (error) {
+      throw new Error(`Error al buscar deck público: ${error.message}`);
+    }
+  }
+
+  /**
+   * Incrementa el contador de clones de un deck
+   */
+  static async incrementClonesCount(id) {
+    try {
+      const updatedDeck = await prisma.deck.update({
+        where: { id: parseInt(id) },
+        data: {
+          clonesCount: {
+            increment: 1
+          }
+        }
+      });
+      return DeckEntity.fromPrisma(updatedDeck);
+    } catch (error) {
+      throw new Error(`Error al incrementar contador de clones: ${error.message}`);
+    }
+  }
+
+  /**
+   * Actualiza la visibilidad de un deck
+   */
+  static async updateVisibility(id, visibility) {
+    try {
+      const updatedDeck = await prisma.deck.update({
+        where: { id: parseInt(id) },
+        data: { visibility }
+      });
+      return DeckEntity.fromPrisma(updatedDeck);
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new Error('Deck no encontrado');
+      }
+      throw new Error(`Error al actualizar visibilidad: ${error.message}`);
+    }
+  }
 }
