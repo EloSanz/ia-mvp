@@ -120,7 +120,7 @@ export default function LandingPage() {
     ]
 
     return (
-        <Box className="font-display">
+        <> <Container className="font-display">
             {/* Header */}
             <Box
                 component="header"
@@ -218,104 +218,114 @@ export default function LandingPage() {
             </Box>
 
             {/* Hero Section */}
-            <Container maxWidth="xl" sx={{ py: { xs: 6, sm: 8 } }}>
-                <Grid container spacing={6} alignItems="center"
+            <Grid container alignItems="center" justifyContent='center'
+                sx={{
+                    py: { xs: 6, sm: 8 },
+                    textAlign: { xs: 'center', md: 'center', lg: 'left' }, // centra el texto en chico
+                    flexWrap: { xs: "wrap", lg: "nowrap", xl: "nowrap" }
+                }}
+                spacing={1}
+            >
+                {/* Descripción */}
+                <Grid
+                    item
+                    xs={12}
+                    md={6}
+                    lg={5} // 👈 ocupa más espacio en pantallas grandes
+                    xl={5}
+                    order={{ xs: 2, md: 1 }}
                     sx={{
-                        flexDirection: { xs: 'column', md: 'column', lg: 'row' }, // apilado en chico, en fila en grande
-                        justifyContent: { xs: 'center', md: 'center', lg: 'space-between' },
-                        textAlign: { xs: 'center', md: 'center', lg: 'left' }, // centra el texto en chico
+                        px: { xs: 2, sm: 4, md: 4, lg: 4, xl: 4 },
+                        textAlign: { xs: 'center', md: 'left' },
+                        alignItems: { xs: 'center', md: 'flex-start' },
+                        maxWidth: { sm: '42rem', md: '52rem', lg: '52rem', xl: '51rem' }
                     }}
                 >
-                    {/* Descripción */}
-                    <Grid
-                        item
-                        xs={12}
-                        md={7}
-                        lg={9} // 👈 ocupa más espacio en pantallas grandes
-                        order={{ xs: 2, md: 1 }}
+
+                    <Typography
+                        variant="h1"
                         sx={{
-                            textAlign: { xs: 'center', md: 'left' },
-                            display: 'flex',
-                            flexDirection: 'column',
+                            fontSize: { xs: '2.0rem', sm: '2.8rem', md: '2.8rem', lg: '3.5rem' },
+                            fontWeight: 900,
+                            letterSpacing: '-0.025em',
+                            mb: 2,
+                            color: 'text.primary',
                             alignItems: { xs: 'center', md: 'flex-start' },
+                            maxWidth: { sm: '42rem', md: '45rem', lg: '52rem', xl: '50rem' }, // 👈 ajusta con el viewport
                         }}
                     >
-                        <Typography
-                            variant="h1"
-                            sx={{
-                                fontSize: { xs: '2.2rem', sm: '2.8rem', md: '3.2rem', lg: '3.5rem' },
-                                fontWeight: 900,
-                                letterSpacing: '-0.025em',
-                                mb: 2,
-                                color: 'text.primary',
-                                maxWidth: { xs: '90%', sm: '80%', md: '700px', lg: '850px' }, // 👈 ajusta con el viewport
-                            }}
-                        >
-                            Estudia Inteligente, No Más Duro. El Futuro del Aprendizaje es Hoy.
-                        </Typography>
+                        Estudia Inteligente, No Más Duro. El Futuro del Aprendizaje es Hoy.
+                    </Typography>
 
-                        <Typography
-                            variant="h2"
-                            sx={{
-                                fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' },
-                                color: 'text.secondary',
-                                mb: 4,
-                                maxWidth: { xs: '90%', sm: '80%', md: '700px', lg: '800px' }, // 👈 igual que arriba
-                            }}
-                        >
-                            Crea flashcards al instante, manual o con IA. Nuestro sistema inteligente registra tu progreso
-                            para que domines cualquier tema sin esfuerzo.
-                        </Typography>
+                    <Typography
+                        variant="h2"
+                        sx={{
+                            fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' },
+                            color: 'text.secondary',
+                            mb: 4,
 
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            size="large"
-                            onClick={() => navigate(isAuthenticated ? '/home' : '/login')}
-                            sx={{
-                                px: 4,
-                                py: 1.5,
-                                borderRadius: 3,
-                                textTransform: 'none',
-                                fontWeight: 'bold',
-                                '&:hover': { transform: 'scale(1.05)' },
-                            }}
-                        >
-                            {isAuthenticated ? 'Ir a Mis Decks' : 'Crea tu primer mazo gratis'}
-                        </Button>
-                    </Grid>
-
-                    {/* Imagen */}
-                    <Grid
-                        item
-                        xs={12}
-                        md={5}
-                        lg={3} // 👈 menos espacio en pantallas grandes
-                        order={{ xs: 2, md: 2 }}
-                        alignItems={{ xs: 'center', md: 'flex-start' }}
+                            maxWidth: { sm: '42rem', md: '45rem', lg: '52rem' }, // 👈 igual que arriba
+                        }}
                     >
-                        <Box
-                            component="img"
-                            src="header.png"
-                            alt="Hero Image"
-                            height="auto"
-                            maxWidth={{ xs: 300, md: 400, lg: 480 }}
-                            maxHeight="400"
-                            sx={{
-                                borderRadius: 4,
-                                boxShadow: 3,
-                                alignContent: 'center',
-                                justifyContent: 'center',
-                                display: 'flex',
-                                margin: '0 auto',
-                            }}
-                        />
-                    </Grid>
+                        Crea flashcards al instante, manual o con IA. Nuestro sistema inteligente registra tu progreso
+                        para que domines cualquier tema sin esfuerzo.
+                    </Typography>
+
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        size="large"
+                        onClick={() => navigate(isAuthenticated ? '/home' : '/login')}
+                        sx={{
+                            px: 4,
+                            py: 1.5,
+                            borderRadius: 3,
+                            textTransform: 'none',
+                            fontWeight: 'bold',
+                            '&:hover': { transform: 'scale(1.05)' },
+                        }}
+                    >
+                        {isAuthenticated ? 'Ir a Mis Decks' : 'Crea tu primer mazo gratis'}
+                    </Button>
+
+
                 </Grid>
-            </Container>
+
+                {/* Imagen */}
+                <Grid
+                    item
+                    xs={12}
+                    md={5}
+                    lg={6} // 👈 menos espacio en pantallas grandes
+                    xl={6}
+                    order={{ xs: 2, md: 2 }}
+                    alignItems={{ xs: 'center', md: 'flex-start' }}
+                >
+                    <Box
+                        component="img"
+                        src="header-min.png"
+                        alt="Hero Image"
+                        height="auto"
+                        maxWidth={{ xs: 250, sm: 320, md: 275, lg: 300, xl: 315 }}
+                        maxHeight="400"
+                        sx={{
+                            borderRadius: 4,
+                            boxShadow: 3,
+                            alignContent: 'center',
+                            justifyContent: 'center',
+                            display: 'flex',
+                            margin: '0 auto',
+                        }}
+                    />
+                </Grid>
+            </Grid>
 
             {/* Features Section */}
-            <Container maxWidth="xl" sx={{ py: { xs: 4, sm: 8 } }}>
+            <Container maxWidth="xl" sx={{
+                py: { xs: 4, sm: 8 }
+
+            }}
+            >
                 <Box sx={{ textAlign: { xs: 'center', md: 'left' }, mb: 6 }}>
                     <Typography
                         variant="h2"
@@ -396,217 +406,138 @@ export default function LandingPage() {
                     ))}
                 </Grid>
             </Container>
+
             {/* How It Works Section */}
-            <Box component="section" sx={{ py: { xs: 8, sm: 12 } }}>
-                <Container maxWidth="xl">
-                    <Grid
-                        container
-                        spacing={8}
-                        alignItems="center"
-                        justifyContent="space-between"
+            <Grid
+                container
+                spacing={4}
+                alignItems="center" justifyContent='center'
+                sx={{
+                    py: { xs: 8, sm: 12 },
+                    textAlign: { xs: "center", md: "left" },
+                    flexWrap: { xs: "wrap", lg: "nowrap", xl: "nowrap" }
+                }}
+            >
+                {/* Texto */}
+                <Grid
+                    item
+                    xs={12}
+                    md={6}
+                    sx={{
+                        // display: "flex",
+                        // flexDirection: "column",
+                        // justifyContent: "center",
+                        alignItems: { xs: "center", md: "flex-start" },
+
+                    }}
+                >
+                    <Typography
+                        variant="h2"
                         sx={{
-                            flexDirection: { xs: "column", md: "row" },
-                            textAlign: { xs: "center", md: "left" },
+                            fontSize: { xs: "2rem", sm: "2.2rem" },
+                            fontWeight: 800,
+                            color: "text.primary",
+                            mb: 2,
                         }}
                     >
-                        {/* Texto */}
-                        <Grid
-                            item
-                            xs={12}
-                            md={6}
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "center",
-                                alignItems: { xs: "center", md: "flex-start" },
-                            }}
-                        >
-                            <Typography
-                                variant="h2"
-                                sx={{
-                                    fontSize: { xs: "2rem", sm: "2.2rem" },
-                                    fontWeight: 800,
-                                    color: "text.primary",
-                                    mb: 2,
-                                }}
-                            >
-                                ¿Cómo funciona?
-                            </Typography>
+                        ¿Cómo funciona?
+                    </Typography>
 
-                            <Typography
-                                sx={{
-                                    color: "text.secondary",
-                                    fontSize: { xs: "1rem", sm: "1.1rem" },
-                                    mb: 4,
-                                    maxWidth: 750,
-                                }}
-                            >
-                                Comienza en solo unos simples pasos. Tu aprendizaje optimizado está
-                                a minutos de distancia.
-                            </Typography>
+                    <Typography
+                        sx={{
+                            color: "text.secondary",
+                            fontSize: { xs: "1rem", sm: "1.1rem" },
+                            mb: 4,
+                            maxWidth: 750,
+                        }}
+                    >
+                        Comienza en solo unos simples pasos. Tu aprendizaje optimizado está
+                        a minutos de distancia.
+                    </Typography>
 
-                            {/* Pasos */}
-                            <Box sx={{ width: "100%", maxWidth: 750 }}>
-                                {[
-                                    {
-                                        icon: <PersonAddIcon color="primary" />,
-                                        title: "Regístrate Gratis",
-                                        text: "Crea tu cuenta en segundos. No se requiere tarjeta de crédito.",
-                                    },
-                                    {
-                                        icon: <AddBoxIcon color="primary" />,
-                                        title: "Crea tus Flashcards",
-                                        text: "Elige entre creación manual o automática con IA para generar tus mazos de estudio.",
-                                    },
-                                    {
-                                        icon: <SchoolIcon color="primary" />,
-                                        title: "Empieza a Estudiar",
-                                        text: "Utiliza nuestro sistema de estudio inteligente y sigue tu progreso para dominar la materia.",
-                                    },
-                                ].map((step, i) => (
-                                    <Box
-                                        key={i}
-                                        sx={{
-                                            display: "flex",
-                                            gap: 2,
-                                            alignItems: "flex-start",
-                                            justifyContent: { xs: "center", md: "flex-start" },
-                                            mb: 3,
-                                        }}
-                                    >
-                                        <Box
-                                            sx={{
-                                                bgcolor: "#fff",
-                                                borderRadius: "50%",
-                                                p: 1,
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "center",
-                                                width: 40,
-                                                height: 40,
-                                                boxShadow: 1,
-                                            }}
-                                        >
-                                            {step.icon}
-                                        </Box>
-                                        <Box sx={{ maxWidth: 400 }}>
-                                            <Typography
-                                                variant="subtitle1"
-                                                sx={{ fontWeight: "bold", color: "text.primary" }}
-                                            >
-                                                {step.title}
-                                            </Typography>
-                                            <Typography sx={{ color: "text.secondary" }}>
-                                                {step.text}
-                                            </Typography>
-                                        </Box>
-                                    </Box>
-                                ))}
-                            </Box>
-                        </Grid>
-
-                        {/* Imagen */}
-                        <Grid
-                            item
-                            xs={12}
-                            md={6}
-                            sx={{
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                            }}
-                        >
+                    {/* Pasos */}
+                    <Box sx={{ width: "100%", maxWidth: 750 }}>
+                        {[
+                            {
+                                icon: <PersonAddIcon color="primary" />,
+                                title: "Regístrate Gratis",
+                                text: "Crea tu cuenta en segundos. No se requiere tarjeta de crédito.",
+                            },
+                            {
+                                icon: <AddBoxIcon color="primary" />,
+                                title: "Crea tus Flashcards",
+                                text: "Elige entre creación manual o automática con IA para generar tus mazos de estudio.",
+                            },
+                            {
+                                icon: <SchoolIcon color="primary" />,
+                                title: "Empieza a Estudiar",
+                                text: "Utiliza nuestro sistema de estudio inteligente y sigue tu progreso para dominar la materia.",
+                            },
+                        ].map((step, i) => (
                             <Box
-                                component="img"
-                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAw07KPjF6uaw4I_V-TtSOWCD75tDA1y3pMxsYN7GjybT1ZCmRkwaSQvDkwCPZyXohZ5PUeSdr_UBcLZiKLvcEIld-72wxnsJ9aw8qUMqJmDfjHakLBlXvVBeaCLy9Ly-HI7YruHrRXRwt_Bjn0gq-j1TUkpLjePM3Er-QqV1pXY2n6vd8is9qGTns62QGkFdZC6lr2Svaj5vJLHWa_nOtjt-a8gg-oE6j6-L5lS5xhkGJxHCWoRH4pdJoPPRxF_cDYuLgYaNa5OkB"
-                                alt="Demostración del estudio inteligente"
+                                key={i}
                                 sx={{
-                                    width: { xs: "90%", sm: "80%", md: "100%" },
-                                    maxWidth: 480,
-                                    aspectRatio: "1 / 1",
-                                    objectFit: "cover",
-                                    borderRadius: 3,
-                                    boxShadow: 4,
+                                    display: "flex",
+                                    gap: 2,
+                                    alignItems: "flex-start",
+                                    justifyContent: { xs: "center", md: "flex-start" },
+                                    mb: 3,
                                 }}
-                            />
-                        </Grid>
-                    </Grid>
-                </Container>
-            </Box>
-            {/* Testimonio Section */}
-            <Box component="section" sx={{ py: { xs: 10, sm: 20 } }}>
-                <Container>
-                    <Box sx={{ textAlign: 'center', maxWidth: 800, mx: 'auto', mb: 6 }}>
-                        <Typography
-                            variant="h2"
-                            sx={{
-                                fontWeight: 'bold',
-                                fontSize: { xs: '2rem', sm: '2.5rem' },
-                                color: 'text.primary',
-                            }}
-                        >
-                            Amado por estudiantes de todo el mundo
-                        </Typography>
-                        <Typography sx={{ color: 'text.secondary', mt: 2 }}>
-                            Mira lo que dicen nuestros usuarios sobre cómo ICards ha mejorado su forma de estudiar.
-                        </Typography>
-                    </Box>
-
-                    <Grid container spacing={4}>
-                        {testimonials.map((t, i) => (
-                            <Grid item xs={12} md={6} lg={4} key={i}
-                                sx={{
-                                    flexDirection: { xs: 'column', lg: 'row' },
-                                    textAlign: { xs: 'center', lg: 'left' },
-                                }}>
+                            >
                                 <Box
                                     sx={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: 2,
-                                        p: 4,
-                                        borderRadius: 3,
-                                        border: '1px solid',
-                                        borderColor: 'divider',
-                                        bgcolor: 'background.paper',
-                                        height: '100%',
+                                        bgcolor: "#fff",
+                                        borderRadius: "50%",
+                                        p: 1,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        width: 40,
+                                        height: 40,
+                                        boxShadow: 1,
                                     }}
                                 >
-                                    <Typography sx={{ color: 'text.primary', flexGrow: 1 }}>{t.text}</Typography>
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 2,
-                                            pt: 2,
-                                            borderTop: '1px solid',
-                                            borderColor: 'divider',
-                                        }}
-                                    >
-                                        <Box
-                                            component="img"
-                                            src={t.img}
-                                            alt={t.name}
-                                            sx={{
-                                                width: 40,
-                                                height: 40,
-                                                borderRadius: '50%',
-                                                objectFit: 'cover',
-                                            }}
-                                        />
-                                        <Box>
-                                            <Typography sx={{ fontWeight: 'bold', color: 'text.primary' }}>{t.name}</Typography>
-                                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                                {t.role}
-                                            </Typography>
-                                        </Box>
-                                    </Box>
+                                    {step.icon}
                                 </Box>
-                            </Grid>
+                                <Box sx={{ maxWidth: 400 }}>
+                                    <Typography
+                                        variant="subtitle1"
+                                        sx={{ fontWeight: "bold", color: "text.primary" }}
+                                    >
+                                        {step.title}
+                                    </Typography>
+                                    <Typography sx={{ color: "text.secondary" }}>
+                                        {step.text}
+                                    </Typography>
+                                </Box>
+                            </Box>
                         ))}
-                    </Grid>
-                </Container>
-            </Box>
+                    </Box>
+                </Grid>
+
+                {/* Imagen */}
+                <Grid
+                    item
+                    xs={12}
+                    md={6}
+                >
+                    <Box
+                        component="img"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAw07KPjF6uaw4I_V-TtSOWCD75tDA1y3pMxsYN7GjybT1ZCmRkwaSQvDkwCPZyXohZ5PUeSdr_UBcLZiKLvcEIld-72wxnsJ9aw8qUMqJmDfjHakLBlXvVBeaCLy9Ly-HI7YruHrRXRwt_Bjn0gq-j1TUkpLjePM3Er-QqV1pXY2n6vd8is9qGTns62QGkFdZC6lr2Svaj5vJLHWa_nOtjt-a8gg-oE6j6-L5lS5xhkGJxHCWoRH4pdJoPPRxF_cDYuLgYaNa5OkB"
+                        alt="Demostración del estudio inteligente"
+                        sx={{
+                            width: { xs: "90%", sm: "80%", md: "100%" },
+                            // maxWidth: 500,
+                            aspectRatio: "1 / 1",
+                            objectFit: "cover",
+                            borderRadius: 3,
+                            boxShadow: 4,
+                        }}
+                    />
+                </Grid>
+            </Grid>
+
+            {/* Testimonio Section */}
             <Box component="section" sx={{ py: { xs: 8, sm: 12 } }}>
                 <Container maxWidth="xl">
                     <Box sx={{ textAlign: 'center', mb: 6 }}>
@@ -826,6 +757,8 @@ export default function LandingPage() {
                     </Typography>
                 </Container>
             </Box>
-        </Box>
+        </Container >
+        </>
+
     );
 }
