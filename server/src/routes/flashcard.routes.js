@@ -17,49 +17,49 @@ router.use(authMiddleware);
 /**
  * @route GET /api/flashcards
  * @desc Obtiene todas las flashcards
- * @access Public
+ * @access Private
  */
 router.get('/', FlashcardController.getAllFlashcards);
 
 /**
  * @route GET /api/flashcards/search?q=termino&deckId=1
  * @desc Busca flashcards por contenido
- * @access Public
+ * @access Private
  */
 router.get('/search', FlashcardController.searchFlashcards);
 
 /**
  * @route GET /api/flashcards/due
  * @desc Obtiene flashcards que necesitan revisión
- * @access Public
+ * @access Private
  */
 router.get('/due', FlashcardController.getDueFlashcards);
 
 /**
  * @route GET /api/flashcards/due/:deckId
  * @desc Obtiene flashcards que necesitan revisión por deck
- * @access Public
+ * @access Private
  */
 router.get('/due/:deckId', FlashcardController.getDueFlashcards);
 
 /**
  * @route GET /api/flashcards/deck/:deckId
  * @desc Obtiene todas las flashcards de un deck específico
- * @access Public
+ * @access Private
  */
 router.get('/deck/:deckId', FlashcardController.getFlashcardsByDeck);
 
 /**
  * @route GET /api/flashcards/:id
  * @desc Obtiene una flashcard por ID
- * @access Public
+ * @access Private
  */
 router.get('/:id', FlashcardController.getFlashcardById);
 
 /**
  * @route POST /api/flashcards
  * @desc Crea una nueva flashcard
- * @access Public
+ * @access Private
  * @body {string} front - Anverso de la flashcard (requerido)
  * @body {string} back - Reverso de la flashcard (requerido)
  * @body {number} deckId - ID del deck (requerido)
@@ -72,7 +72,7 @@ router.post('/batch', FlashcardController.createManyFlashcards);
 /**
  * @route PUT /api/flashcards/:id
  * @desc Actualiza una flashcard existente
- * @access Public
+ * @access Private
  * @body {string} front - Anverso de la flashcard
  * @body {string} back - Reverso de la flashcard
  * @body {number} deckId - ID del deck
@@ -83,7 +83,7 @@ router.put('/:id', FlashcardController.updateFlashcard);
 /**
  * @route PUT /api/flashcards/:id/review
  * @desc Marca una flashcard como revisada
- * @access Public
+ * @access Private
  * @body {number} difficulty - Dificultad percibida (1-3)
  */
 router.put('/:id/review', FlashcardController.markAsReviewed);
@@ -91,7 +91,7 @@ router.put('/:id/review', FlashcardController.markAsReviewed);
 /**
  * @route DELETE /api/flashcards/:id
  * @desc Elimina una flashcard
- * @access Public
+ * @access Private
  */
 router.delete('/:id', FlashcardController.deleteFlashcard);
 

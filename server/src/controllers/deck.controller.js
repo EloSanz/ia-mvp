@@ -3,10 +3,49 @@ import { DeckDto } from '../dtos/deck.dto.js';
 import { BaseController } from './base.controller.js';
 import { ForbiddenError, NotFoundError } from '../utils/custom.errors.js';
 import { deckGeneratorService } from '../services/deckGenerator.service.js';
+import { TagRepository } from '../repositories/tag.repository.js';
+import { FlashcardRepository } from '../repositories/flashcard.repository.js';
 
 export const DeckController = {
   /**
-   * Obtiene todos los decks del usuario
+   * @swagger
+   * /api/decks:
+   *   get:
+   *     summary: Get all decks for the authenticated user
+   *     description: Retrieves all flashcard decks owned by the authenticated user, including statistics
+   *     tags: [Decks]
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Decks retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Decks obtenidos exitosamente
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Deck'
+   *                 count:
+   *                   type: integer
+   *                   example: 5
+   *                 timestamp:
+   *                   type: string
+   *                   format: date-time
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   getAllDecks: BaseController.wrap(async (req, res) => {
     const decks = await Deck.findAll({ userId: req.userId });
@@ -14,7 +53,101 @@ export const DeckController = {
   }),
 
   /**
-   * Obtiene un deck por ID
+   * @swagger
+   * /api/decks/mcp:
+   *   get:
+   *     summary: Get all decks for the authenticated user (MCP optimized)
+   *     description: Retrieves all flashcard decks owned by the authenticated user without cover images, optimized for MCP tools
+   *     tags: [Decks]
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Decks retrieved successfully (without cover images)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Decks obtenidos exitosamente (sin coverUrl)
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/DeckMCP'
+   *                 count:
+   *                   type: integer
+   *                   example: 5
+   *                 timestamp:
+   *                   type: string
+   *                   format: date-time
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  getAllDecksForMcp: BaseController.wrap(async (req, res) => {
+    const decks = await Deck.findAllWithoutCoverUrl({ userId: req.userId });
+    BaseController.successList(res, decks, 'Decks obtenidos exitosamente (sin coverUrl)');
+  }),
+
+  /**
+   * @swagger
+   * /api/decks/{id}:
+   *   get:
+   *     summary: Get a specific deck by ID
+   *     description: Retrieves a single deck with ownership verification
+   *     tags: [Decks]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Deck ID to retrieve
+   *         example: 1
+   *     responses:
+   *       200:
+   *         description: Deck retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Deck obtenido exitosamente
+   *                 data:
+   *                   $ref: '#/components/schemas/Deck'
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       403:
+   *         description: Forbidden - User does not own this deck
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       404:
+   *         description: Deck not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   getDeckById: BaseController.wrap(async (req, res) => {
     const { id } = req.params;
@@ -28,7 +161,52 @@ export const DeckController = {
   }),
 
   /**
-   * Crea un nuevo deck
+   * @swagger
+   * /api/decks:
+   *   post:
+   *     summary: Create a new deck
+   *     description: Creates a new flashcard deck with optional AI-generated cover image
+   *     tags: [Decks]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/CreateDeckRequest'
+   *           example:
+   *             name: "Spanish Vocabulary"
+   *             description: "Basic Spanish words and phrases"
+   *             generateCover: true
+   *     responses:
+   *       201:
+   *         description: Deck created successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Deck creado exitosamente
+   *                 data:
+   *                   $ref: '#/components/schemas/Deck'
+   *       400:
+   *         description: Bad request - Invalid input data
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   createDeck: BaseController.wrap(async (req, res) => {
 
@@ -73,7 +251,71 @@ export const DeckController = {
   }),
 
   /**
-   * Actualiza un deck existente
+   * @swagger
+   * /api/decks/{id}:
+   *   put:
+   *     summary: Update an existing deck
+   *     description: Updates a deck's information with ownership verification
+   *     tags: [Decks]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Deck ID to update
+   *         example: 1
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/UpdateDeckRequest'
+   *           example:
+   *             name: "Advanced Spanish"
+   *             description: "Advanced Spanish vocabulary and grammar"
+   *     responses:
+   *       200:
+   *         description: Deck updated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Deck actualizado exitosamente
+   *                 data:
+   *                   $ref: '#/components/schemas/Deck'
+   *       400:
+   *         description: Bad request - Invalid input data
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       403:
+   *         description: Forbidden - User does not own this deck
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       404:
+   *         description: Deck not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   updateDeck: BaseController.wrap(async (req, res) => {
     const { id } = req.params;
@@ -94,7 +336,56 @@ export const DeckController = {
   }),
 
   /**
-   * Elimina un deck
+   * @swagger
+   * /api/decks/{id}:
+   *   delete:
+   *     summary: Delete a deck
+   *     description: Deletes a deck with ownership verification
+   *     tags: [Decks]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Deck ID to delete
+   *         example: 1
+   *     responses:
+   *       200:
+   *         description: Deck deleted successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Deck eliminado exitosamente
+   *                 data:
+   *                   type: null
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       403:
+   *         description: Forbidden - User does not own this deck
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       404:
+   *         description: Deck not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   deleteDeck: BaseController.wrap(async (req, res) => {
     const { id } = req.params;
@@ -113,7 +404,58 @@ export const DeckController = {
   }),
 
   /**
-   * Sugiere temas de decks basados en los decks existentes del usuario
+   * @swagger
+   * /api/decks/suggest-topics:
+   *   post:
+   *     summary: Suggest deck topics based on user history
+   *     description: Generates topic suggestions for new decks based on the user's existing decks
+   *     tags: [Decks, AI]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: false
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               count:
+   *                 type: integer
+   *                 minimum: 1
+   *                 maximum: 10
+   *                 default: 3
+   *                 example: 3
+   *                 description: Number of topics to suggest
+   *           example:
+   *             count: 3
+   *     responses:
+   *       200:
+   *         description: Topics suggested successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Temas sugeridos exitosamente
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     topics:
+   *                       type: array
+   *                       items:
+   *                         type: string
+   *                       example: ["Advanced JavaScript", "React Patterns", "Database Design"]
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   suggestTopics: BaseController.wrap(async (req, res) => {
     const userId = parseInt(req.userId);
@@ -125,8 +467,438 @@ export const DeckController = {
   }),
 
   /**
-   * Genera un deck completo con IA
+   * @swagger
+   * /api/decks/generate-with-ai:
+   *   post:
+   *     summary: Generate a complete deck with AI
+   *     description: Creates a full flashcard deck using AI based on topic, difficulty, and other parameters
+   *     tags: [Decks, AI]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - mode
+   *               - topic
+   *             properties:
+   *               mode:
+   *                 type: string
+   *                 enum: [free, configured, suggested]
+   *                 example: configured
+   *                 description: Generation mode
+   *               topic:
+   *                 type: string
+   *                 minLength: 1
+   *                 example: "Spanish Vocabulary"
+   *                 description: Topic for the deck
+   *               flashcardCount:
+   *                 type: integer
+   *                 minimum: 5
+   *                 maximum: 50
+   *                 default: 10
+   *                 example: 15
+   *                 description: Number of flashcards to generate
+   *               difficulty:
+   *                 type: string
+   *                 enum: [beginner, intermediate, advanced]
+   *                 example: intermediate
+   *                 description: Difficulty level
+   *               tags:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *                 example: ["grammar", "vocabulary"]
+   *                 description: Tags for the flashcards
+   *               generateCover:
+   *                 type: boolean
+   *                 default: true
+   *                 example: true
+   *                 description: Whether to generate AI cover image
+   *           examples:
+   *             free:
+   *               summary: Free topic generation
+   *               value:
+   *                 mode: "free"
+   *                 topic: "Machine Learning"
+   *                 flashcardCount: 10
+   *                 generateCover: true
+   *             configured:
+   *               summary: Configured generation
+   *               value:
+   *                 mode: "configured"
+   *                 topic: "React Components"
+   *                 flashcardCount: 15
+   *                 difficulty: "intermediate"
+   *                 tags: ["react", "frontend"]
+   *                 generateCover: false
+   *     responses:
+   *       201:
+   *         description: Deck generated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Deck generado exitosamente
+   *                 data:
+   *                   $ref: '#/components/schemas/Deck'
+   *       400:
+   *         description: Bad request - Invalid input data
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       500:
+   *         description: Internal server error - AI generation failed
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
+  /**
+   * @swagger
+   * /api/decks/{deckId}/tag-count:
+   *   get:
+   *     summary: Get tag count for a specific deck
+   *     description: Returns the total number of tags in a specific deck
+   *     tags: [Decks, Tags]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: deckId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Deck ID to count tags for
+   *         example: 1
+   *     responses:
+   *       200:
+   *         description: Tag count retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Tag count retrieved successfully
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     deckId:
+   *                       type: integer
+   *                       example: 1
+   *                     tagCount:
+   *                       type: integer
+   *                       example: 5
+   */
+  getDeckTagCount: BaseController.wrap(async (req, res) => {
+    const { deckId } = req.params;
+    const userId = req.userId;
+
+    // Verificar ownership del deck
+    const deck = await Deck.findById(deckId);
+    if (!deck || deck.userId !== userId) {
+      throw new ForbiddenError('No tienes permiso para ver este deck');
+    }
+
+    const tagCount = await TagRepository.countByDeckId(deckId);
+
+    BaseController.success(res, {
+      deckId: parseInt(deckId),
+      tagCount
+    }, 'Tag count retrieved successfully');
+  }),
+
+  /**
+   * @swagger
+   * /api/decks/{deckId}/flashcards-by-tag:
+   *   get:
+   *     summary: Get flashcards count by tag for a specific deck
+   *     description: Returns the count of flashcards for each tag in a specific deck
+   *     tags: [Decks, Flashcards, Tags]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: deckId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Deck ID to get flashcards by tag for
+   *         example: 1
+   *     responses:
+   *       200:
+   *         description: Flashcards by tag count retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Flashcards by tag count retrieved successfully
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     deckId:
+   *                       type: integer
+   *                       example: 1
+   *                     flashcardsByTag:
+   *                       type: array
+   *                       items:
+   *                         type: object
+   *                         properties:
+   *                           tagId:
+   *                             type: integer
+   *                             example: 1
+   *                           tagName:
+   *                             type: string
+   *                             example: "Grammar"
+   *                           count:
+   *                             type: integer
+   *                             example: 10
+   */
+  getDeckFlashcardsByTag: BaseController.wrap(async (req, res) => {
+    const { deckId } = req.params;
+    const userId = req.userId;
+
+    // Verificar ownership del deck
+    const deck = await Deck.findById(deckId);
+    if (!deck || deck.userId !== userId) {
+      throw new ForbiddenError('No tienes permiso para ver este deck');
+    }
+
+    const tags = await TagRepository.findByDeckId(deckId);
+    const flashcardsByTag = await Promise.all(
+      tags.map(async (tag) => ({
+        tagId: tag.id,
+        tagName: tag.name,
+        count: await FlashcardRepository.countByTagId(tag.id)
+      }))
+    );
+
+    BaseController.success(res, {
+      deckId: parseInt(deckId),
+      flashcardsByTag
+    }, 'Flashcards by tag count retrieved successfully');
+  }),
+
+  /**
+   * @swagger
+   * /api/decks/{deckId}/untagged-flashcards-count:
+   *   get:
+   *     summary: Get count of untagged flashcards for a specific deck
+   *     description: Returns the count of flashcards without tags in a specific deck
+   *     tags: [Decks, Flashcards]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: deckId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Deck ID to count untagged flashcards for
+   *         example: 1
+   *     responses:
+   *       200:
+   *         description: Untagged flashcards count retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Untagged flashcards count retrieved successfully
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     deckId:
+   *                       type: integer
+   *                       example: 1
+   *                     untaggedFlashcardsCount:
+   *                       type: integer
+   *                       example: 8
+   */
+  getDeckUntaggedFlashcardsCount: BaseController.wrap(async (req, res) => {
+    const { deckId } = req.params;
+    const userId = req.userId;
+
+    // Verificar ownership del deck
+    const deck = await Deck.findById(deckId);
+    if (!deck || deck.userId !== userId) {
+      throw new ForbiddenError('No tienes permiso para ver este deck');
+    }
+
+    const untaggedFlashcardsCount = await FlashcardRepository.countUntaggedByDeckId(deckId);
+
+    BaseController.success(res, {
+      deckId: parseInt(deckId),
+      untaggedFlashcardsCount
+    }, 'Untagged flashcards count retrieved successfully');
+  }),
+
+  /**
+   * @swagger
+   * /api/decks/untagged-flashcards-count:
+   *   get:
+   *     summary: Get count of untagged flashcards across all user decks
+   *     description: Returns the total count of flashcards without tags across all user decks
+   *     tags: [Decks, Flashcards]
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Untagged flashcards count across all decks retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Untagged flashcards count across all decks retrieved successfully
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     totalUntaggedFlashcards:
+   *                       type: integer
+   *                       example: 25
+   *                     byDeck:
+   *                       type: array
+   *                       items:
+   *                         type: object
+   *                         properties:
+   *                           deckId:
+   *                             type: integer
+   *                             example: 1
+   *                           deckName:
+   *                             type: string
+   *                             example: "Spanish Vocabulary"
+   *                           untaggedCount:
+   *                             type: integer
+   *                             example: 8
+   */
+  getAllUntaggedFlashcardsCount: BaseController.wrap(async (req, res) => {
+    const userId = req.userId;
+
+    const decks = await Deck.findAll({ userId });
+    let totalUntaggedFlashcards = 0;
+    const byDeck = [];
+
+    for (const deck of decks) {
+      const untaggedCount = await FlashcardRepository.countUntaggedByDeckId(deck.id);
+      totalUntaggedFlashcards += untaggedCount;
+
+      byDeck.push({
+        deckId: deck.id,
+        deckName: deck.name,
+        untaggedCount
+      });
+    }
+
+    BaseController.success(res, {
+      totalUntaggedFlashcards,
+      byDeck
+    }, 'Untagged flashcards count across all decks retrieved successfully');
+  }),
+
+  /**
+   * @swagger
+   * /api/decks/flashcards-count:
+   *   get:
+   *     summary: Get flashcards count for all user decks
+   *     description: Returns the count of flashcards for each user deck
+   *     tags: [Decks, Flashcards]
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Flashcards count for all decks retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Flashcards count for all decks retrieved successfully
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     totalFlashcards:
+   *                       type: integer
+   *                       example: 150
+   *                     byDeck:
+   *                       type: array
+   *                       items:
+   *                         type: object
+   *                         properties:
+   *                           deckId:
+   *                             type: integer
+   *                             example: 1
+   *                           deckName:
+   *                             type: string
+   *                             example: "Spanish Vocabulary"
+   *                           flashcardsCount:
+   *                             type: integer
+   *                             example: 50
+   */
+  getAllFlashcardsCount: BaseController.wrap(async (req, res) => {
+    const userId = req.userId;
+
+    const decks = await Deck.findAll({ userId });
+    let totalFlashcards = 0;
+    const byDeck = decks.map(deck => {
+      const flashcardsCount = deck.stats.flashcardsCount;
+      totalFlashcards += flashcardsCount;
+
+      return {
+        deckId: deck.id,
+        deckName: deck.name,
+        flashcardsCount
+      };
+    });
+
+    BaseController.success(res, {
+      totalFlashcards,
+      byDeck
+    }, 'Flashcards count for all decks retrieved successfully');
+  }),
+
   generateDeckWithAI: BaseController.wrap(async (req, res) => {
     const userId = parseInt(req.userId);
     const { mode, topic, flashcardCount, difficulty, tags, generateCover = true } = req.body;
