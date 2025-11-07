@@ -762,6 +762,97 @@
       ]
     },
     {
+      "name": "Library",
+      "item": [
+        {
+          "name": "Get All Public Decks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/library?search=spanish&sortBy=recent",
+              "host": ["{{base_url}}"],
+              "path": ["api", "library"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "spanish"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "recent"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Public Deck Preview",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/library/7",
+              "host": ["{{base_url}}"],
+              "path": ["api", "library", "7"]
+            }
+          }
+        },
+        {
+          "name": "Update Deck Visibility",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"visibility\": \"public\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/decks/16/visibility",
+              "host": ["{{base_url}}"],
+              "path": ["api", "decks", "16", "visibility"]
+            }
+          }
+        },
+        {
+          "name": "Clone Public Deck",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/decks/7/clone",
+              "host": ["{{base_url}}"],
+              "path": ["api", "decks", "7", "clone"]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Anki Sync",
       "item": [
         {
