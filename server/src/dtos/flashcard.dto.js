@@ -1,8 +1,127 @@
+import Joi from 'joi';
+
 /**
  * FlashcardDto - Data Transfer Object para transferencia de datos
  * Define la estructura de datos que se envía/recibe por las rutas
  */
 export class FlashcardDto {
+  // Esquemas de validación con Joi
+  static createSchema = Joi.object({
+    front: Joi.string()
+      .trim()
+      .min(1)
+      .max(1000)
+      .required()
+      .messages({
+        'string.empty': 'El anverso (front) es requerido y no puede estar vacío',
+        'string.max': 'El anverso no puede tener más de 1000 caracteres',
+        'any.required': 'El anverso (front) es requerido'
+      }),
+
+    back: Joi.string()
+      .trim()
+      .min(1)
+      .max(1000)
+      .required()
+      .messages({
+        'string.empty': 'El reverso (back) es requerido y no puede estar vacío',
+        'string.max': 'El reverso no puede tener más de 1000 caracteres',
+        'any.required': 'El reverso (back) es requerido'
+      }),
+
+    deckId: Joi.alternatives()
+      .try(
+        Joi.number().integer().positive(),
+        Joi.string().pattern(/^\d+$/).custom((value) => parseInt(value))
+      )
+      .required()
+      .messages({
+        'number.base': 'El deckId debe ser un número positivo',
+        'number.integer': 'El deckId debe ser un número entero',
+        'number.positive': 'El deckId debe ser un número positivo',
+        'any.required': 'El deckId es requerido'
+      }),
+
+    difficulty: Joi.number()
+      .integer()
+      .min(1)
+      .max(3)
+      .default(2)
+      .messages({
+        'number.base': 'La dificultad debe ser un número',
+        'number.integer': 'La dificultad debe ser un número entero',
+        'number.min': 'La dificultad debe estar entre 1 y 3 (1=fácil, 2=normal, 3=difícil)',
+        'number.max': 'La dificultad debe estar entre 1 y 3 (1=fácil, 2=normal, 3=difícil)'
+      }),
+
+    tagId: Joi.alternatives()
+      .try(
+        Joi.number().integer().positive().allow(null),
+        Joi.string().pattern(/^\d+$/).custom((value) => parseInt(value)).allow(null)
+      )
+      .optional()
+      .messages({
+        'number.base': 'El tagId debe ser un número positivo o null',
+        'number.integer': 'El tagId debe ser un número entero',
+        'number.positive': 'El tagId debe ser un número positivo'
+      })
+  });
+
+  static updateSchema = Joi.object({
+    front: Joi.string()
+      .trim()
+      .min(1)
+      .max(1000)
+      .messages({
+        'string.empty': 'El anverso no puede estar vacío',
+        'string.max': 'El anverso no puede tener más de 1000 caracteres'
+      }),
+
+    back: Joi.string()
+      .trim()
+      .min(1)
+      .max(1000)
+      .messages({
+        'string.empty': 'El reverso no puede estar vacío',
+        'string.max': 'El reverso no puede tener más de 1000 caracteres'
+      }),
+
+    deckId: Joi.alternatives()
+      .try(
+        Joi.number().integer().positive(),
+        Joi.string().pattern(/^\d+$/).custom((value) => parseInt(value))
+      )
+      .messages({
+        'number.base': 'El deckId debe ser un número positivo',
+        'number.integer': 'El deckId debe ser un número entero',
+        'number.positive': 'El deckId debe ser un número positivo'
+      }),
+
+    difficulty: Joi.number()
+      .integer()
+      .min(1)
+      .max(3)
+      .messages({
+        'number.base': 'La dificultad debe ser un número',
+        'number.integer': 'La dificultad debe ser un número entero',
+        'number.min': 'La dificultad debe estar entre 1 y 3 (1=fácil, 2=normal, 3=difícil)',
+        'number.max': 'La dificultad debe estar entre 1 y 3 (1=fácil, 2=normal, 3=difícil)'
+      }),
+
+    tagId: Joi.alternatives()
+      .try(
+        Joi.number().integer().positive().allow(null),
+        Joi.string().pattern(/^\d+$/).custom((value) => parseInt(value)).allow(null)
+      )
+      .messages({
+        'number.base': 'El tagId debe ser un número positivo o null',
+        'number.integer': 'El tagId debe ser un número entero',
+        'number.positive': 'El tagId debe ser un número positivo'
+      })
+  }).min(1).messages({
+    'object.min': 'Debe proporcionar al menos un campo para actualizar'
+  });
+
   constructor(data = {}) {
     this.id = data.id || null;
     this.front = data.front || '';
@@ -47,113 +166,46 @@ export class FlashcardDto {
   }
 
   /**
-   * Valida los datos de entrada para crear una flashcard
+   * Valida los datos de entrada para crear una flashcard usando Joi
    */
   static validateCreate(data) {
-    const errors = [];
+    const { error, value } = this.createSchema.validate(data, { abortEarly: false });
 
-    // Forzar deckId a número si es string numérico
-    if (typeof data.deckId === 'string' && !isNaN(Number(data.deckId))) {
-      data.deckId = Number(data.deckId);
+    if (error) {
+      const errors = error.details.map(detail => detail.message);
+      return {
+        success: false,
+        errors: errors,
+        message: 'Errores de validación en los datos enviados'
+      };
     }
 
-    if (!data.front || typeof data.front !== 'string') {
-      errors.push('El anverso (front) es requerido y debe ser una cadena de texto');
-    } else if (data.front.trim().length === 0) {
-      errors.push('El anverso no puede estar vacío');
-    } else if (data.front.length > 1000) {
-      errors.push('El anverso no puede tener más de 1000 caracteres');
-    }
-
-    if (!data.back || typeof data.back !== 'string') {
-      errors.push('El reverso (back) es requerido y debe ser una cadena de texto');
-    } else if (data.back.trim().length === 0) {
-      errors.push('El reverso no puede estar vacío');
-    } else if (data.back.length > 1000) {
-      errors.push('El reverso no puede tener más de 1000 caracteres');
-    }
-
-    if (
-      data.deckId === undefined ||
-      data.deckId === null ||
-      typeof data.deckId !== 'number' ||
-      data.deckId <= 0
-    ) {
-      errors.push('El deckId es requerido y debe ser un número positivo');
-    }
-
-    if (data.difficulty !== undefined && (data.difficulty < 1 || data.difficulty > 3)) {
-      errors.push('La dificultad debe estar entre 1 y 3');
-    }
-
-    if (data.tagId !== undefined && data.tagId !== null && isNaN(Number(data.tagId))) {
-      errors.push('El tagId debe ser un número válido o null');
-    }
-
-    if (errors.length > 0) {
-      throw new Error(`Errores de validación: ${errors.join(', ')}`);
-    }
-
-    return new FlashcardDto({
-      front: data.front.trim(),
-      back: data.back.trim(),
-      deckId: data.deckId,
-      difficulty: data.difficulty || 2,
-      tagId: data.tagId || null
-    });
+    return {
+      success: true,
+      data: new FlashcardDto(value)
+    };
   }
 
   /**
-   * Valida los datos de entrada para actualizar una flashcard
+   * Valida los datos de entrada para actualizar una flashcard usando Joi
    */
-  static validateUpdate(data) {
-    if (data.tagId !== undefined && data.tagId !== null && isNaN(Number(data.tagId))) {
-      errors.push('El tagId debe ser un número válido o null');
-    }
-    const errors = [];
+  static validateUpdate(data, existingId = null) {
+    const { error, value } = this.updateSchema.validate(data, { abortEarly: false });
 
-    if (data.front !== undefined) {
-      if (typeof data.front !== 'string') {
-        errors.push('El anverso debe ser una cadena de texto');
-      } else if (data.front.trim().length === 0) {
-        errors.push('El anverso no puede estar vacío');
-      } else if (data.front.length > 1000) {
-        errors.push('El anverso no puede tener más de 1000 caracteres');
-      }
+    if (error) {
+      const errors = error.details.map(detail => detail.message);
+      return {
+        success: false,
+        errors: errors,
+        message: 'Errores de validación en los datos enviados'
+      };
     }
 
-    if (data.back !== undefined) {
-      if (typeof data.back !== 'string') {
-        errors.push('El reverso debe ser una cadena de texto');
-      } else if (data.back.trim().length === 0) {
-        errors.push('El reverso no puede estar vacío');
-      } else if (data.back.length > 1000) {
-        errors.push('El reverso no puede tener más de 1000 caracteres');
-      }
-    }
-
-    if (data.deckId !== undefined) {
-      if (typeof data.deckId !== 'number' || data.deckId <= 0) {
-        errors.push('El deckId debe ser un número positivo');
-      }
-    }
-
-    if (data.difficulty !== undefined && (data.difficulty < 1 || data.difficulty > 3)) {
-      errors.push('La dificultad debe estar entre 1 y 3');
-    }
-
-    if (errors.length > 0) {
-      throw new Error(`Errores de validación: ${errors.join(', ')}`);
-    }
-
-    const updateData = {};
-    if (data.front !== undefined) updateData.front = data.front.trim();
-    if (data.back !== undefined) updateData.back = data.back.trim();
-    if (data.deckId !== undefined) updateData.deckId = data.deckId;
-    if (data.difficulty !== undefined) updateData.difficulty = data.difficulty;
-    if (data.tagId !== undefined) updateData.tagId = data.tagId;
-
-    return new FlashcardDto(updateData);
+    // Para update, necesitamos incluir el ID existente
+    return {
+      success: true,
+      data: new FlashcardDto({ ...value, id: existingId })
+    };
   }
 
   /**
@@ -194,6 +246,17 @@ export class FlashcardDto {
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };
+  }
+
+  /**
+   * Convierte el DTO a un objeto para update (sin ID)
+   */
+  toUpdateModel() {
+    const model = this.toModel();
+    // No incluir el ID en updates para evitar conflictos
+    delete model.id;
+    delete model.createdAt; // Tampoco incluir createdAt
+    return model;
   }
 }
 
