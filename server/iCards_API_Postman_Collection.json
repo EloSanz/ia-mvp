@@ -708,7 +708,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Grammar\",\n  \"color\": \"#FF6B6B\",\n  \"deckId\": 7\n}"
+              "raw": "{\n  \"name\": \"Grammar\",\n  \"deckId\": 7\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/decks/7/tags",
@@ -733,7 +733,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Advanced Grammar\",\n  \"color\": \"#4CAF50\"\n}"
+              "raw": "{\n  \"name\": \"Advanced Grammar\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/decks/7/tags/1",
