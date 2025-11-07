@@ -11,14 +11,14 @@ import { useRouteDetection } from './useRouteDetection';
 const LAST_DECK_KEY = 'lastVisitedDeck';
 
 export const useLastDeck = () => {
-  const { currentDeckId, isOnDeckPage } = useRouteDetection();
+  const { currentDeckId, isOnDeckPage, isOnLibraryPage } = useRouteDetection();
 
-  // Guardar el último deck visitado
+  // Guardar el último deck visitado (solo si es un deck propio, no de biblioteca)
   useEffect(() => {
-    if (isOnDeckPage && currentDeckId) {
+    if (isOnDeckPage && currentDeckId && !isOnLibraryPage) {
       localStorage.setItem(LAST_DECK_KEY, currentDeckId.toString());
     }
-  }, [isOnDeckPage, currentDeckId]);
+  }, [isOnDeckPage, currentDeckId, isOnLibraryPage]);
 
   // Obtener el último deck visitado
   const getLastDeckId = () => {

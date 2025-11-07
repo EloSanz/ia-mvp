@@ -15,8 +15,9 @@ services:
   backend:
     build: ./server
     container_name: ia-flashcards-api
+    env_file:
+      - ./server/.env
     environment:
-      - DATABASE_URL=${DATABASE_URL}
       - PORT=3000
     volumes:
       - ./server:/usr/src/app
