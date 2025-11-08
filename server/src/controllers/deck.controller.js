@@ -5,6 +5,8 @@ import { ForbiddenError, NotFoundError } from '../utils/custom.errors.js';
 import { deckGeneratorService } from '../services/deckGenerator.service.js';
 import { TagRepository } from '../repositories/tag.repository.js';
 import { FlashcardRepository } from '../repositories/flashcard.repository.js';
+import { generateDeckCoverBase64 } from '../services/aiImage.service.js';
+import { uploadImageToCloudinary } from '../utils/cloudinary.js';
 
 export const DeckController = {
   /**
@@ -165,7 +167,7 @@ export const DeckController = {
    * /api/decks:
    *   post:
    *     summary: Create a new deck
-   *     description: Creates a new flashcard deck with optional AI-generated cover image
+   *     description: Creates a new flashcard deck with optional AI-generated cover image. If `generateCover` is true, the image will be uploaded to Cloudinary.
    *     tags: [Decks]
    *     security:
    *       - bearerAuth: []
@@ -224,24 +226,38 @@ export const DeckController = {
 
       BaseController.success(res, deck, "Deck creado exitosamente", 201);
 
-      let coverBase64 = null;
-
       if (generateCover) {
         (async () => {
-          const { generateDeckCoverBase64 } = await import("../services/aiImage.service.js");
-          const result = await generateDeckCoverBase64(name, description);
 
-          if (result.base64) {
-            coverBase64 = result.base64
-            await Deck.update(deck.id, { coverUrl: result.base64 });
-            // TODO: emitir evento con socket.io o notificación al front
-            console.log("Portada generada correctamente");
-          } else {
-            console.error("❌ Error al generar portada IA:", result.error);
+          try {
+            const result = await generateDeckCoverBase64(name, description);
+
+            if (result.base64) {
+              let url = null;
+              try {
+                const formattedBase64 = `data:image/png;base64,${result.base64}`;
+                url = await uploadImageToCloudinary(formattedBase64, 'ICards');
+                console.log("✅ ~ URL de la imagen subida a Cloudinary:", url);
+
+              } catch (uploadError) {
+                console.error(`❌ Error subiendo la imagen a Cloudinary para deck ${deckId}:`, uploadError);
+              }
+              try {
+                // Actualizar la URL de la imagen en la base de datos
+                await Deck.update(deckId, { coverUrl: url });
+              } catch (updateError) {
+                console.error(`❌ Error asignando la imagen para deck ${deckId}:`, updateError);
+              }
+              console.log(`✅ Portada generada y subida exitosamente para deck ${deckId}`);
+            } else {
+              console.error(`❌ Error generando portada para deck ${deckId}:`, result.error);
+            }
+          } catch (error) {
+            console.error(`❌ Error generando portada para deck ${deckId}:`, error);
           }
+
         })();
       }
-
 
     } catch (error) {
       console.error("Error creating deck:", error);
