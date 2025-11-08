@@ -112,6 +112,8 @@ model Deck {
   name        String
   description String   @db.Text
   coverUrl    String?  // AI-generated cover URL
+  visibility  String   @default("private") // "private" | "public"
+  clonesCount Int      @default(0) // Popularity counter
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -129,6 +131,8 @@ model Deck {
 - `name`: String - Deck name (max 255 chars)
 - `description`: String - Deck description (max 1000 chars, optional)
 - `coverUrl`: String - URL of AI-generated cover image (optional)
+- `visibility`: String - Deck visibility ("private" or "public", default: "private")
+- `clonesCount`: Integer - Number of times this deck has been cloned (default: 0)
 - `userId`: Integer - Owner user ID (foreign key)
 - `createdAt`: DateTime - Deck creation timestamp
 - `updatedAt`: DateTime - Last deck modification timestamp
@@ -142,6 +146,8 @@ class Deck {
     this.name = data.name;
     this.description = data.description;
     this.coverUrl = data.coverUrl;
+    this.visibility = data.visibility || 'private';
+    this.clonesCount = data.clonesCount || 0;
     this.userId = data.userId;
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
@@ -160,10 +166,13 @@ class Deck {
     "name": {"type": "string", "maxLength": 255},
     "description": {"type": "string", "maxLength": 1000},
     "coverUrl": {"type": "string", "format": "uri"},
+    "visibility": {"type": "string", "enum": ["private", "public"]},
+    "clonesCount": {"type": "integer", "minimum": 0},
+    "userId": {"type": "integer", "minimum": 1},
     "createdAt": {"type": "string", "format": "date-time"},
     "updatedAt": {"type": "string", "format": "date-time"}
   },
-  "required": ["id", "name", "createdAt", "updatedAt"]
+  "required": ["id", "name", "userId", "createdAt", "updatedAt"]
 }
 ```
 
