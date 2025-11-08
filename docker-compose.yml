@@ -18,9 +18,6 @@ services:
     env_file:
       - ./server/.env
     environment:
-      # url de conexion con la dbLocal(no la que esta comentada con docker internal y que no se solicita por el armado para deploy y superbase)
-      # - DATABASE_URL=postgresql://postgres:will@host.docker.internal:5433/decks_db
-      - DATABASE_URL=postgresql://postgres:will@host.docker.internal:5433/decks_db
       - PORT=3000
     volumes:
       - ./server:/usr/src/app
@@ -33,7 +30,7 @@ services:
     build: ./web
     container_name: ia-flashcards-web
     environment:
-      - API_UPSTREAM="https://api-icard.azurewebsites.net"
+      - API_UPSTREAM="http://localhost:3000"
       - VITE_API_URL=http://localhost:3000
     volumes:
       - ./web:/usr/src/app
