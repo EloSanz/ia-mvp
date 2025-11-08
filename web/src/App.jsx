@@ -11,6 +11,7 @@ import DeckPage from './pages/DeckPage';
 import StudyPage from './pages/StudyPage';
 import StudySessionPage from './pages/StudySessionPage';
 import LibraryPage from './pages/LibraryPage';
+import LibraryPreviewPage from './pages/LibraryPreviewPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 
@@ -84,6 +85,14 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <LibraryPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/library/:deckId"
+                element={
+                  <ProtectedRoute>
+                    <LibraryPreviewPage />
                   </ProtectedRoute>
                 }
               />

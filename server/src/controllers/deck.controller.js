@@ -956,5 +956,113 @@ export const DeckController = {
       console.error('Error generando deck con IA:', error);
       BaseController.error(res, `Error generando deck: ${error.message}`, 500, [error.message]);
     }
+  }),
+
+  /**
+   * Actualiza la visibilidad de un deck
+   * PATCH /api/decks/:id/visibility
+   */
+  updateVisibility: BaseController.wrap(async (req, res) => {
+    const { id } = req.params;
+    const { visibility } = req.body;
+
+    // Validar visibilidad
+    if (!visibility || !['private', 'public'].includes(visibility)) {
+      return BaseController.error(res, 'La visibilidad debe ser "private" o "public"', 400);
+    }
+
+    // Verificar que el deck existe y pertenece al usuario
+    const existingDeck = await Deck.findById(id);
+
+    if (!existingDeck) {
+      throw new NotFoundError('Deck no encontrado');
+    }
+
+    if (existingDeck.userId !== req.userId) {
+      throw new ForbiddenError('No tienes permiso para modificar este deck');
+    }
+
+    // Actualizar visibilidad usando el repositorio
+    const { DeckRepository } = await import('../repositories/deck.repository.js');
+    const updatedDeck = await DeckRepository.updateVisibility(id, visibility);
+
+    BaseController.success(res, updatedDeck, `Deck ahora es ${visibility === 'public' ? 'público' : 'privado'}`);
+  }),
+
+  /**
+   * Clona un deck público
+   * POST /api/decks/:id/clone
+   */
+  cloneDeck: BaseController.wrap(async (req, res) => {
+    const { id } = req.params;
+    const userId = parseInt(req.userId);
+
+    // Obtener el deck público con todos sus datos
+    const { DeckRepository } = await import('../repositories/deck.repository.js');
+    const sourceDeck = await DeckRepository.findPublicById(id);
+
+    if (!sourceDeck) {
+      throw new NotFoundError('Deck no encontrado o no es público');
+    }
+
+    // Validar que el usuario no esté clonando su propio deck
+    if (sourceDeck.userId === userId) {
+      return BaseController.error(res, 'No puedes clonar tu propio deck', 400);
+    }
+
+    try {
+      // Crear descripción con atribución
+      const attribution = `\n\nClonado de "${sourceDeck.name}" por ${sourceDeck.user.username}`;
+      const newDescription = sourceDeck.description + attribution;
+
+      // Crear el nuevo deck (privado por defecto)
+      const clonedDeck = await Deck.create({
+        name: sourceDeck.name,
+        description: newDescription,
+        coverUrl: sourceDeck.coverUrl,
+        userId,
+        visibility: 'private'
+      });
+
+      // Clonar flashcards con tags
+      const prisma = (await import('../config/database.js')).default;
+      
+      // Primero clonar los tags
+      const tagMapping = new Map();
+      if (sourceDeck.tags && sourceDeck.tags.length > 0) {
+        for (const tag of sourceDeck.tags) {
+          const newTag = await prisma.tag.create({
+            data: {
+              name: tag.name,
+              deckId: clonedDeck.id
+            }
+          });
+          tagMapping.set(tag.id, newTag.id);
+        }
+      }
+
+      // Luego clonar las flashcards
+      if (sourceDeck.flashcards && sourceDeck.flashcards.length > 0) {
+        const flashcardsToCreate = sourceDeck.flashcards.map(fc => ({
+          front: fc.front,
+          back: fc.back,
+          deckId: clonedDeck.id,
+          difficulty: fc.difficulty || 2,
+          tagId: fc.tagId ? tagMapping.get(fc.tagId) : null
+        }));
+
+        await prisma.flashcard.createMany({
+          data: flashcardsToCreate
+        });
+      }
+
+      // Incrementar contador de clones del deck original
+      await DeckRepository.incrementClonesCount(id);
+
+      BaseController.success(res, clonedDeck, 'Deck clonado exitosamente', 201);
+    } catch (error) {
+      console.error('Error clonando deck:', error);
+      BaseController.error(res, `Error al clonar deck: ${error.message}`, 500);
+    }
   })
 };
