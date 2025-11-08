@@ -51,9 +51,9 @@ export default function DeckCard({ deck, selected, onSelect, onView }) {
             {deck.name}
           </Typography>
           <Chip
-            label={deck.isPublic ? 'Público' : 'Privado'}
+            label={deck.visibility === 'public' ? 'Público' : 'Privado'}
             size="small"
-            color={deck.isPublic ? 'success' : 'default'}
+            color={deck.visibility === 'public' ? 'success' : 'default'}
             variant="outlined"
             sx={{ flexShrink: 0 }}
           />

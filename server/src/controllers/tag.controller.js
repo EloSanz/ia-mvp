@@ -3,6 +3,57 @@ import { TagEntity } from '../entities/tag.entity.js';
 import { TagDto } from '../dtos/tag.dto.js';
 
 export class TagController {
+  /**
+   * @swagger
+   * /api/decks/{deckId}/tags:
+   *   get:
+   *     summary: Get all tags for a specific deck
+   *     description: Retrieves all tags associated with a specific deck
+   *     tags: [Tags]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: deckId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Deck ID to get tags for
+   *         example: 1
+   *     responses:
+   *       200:
+   *         description: Tags retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Tag'
+   *                 total:
+   *                   type: integer
+   *                   example: 5
+   *                 message:
+   *                   type: string
+   *                   example: Tags retrieved successfully
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       403:
+   *         description: Forbidden - User does not own this deck
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
   // GET /api/decks/:deckId/tags - Obtener todas las tags de un deck
   static async getByDeckId(req, res) {
     try {
@@ -12,9 +63,9 @@ export class TagController {
       // Verificar que el deck pertenece al usuario
       const isOwner = await TagRepository.validateDeckOwnership(deckId, userId);
       if (!isOwner) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           success: false,
-          error: 'Access denied. Deck does not belong to user.' 
+          error: 'Access denied. Deck does not belong to user.'
         });
       }
 
@@ -29,10 +80,10 @@ export class TagController {
       });
     } catch (error) {
       console.error('Error getting tags by deck:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: 'Error interno del servidor',
-        message: error.message 
+        error: 'Internal server error',
+        message: error.message
       });
     }
   }
@@ -46,9 +97,9 @@ export class TagController {
       // Verificar ownership del deck
       const isOwner = await TagRepository.validateDeckOwnership(deckId, userId);
       if (!isOwner) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           success: false,
-          error: 'Access denied. Deck does not belong to user.' 
+          error: 'Access denied. Deck does not belong to user.'
         });
       }
 
@@ -67,14 +118,63 @@ export class TagController {
       });
     } catch (error) {
       console.error('Error getting tag by id:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: 'Error interno del servidor',
-        message: error.message 
+        error: 'Internal server error',
+        message: error.message
       });
     }
   }
 
+  /**
+   * @swagger
+   * /api/decks/{deckId}/tags:
+   *   post:
+   *     summary: Create a new tag for a deck
+   *     description: Creates a new tag and associates it with a specific deck
+   *     tags: [Tags]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: deckId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Deck ID to create tag for
+   *         example: 1
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/CreateTagRequest'
+   *           example:
+   *             name: "Grammar"
+   *             color: "#FF6B6B"
+   *     responses:
+   *       201:
+   *         description: Tag created successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   $ref: '#/components/schemas/Tag'
+   *                 message:
+   *                   type: string
+   *                   example: Tag created successfully
+   *       400:
+   *         description: Bad request - Invalid input data
+   *       401:
+   *         description: Unauthorized
+   *       403:
+   *         description: Forbidden - User does not own this deck
+   */
   // POST /api/decks/:deckId/tags - Crear nueva tag en un deck
   static async create(req, res) {
     try {
@@ -85,9 +185,9 @@ export class TagController {
       // Verificar ownership del deck
       const isOwner = await TagRepository.validateDeckOwnership(deckId, userId);
       if (!isOwner) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           success: false,
-          error: 'Access denied. Deck does not belong to user.' 
+          error: 'Access denied. Deck does not belong to user.'
         });
       }
 
@@ -108,10 +208,10 @@ export class TagController {
         });
       }
 
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: 'Error interno del servidor',
-        message: error.message 
+        error: 'Internal server error',
+        message: error.message
       });
     }
   }
@@ -125,9 +225,9 @@ export class TagController {
       // Verificar ownership del deck
       const isOwner = await TagRepository.validateDeckOwnership(deckId, userId);
       if (!isOwner) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           success: false,
-          error: 'Access denied. Deck does not belong to user.' 
+          error: 'Access denied. Deck does not belong to user.'
         });
       }
 
@@ -155,10 +255,10 @@ export class TagController {
         });
       }
 
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: 'Error interno del servidor',
-        message: error.message 
+        error: 'Internal server error',
+        message: error.message
       });
     }
   }
@@ -172,9 +272,9 @@ export class TagController {
       // Verificar ownership del deck
       const isOwner = await TagRepository.validateDeckOwnership(deckId, userId);
       if (!isOwner) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           success: false,
-          error: 'Access denied. Deck does not belong to user.' 
+          error: 'Access denied. Deck does not belong to user.'
         });
       }
 
@@ -194,10 +294,10 @@ export class TagController {
         });
       }
 
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: 'Error interno del servidor',
-        message: error.message 
+        error: 'Internal server error',
+        message: error.message
       });
     }
   }
@@ -214,9 +314,9 @@ export class TagController {
       });
     } catch (error) {
       console.error('Error getting tags:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: 'Error interno del servidor' 
+        error: 'Internal server error'
       });
     }
   }

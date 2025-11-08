@@ -5,7 +5,76 @@ import { generateFromAI } from '../services/flashcard.service.js';
 
 export const FlashcardController = {
   /**
-   * Busca flashcards por consigna (front) dentro de un deck
+   * @swagger
+   * /api/flashcards/deck/{deckId}/search:
+   *   get:
+   *     summary: Search flashcards by front content within a deck
+   *     description: Searches for flashcards in a specific deck by their front (question) content
+   *     tags: [Flashcards]
+   *     parameters:
+   *       - in: path
+   *         name: deckId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Deck ID to search in
+   *         example: 1
+   *       - in: query
+   *         name: q
+   *         schema:
+   *           type: string
+   *         description: Search query for flashcard front content
+   *         example: "hello"
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           minimum: 0
+   *           default: 0
+   *         description: Page number for pagination
+   *         example: 0
+   *       - in: query
+   *         name: pageSize
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 100
+   *           default: 50
+   *         description: Number of items per page
+   *         example: 50
+   *     responses:
+   *       200:
+   *         description: Search completed successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Flashcard'
+   *                 total:
+   *                   type: integer
+   *                   example: 25
+   *                 page:
+   *                   type: integer
+   *                   example: 0
+   *                 pageSize:
+   *                   type: integer
+   *                   example: 50
+   *                 message:
+   *                   type: string
+   *                   example: Búsqueda de flashcards en deck
+   *       400:
+   *         description: Bad request - Invalid deck ID or parameters
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   searchFlashcardsInDeck: BaseController.wrap(async (req, res) => {
     const { deckId } = req.params;
@@ -27,7 +96,44 @@ export const FlashcardController = {
     });
   }),
   /**
-   * Obtiene todas las flashcards
+   * @swagger
+   * /api/flashcards:
+   *   get:
+   *     summary: Get all flashcards
+   *     description: Retrieves all flashcards for the authenticated user
+   *     tags: [Flashcards]
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Flashcards retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Flashcards obtenidas exitosamente
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Flashcard'
+   *                 count:
+   *                   type: integer
+   *                   example: 500
+   *                 timestamp:
+   *                   type: string
+   *                   format: date-time
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   getAllFlashcards: BaseController.wrap(async (req, res) => {
     const flashcards = await Flashcard.findAll();
@@ -35,7 +141,50 @@ export const FlashcardController = {
   }),
 
   /**
-   * Obtiene una flashcard por ID
+   * @swagger
+   * /api/flashcards/{id}:
+   *   get:
+   *     summary: Get a flashcard by ID
+   *     description: Retrieves a specific flashcard by its ID
+   *     tags: [Flashcards]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Flashcard ID to retrieve
+   *         example: 1
+   *     responses:
+   *       200:
+   *         description: Flashcard retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Flashcard obtenida exitosamente
+   *                 data:
+   *                   $ref: '#/components/schemas/Flashcard'
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       404:
+   *         description: Flashcard not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   getFlashcardById: BaseController.wrap(async (req, res) => {
     const { id } = req.params;
@@ -52,38 +201,174 @@ export const FlashcardController = {
   }),
 
   /**
-   * Crea una nueva flashcard
+   * @swagger
+   * /api/flashcards:
+   *   post:
+   *     summary: Create a new flashcard
+   *     description: Creates a new flashcard with front/back content and associates it with a deck
+   *     tags: [Flashcards]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/CreateFlashcardRequest'
+   *           example:
+   *             front: "Hello"
+   *             back: "Hola"
+   *             deckId: 1
+   *             difficulty: 2
+   *             tags: ["greeting", "basic"]
+   *     responses:
+   *       201:
+   *         description: Flashcard created successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Flashcard creada exitosamente
+   *                 data:
+   *                   $ref: '#/components/schemas/Flashcard'
+   *       400:
+   *         description: Bad request - Invalid input data
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   createFlashcard: BaseController.wrap(async (req, res) => {
-    const result = await BaseController.createWithValidation(
-      FlashcardDto.validateCreate.bind(FlashcardDto),
-      Flashcard.create.bind(Flashcard),
-      req.body,
-      'Flashcard creada exitosamente'
-    );
+    // Validar datos de entrada
+    const validation = FlashcardDto.validateCreate(req.body);
 
-    BaseController.success(res, result.data, result.message, 201);
+    if (!validation.success) {
+      return BaseController.error(res, validation.message, 400, validation.errors);
+    }
+
+    // Crear flashcard
+    const newFlashcard = await Flashcard.create(validation.data.toModel());
+
+    BaseController.success(res, newFlashcard, 'Flashcard creada exitosamente', 201);
   }),
 
   /**
-   * Actualiza una flashcard existente
+   * @swagger
+   * /api/flashcards/{id}:
+   *   put:
+   *     summary: Update an existing flashcard
+   *     description: Updates a flashcard's information
+   *     tags: [Flashcards]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Flashcard ID to update
+   *         example: 1
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/CreateFlashcardRequest'
+   *     responses:
+   *       200:
+   *         description: Flashcard updated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Flashcard actualizada exitosamente
+   *                 data:
+   *                   $ref: '#/components/schemas/Flashcard'
+   *       400:
+   *         description: Bad request - Invalid input data
+   *       401:
+   *         description: Unauthorized
+   *       404:
+   *         description: Flashcard not found
    */
   updateFlashcard: BaseController.wrap(async (req, res) => {
     const { id } = req.params;
-    const result = await BaseController.updateWithValidation(
-      Flashcard.findById.bind(Flashcard),
-      FlashcardDto.validateUpdate.bind(FlashcardDto),
-      Flashcard.update.bind(Flashcard),
-      id,
-      req.body,
-      'Flashcard actualizada exitosamente'
-    );
 
-    BaseController.success(res, result.data, result.message);
+    // Verificar que la flashcard existe
+    const existingFlashcard = await Flashcard.findById(id);
+    if (!existingFlashcard) {
+      return BaseController.error(res, 'Flashcard no encontrada', 404);
+    }
+
+    // Validar datos de entrada
+    const validation = FlashcardDto.validateUpdate(req.body, id);
+
+    if (!validation.success) {
+      return BaseController.error(res, validation.message, 400, validation.errors);
+    }
+
+    // Actualizar flashcard
+    const updatedFlashcard = await Flashcard.update(id, validation.data.toUpdateModel());
+
+    BaseController.success(res, updatedFlashcard, 'Flashcard actualizada exitosamente');
   }),
 
   /**
-   * Elimina una flashcard
+   * @swagger
+   * /api/flashcards/{id}:
+   *   delete:
+   *     summary: Delete a flashcard
+   *     description: Deletes a flashcard by its ID
+   *     tags: [Flashcards]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Flashcard ID to delete
+   *         example: 1
+   *     responses:
+   *       200:
+   *         description: Flashcard deleted successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Flashcard eliminada exitosamente
+   *                 data:
+   *                   type: null
+   *       401:
+   *         description: Unauthorized
+   *       404:
+   *         description: Flashcard not found
    */
   deleteFlashcard: BaseController.wrap(async (req, res) => {
     const { id } = req.params;
@@ -101,13 +386,89 @@ export const FlashcardController = {
   }),
 
   /**
-   * Obtiene flashcards por deckId, opcionalmente filtradas por tagId
+   * @swagger
+   * /api/flashcards/deck/{deckId}:
+   *   get:
+   *     summary: Get flashcards by deck ID
+   *     description: Retrieves flashcards for a specific deck with optional pagination and tag filtering
+   *     tags: [Flashcards]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: deckId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Deck ID to get flashcards for
+   *         example: 1
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           minimum: 0
+   *           default: 0
+   *         description: Page number for pagination
+   *         example: 0
+   *       - in: query
+   *         name: pageSize
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 100
+   *           default: 50
+   *         description: Number of items per page
+   *         example: 50
+   *       - in: query
+   *         name: all
+   *         schema:
+   *           type: string
+   *           enum: [true]
+   *         description: Set to 'true' to get ALL flashcards without pagination
+   *         example: true
+   *       - in: query
+   *         name: tagId
+   *         schema:
+   *           type: integer
+   *         description: Filter flashcards by tag ID
+   *         example: 1
+   *     responses:
+   *       200:
+   *         description: Flashcards retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Flashcard'
+   *                 total:
+   *                   type: integer
+   *                   example: 63
+   *                 page:
+   *                   type: integer
+   *                   example: 0
+   *                 pageSize:
+   *                   type: integer
+   *                   example: 50
+   *                 message:
+   *                   type: string
+   *                   example: Flashcards obtenidas exitosamente
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *       404:
+   *         description: Deck not found
    */
   getFlashcardsByDeck: BaseController.wrap(async (req, res) => {
     const { deckId } = req.params;
     const parsedDeckId = BaseController.validateId(deckId);
     const page = parseInt(req.query.page || '0');
-    const pageSize = parseInt(req.query.pageSize || '15');
+    const pageSize = req.query.all === 'true' ? null : parseInt(req.query.pageSize || '50');
     const tagId = req.query.tagId ? parseInt(req.query.tagId) : null;
 
     let items, total;
@@ -115,13 +476,26 @@ export const FlashcardController = {
       // Filtrar por deck y tag
       const flashcards = await Flashcard.findByDeckIdAndTag(parsedDeckId, tagId);
       // Implementar paginación manual para resultados filtrados
-      const startIndex = page * pageSize;
-      const endIndex = startIndex + pageSize;
-      items = flashcards.slice(startIndex, endIndex);
-      total = flashcards.length;
+      if (pageSize === null) {
+        // Devolver todas las flashcards sin paginado
+        items = flashcards;
+        total = flashcards.length;
+      } else {
+        const startIndex = page * pageSize;
+        const endIndex = startIndex + pageSize;
+        items = flashcards.slice(startIndex, endIndex);
+        total = flashcards.length;
+      }
     } else {
       // Obtener todas las cards del deck
-      ({ items, total } = await Flashcard.findByDeckId(parsedDeckId, { page, pageSize }));
+      if (pageSize === null) {
+        // Devolver todas las flashcards sin paginado
+        const allFlashcards = await Flashcard.findByDeckIdAll(parsedDeckId);
+        items = allFlashcards;
+        total = allFlashcards.length;
+      } else {
+        ({ items, total } = await Flashcard.findByDeckId(parsedDeckId, { page, pageSize }));
+      }
     }
 
     res.json({
@@ -214,18 +588,19 @@ export const FlashcardController = {
 
     // Validar cada flashcard
     const validatedFlashcards = [];
-    for (const flashcard of flashcards) {
-      try {
-        const validatedData = await FlashcardDto.validateCreate(flashcard);
-        validatedFlashcards.push(validatedData);
-      } catch (err) {
+    for (const [index, flashcard] of flashcards.entries()) {
+      const validation = FlashcardDto.validateCreate(flashcard);
+
+      if (!validation.success) {
         return BaseController.error(
           res,
-          'Error de validación en una o más flashcards',
+          `Error de validación en la flashcard #${index + 1}`,
           400,
-          err.errors
+          validation.errors
         );
       }
+
+      validatedFlashcards.push(validation.data);
     }
 
     // Crear todas las flashcards

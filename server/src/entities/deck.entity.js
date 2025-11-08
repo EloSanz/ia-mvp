@@ -9,6 +9,8 @@ export class DeckEntity {
     this.description = data.description || '';
     this.userId = data.userId;
     this.coverUrl= data.coverUrl|| null;
+    this.visibility = data.visibility || 'private';
+    this.clonesCount = data.clonesCount || 0;
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
   }
@@ -22,7 +24,9 @@ export class DeckEntity {
       name: this.name,
       description: this.description,
       userId: this.userId,
-      coverUrl: this.coverUrl,  
+      coverUrl: this.coverUrl,
+      visibility: this.visibility,
+      clonesCount: this.clonesCount,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };
@@ -37,7 +41,9 @@ export class DeckEntity {
       name: prismaData.name,
       description: prismaData.description,
       userId: prismaData.userId,
-      coverUrl: prismaData.coverUrl,  
+      coverUrl: prismaData.coverUrl,
+      visibility: prismaData.visibility,
+      clonesCount: prismaData.clonesCount,
       createdAt: prismaData.createdAt,
       updatedAt: prismaData.updatedAt
     });

@@ -11,6 +11,8 @@ export class Deck {
     this.name = data.name || '';
     this.description = data.description || '';
     this.coverUrl = data.coverUrl || null;
+    this.visibility = data.visibility || 'private';
+    this.clonesCount = data.clonesCount || 0;
     this.userId = data.userId;
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
@@ -54,6 +56,14 @@ export class Deck {
    */
   static async findAll(filter = {}) {
     const entities = await DeckRepository.findAll(filter);
+    return entities.map((entity) => Deck.fromEntityWithStast(entity));
+  }
+
+  /**
+   * Obtiene todos los decks sin coverUrl (optimizado para MCP)
+   */
+  static async findAllWithoutCoverUrl(filter = {}) {
+    const entities = await DeckRepository.findAllWithoutCoverUrl(filter);
     return entities.map((entity) => Deck.fromEntityWithStast(entity));
   }
 
@@ -107,6 +117,8 @@ export class Deck {
       name: entity.name,
       description: entity.description,
       coverUrl: entity.coverUrl,
+      visibility: entity.visibility,
+      clonesCount: entity.clonesCount,
       userId: entity.userId,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt
@@ -122,6 +134,8 @@ export class Deck {
       name: entity.name,
       description: entity.description,
       coverUrl: entity.coverUrl,
+      visibility: entity.visibility,
+      clonesCount: entity.clonesCount,
       userId: entity.userId,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
@@ -138,6 +152,8 @@ export class Deck {
       name: this.name,
       description: this.description,
       coverUrl: this.coverUrl,
+      visibility: this.visibility,
+      clonesCount: this.clonesCount,
       userId: this.userId,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
