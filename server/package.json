@@ -18,6 +18,7 @@
     "start": "node src/index.js",
     "dockerStart": "node src/index.js",
     "test": "jest",
+    "test:e2e": "./test-integration.sh",
     "test:unit": "jest --testMatch=\"**/unit/**/*.test.js\" --testMatch=\"**/src/**/*.test.js\"",
     "test:integration": "jest --testMatch=\"**/integration/**/*.test.js\"",
     "test:all": "jest --testPathIgnorePatterns=\"\" --testMatch=\"**/*.test.js\"",
@@ -38,6 +39,8 @@
     "joi": "^18.0.1",
     "jsonwebtoken": "^9.0.2",
     "openai": "^5.19.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

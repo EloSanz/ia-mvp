@@ -101,7 +101,10 @@ export const ApiProvider = ({ children }) => {
     suggestTopics: (count = 3) => api.post('/api/decks/suggest-topics', { count }),
     generateWithAI: (config) => api.post('/api/decks/generate-with-ai', config, {
       timeout: 120000  // 2 minutos para generación completa
-    })
+    }),
+    // Métodos para biblioteca
+    updateVisibility: (id, visibility) => api.patch(`/api/decks/${id}/visibility`, { visibility }),
+    clone: (id) => api.post(`/api/decks/${id}/clone`)
   };
 
   // Flashcards API
@@ -190,6 +193,16 @@ export const ApiProvider = ({ children }) => {
     getGlobalStats: () => api.get('/api/study/stats')
   };
 
+  // Library API - Biblioteca pública de decks
+  const library = {
+    // Obtener todos los decks públicos
+    getAll: (search = '', sortBy = 'recent') => api.get('/api/library', {
+      params: { search, sortBy }
+    }),
+    // Obtener preview de un deck público
+    getPreview: (deckId) => api.get(`/api/library/${deckId}`)
+  };
+
   // Health check
   const health = {
     check: () => api.get('/api/health'),
@@ -202,6 +215,7 @@ export const ApiProvider = ({ children }) => {
     tags,
     sync,
     study,
+    library,
     health
   };
 

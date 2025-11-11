@@ -10,7 +10,7 @@ export class Flashcard {
   /**
    * Busca flashcards por deckId y consigna (front)
    */
-  static async searchByDeckIdAndFront(deckId, query, { page = 0, pageSize = 15 } = {}) {
+  static async searchByDeckIdAndFront(deckId, query, { page = 0, pageSize = 50 } = {}) {
     const { items, total } = await FlashcardRepository.searchByDeckIdAndFront(deckId, query, {
       page,
       pageSize
@@ -88,12 +88,20 @@ export class Flashcard {
   /**
    * Busca flashcards por deckId
    */
-  static async findByDeckId(deckId, { page = 0, pageSize = 15 } = {}) {
+  static async findByDeckId(deckId, { page = 0, pageSize = 50 } = {}) {
     const { items, total } = await FlashcardRepository.findByDeckId(deckId, { page, pageSize });
     return {
       items: items.map((entity) => Flashcard.fromEntity(entity)),
       total
     };
+  }
+
+  /**
+   * Busca TODAS las flashcards por deckId (sin paginado)
+   */
+  static async findByDeckIdAll(deckId) {
+    const flashcards = await FlashcardRepository.findByDeckIdAll(deckId);
+    return flashcards.map((entity) => Flashcard.fromEntity(entity));
   }
 
   /**
