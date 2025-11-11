@@ -5,11 +5,21 @@ on:
     workflows: ["Backend CI"]  # ✅ el nombre exacto de tu CI
     types:
       - completed              # ✅ solo cuando termine
+    branches:
+      - test 
+      - main 
 
 jobs:
   build-and-push:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # ✅ solo si CI = SUCCESS
+    name: Build and Push to Azure
+     # ✅ Asegura que SOLO se ejecute cuando CI = éxito
     runs-on: ubuntu-latest
+
+     # ✅ Asegura que SOLO se ejecute cuando CI = éxito
+    if: >
+      ${{
+        github.event.workflow_run.conclusion == 'success'
+      }}
 
     steps:
       - name: Checkout code
