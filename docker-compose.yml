@@ -18,7 +18,6 @@ services:
     env_file:
       - ./server/.env
     environment:
-
       - PORT=3000
     volumes:
       - ./server:/usr/src/app
@@ -30,8 +29,9 @@ services:
   frontend:
     build: ./web
     container_name: ia-flashcards-web
+    env_file:
+      - ./web/.env
     environment:
-      - API_UPSTREAM="http://localhost:3000"
       - VITE_API_URL=http://localhost:3000
     volumes:
       - ./web:/usr/src/app

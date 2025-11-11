@@ -125,8 +125,8 @@ az role assignment create --assignee $PRINCIPAL_ID --role AcrPull --scope $ACR_I
 
 ## 7) Variables y configuración (Nginx / API)
 
-- Nuestra imagen frontend usa `nginx.conf.template` y `docker-entrypoint.sh` para inyectar en runtime la variable `API_UPSTREAM` que controla a dónde proxear `/api`.
-- Si necesitas cambiar la URL de la API sin rebuild, configura `API_UPSTREAM` en los Application Settings del App Service.
+- Nuestra imagen frontend usa `nginx.conf.template` y `docker-entrypoint.sh` para inyectar en runtime la variable `VITE_API_URL` que controla a dónde proxear `/api`.
+- Si necesitas cambiar la URL de la API sin rebuild, configura `VITE_API_URL` en los Application Settings del App Service.
 - Las variables que empiezan con `VITE_` son sólo visibles en tiempo de build por Vite (p.ej. `VITE_API_URL`).
 
 ## 8) Dev vs Prod
