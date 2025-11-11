@@ -21,7 +21,7 @@ services:
       - PORT=3000
     volumes:
       - ./server:/usr/src/app
-      - /usr/src/app/node_modules
+      # - /usr/src/app/node_modules
     ports:
       - "3000:3000"
     command: sh -c "npm run dockerStart"
@@ -29,8 +29,9 @@ services:
   frontend:
     build: ./web
     container_name: ia-flashcards-web
+    env_file:
+      - ./web/.env
     environment:
-      - API_UPSTREAM="http://localhost:3000"
       - VITE_API_URL=http://localhost:3000
     volumes:
       - ./web:/usr/src/app
