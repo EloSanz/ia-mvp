@@ -74,8 +74,8 @@ docker tag ia-mvp-backend:latest icardflash.azurecr.io/backend:v1
 ## 3) Login y push a ACR
 
 ```powershell
-# Login en ACR (puedes usar az acr login o docker login)
-docker login icardflash.azurecr.io --username <ACR_USER> --password <ACR_PASS>
+# Login en ACR (puedes usar az acr login o docker login, si lo solicita)
+docker login icardflash.azurecr.io --username <ACR_USER> --password <ACR_PASS> 
 
 docker push icardflash.azurecr.io/frontend:v1
 docker push icardflash.azurecr.io/backend:v1
@@ -164,3 +164,29 @@ docker compose -f docker-compose.prod.yml up -d
 ---
 
 Si queréis, puedo añadir ejemplos concretos para App Service o AKS y un script `deploy.sh` para automatizar build+tag+push+deploy.
+
+
+✅ Alternativa: construir y levantar con Docker Compose
+
+Si deseás crear las imágenes automáticamente y levantar los contenedores:
+
+# Al levanatar luego de actualizar las imagenes se detecta si hubo error. Puede haber caso qeu se creen pero que no se levante el back op front
+docker compose up 
+
+Esto generará las imágenes:
+
+ia-mvp-frontend:latest
+
+ia-mvp-backend:latest
+
+Luego podés seguir con el proceso de etiquetado y push si querés subirlas a ACR.
+
+✅ 2) Etiquetado de imágenes (solo si usaste docker compose up)
+docker tag ia-mvp-frontend:latest icardflash.azurecr.io/frontend:v1
+docker tag ia-mvp-backend:latest icardflash.azurecr.io/backend:v1
+
+# Login en ACR (puedes usar az acr login o docker login, si lo solicita)
+docker login icardflash.azurecr.io --username <ACR_USER_DE_icardflash> --password <ACR_PASS_DE_icardflash> 
+
+docker push icardflash.azurecr.io/frontend:v1
+docker push icardflash.azurecr.io/backend:v1
