@@ -3,11 +3,8 @@ name: Update Azure Image
 on:
   workflow_run:
     workflows: ["Backend CI"]  # ✅ el nombre exacto de tu CI
-    types:
-      - completed              # ✅ solo cuando termine
-    branches:
-      - test 
-      - main 
+    types: [completed]         # ✅ solo cuando termine
+    branches: [main, test]
 
 jobs:
   build-and-push:
@@ -22,6 +19,9 @@ jobs:
       }}
 
     steps:
+      - name: Show event payload
+        run: echo '${{ toJson(github.event) }}'
+        
       - name: Checkout code
         uses: actions/checkout@v4
 
