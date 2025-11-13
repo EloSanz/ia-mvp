@@ -24,12 +24,13 @@ services:
       - /usr/src/app/node_modules
     ports:
       - "3000:3000"
-    command: sh -c "npm run dockerStart"  
+    command: sh -c "npm run dockerStart"
 
   frontend:
     build: ./web
     container_name: ia-flashcards-web
     environment:
+      - API_UPSTREAM="http://localhost:3000"
       - VITE_API_URL=http://localhost:3000
     volumes:
       - ./web:/usr/src/app
@@ -38,7 +39,6 @@ services:
       - "5173:5173"
     depends_on:
       - backend
-   
 
 # volumes:
 #   postgres_data:
