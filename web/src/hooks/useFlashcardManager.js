@@ -78,7 +78,15 @@ export const useFlashcardManager = (deckId) => {
 
     try {
       setEditing(true);
-      await flashcards.update(editingCard.id, editingCard);
+      const body = {// Solo los campos editables
+        front: editingCard.front,
+        back: editingCard.back,
+        deckId: editingCard.deckId,
+        difficulty: editingCard.difficulty,
+        tagId: editingCard.tagId
+      };
+      await flashcards.update(editingCard.id, body);
+
       setEditDialogOpen(false);
       setEditingCard(null);
 
