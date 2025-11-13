@@ -275,14 +275,14 @@ const DeckPage = () => {
   // Función para cambiar la visibilidad del deck
   const handleVisibilityChange = async (event) => {
     const newVisibility = event.target.checked ? 'public' : 'private';
-    
+
     try {
       setChangingVisibility(true);
       await decks.updateVisibility(deckId, newVisibility);
-      
+
       // Actualizar el deck local
       setDeck(prev => ({ ...prev, visibility: newVisibility }));
-      
+
       // Mostrar snackbar con animación
       setSnackbar({
         open: true,
@@ -468,13 +468,19 @@ const DeckPage = () => {
         {/* Información del deck */}
         {deck && (
           <Box sx={{ mb: 3 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={2}>
+            <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap"
+              flexDirection={{ xs: 'column', md: 'row' }}   // 👈 columna en mobile, fila en desktop
+              gap={2}                        // 👈 buen espaciado entre bloques
+            >
               <Box flex={1}>
                 <Typography
                   variant="h4"
                   component="h1"
                   gutterBottom
-                  sx={{ fontFamily: muiTheme.fontFamily, fontWeight: 'bold' }}
+                  sx={{
+                    fontFamily: muiTheme.fontFamily, fontWeight: 'bold',
+                    fontSize: { xs: '1.5rem', md: '2rem' }, // 👈 tamaño de título adaptativo
+                  }}
                 >
                   {deck.name}
                 </Typography>
@@ -488,13 +494,13 @@ const DeckPage = () => {
                   </Typography>
                 )}
               </Box>
-              
+
               {/* Visibility Toggle */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
+              <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
                 gap: 2,
-                flexDirection: 'column'
+                flexDirection: { xs: 'row', md: 'column' }, // 👈 en mobile, en fila; en desktop, en columna
               }}>
                 <FormControlLabel
                   control={
