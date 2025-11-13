@@ -64,7 +64,7 @@ export default function LibraryPreviewPage() {
     try {
       setCloning(true);
       await decksApi.clone(deckId);
-      
+
       // Efecto confetti
       confetti({
         particleCount: 100,
@@ -142,7 +142,9 @@ export default function LibraryPreviewPage() {
 
         {/* Header */}
         <Paper sx={{ p: 3, mb: 3 }}>
-          <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={2}>
+          <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={2}
+            flexDirection={{ xs: 'column', md: 'row' }}
+          >
             <Box flex={1}>
               <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
                 {deck.name}
