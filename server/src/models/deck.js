@@ -18,6 +18,7 @@ export class Deck {
     this.updatedAt = data.updatedAt || new Date();
     // Agregado para conservar estadísticas
     this.stats = data.stats || null;
+    this.tags = data.tags || [];
   }
 
   /**
@@ -121,12 +122,13 @@ export class Deck {
       clonesCount: entity.clonesCount,
       userId: entity.userId,
       createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt
+      updatedAt: entity.updatedAt,
+      tags: entity.tags
     });
   }
 
   /**
-  * Convierte una entidad a modelo
+  * Convierte una entidad a modelo con estadísticas
   */
   static fromEntityWithStast(entity) {
     return new Deck({
@@ -139,7 +141,8 @@ export class Deck {
       userId: entity.userId,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
-      stats: entity.stats
+      stats: entity.stats,
+      tags: entity.tags
     });
   }
 
@@ -158,7 +161,8 @@ export class Deck {
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       // Agregado para enviar stats
-      stats: this.stats
+      stats: this.stats,
+      tags: this.tags
     };
   }
 }

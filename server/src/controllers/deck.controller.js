@@ -57,13 +57,13 @@ export const DeckController = {
    * /api/decks/mcp:
    *   get:
    *     summary: Get all decks for the authenticated user (MCP optimized)
-   *     description: Retrieves all flashcard decks owned by the authenticated user without cover images, optimized for MCP tools
+   *     description: Retrieves all flashcard decks owned by the authenticated user without cover images, optimized for MCP tools, including tags for each deck
    *     tags: [Decks]
    *     security:
    *       - bearerAuth: []
    *     responses:
    *       200:
-   *         description: Decks retrieved successfully (without cover images)
+   *         description: Decks retrieved successfully (without cover images, with tags)
    *         content:
    *           application/json:
    *             schema:
