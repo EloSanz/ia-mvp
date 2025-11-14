@@ -16,6 +16,14 @@ import { requestLogger, apiLogger, errorLogger } from './middlewares/logging.mid
 import { getQueryStats } from './config/database.js';
 import { swaggerUi, specs } from './config/swagger.config.js';
 import { BaseController } from './controllers/base.controller.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Define __dirname para módulos ES
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 
@@ -108,3 +116,21 @@ app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`API on :${PORT}`);
 });
+
+const migrationFlagPath = path.join(__dirname, 'migration_done.txt');
+
+(async () => {
+  if (!fs.existsSync(migrationFlagPath)) {
+    console.log('Ejecutando script de migración de imágenes a Cloudinary...');
+
+    try {
+      await import('../scripts/migrate_images_to_cloudinary.js');
+      fs.writeFileSync(migrationFlagPath, 'La migración se ejecutó el ' + new Date().toISOString());
+      console.log('Migración completada y registrada.');
+    } catch (error) {
+      console.error('Error durante la migración:', error);
+    }
+  } else {
+    console.log('La migración ya se ejecutó previamente.');
+  }
+})();
