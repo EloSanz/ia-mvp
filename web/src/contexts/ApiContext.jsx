@@ -80,15 +80,6 @@ export const useApi = () => {
   return context;
 };
 
-// Interceptor para agregar el token de autenticación
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
 export const ApiProvider = ({ children }) => {
   // Decks API
   const decks = {
@@ -209,6 +200,12 @@ export const ApiProvider = ({ children }) => {
     detailed: () => api.get('/api/health/detailed')
   };
 
+  // Auth API
+  const auth = {
+    login: (username, password) => api.post('/api/auth/login', { username, password }),
+    register: (username, password) => api.post('/api/auth/register', { username, password })
+  };
+
   const value = {
     decks,
     flashcards,
@@ -216,7 +213,8 @@ export const ApiProvider = ({ children }) => {
     sync,
     study,
     library,
-    health
+    health,
+    auth
   };
 
   return <ApiContext.Provider value={value}>{children}</ApiContext.Provider>;
