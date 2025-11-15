@@ -19,8 +19,11 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
+        # Cachear dependencias para ambos, frontend y backend
         cache: 'npm'
-        cache-dependency-path: server/package-lock.json
+        cache-dependency-path: |
+          server/package-lock.json
+          web/package-lock.json
 
     - name: Install dependencies
       working-directory: ./server
@@ -69,6 +72,7 @@ jobs:
       run: |
         echo "NODE_ENV=test" > .env
         echo "DATABASE_URL=postgresql://postgres:testpassword@localhost:5432/testdb" >> .env
+        echo "DIRECT_URL="" >> .env
         echo "JWT_SECRET=test_jwt_secret_key_for_ci" >> .env
         echo "OPENAI_API_KEY=test_key" >> .env
 
@@ -121,7 +125,9 @@ jobs:
         # Usamos docker build para construir y etiquetar directamente, es más limpio en CI.
         # docker-compose build no siempre se comporta como se espera en estos entornos.
         run: |
-          docker build -t ${{ env.AZURE_REGISTRY_LOGIN_SERVER }}/frontend:${{ env.IMAGE_TAG }} -f web/Dockerfile ./web
+          # El contexto de build debe ser la raíz (.) para que pueda encontrar la carpeta 'web'
+          docker build -t ${{ env.AZURE_REGISTRY_LOGIN_SERVER }}/frontend:${{ env.IMAGE_TAG }} -f web/Dockerfile .
+          # El contexto de build debe ser la raíz (.) para que pueda encontrar la carpeta 'server'
           docker build -t ${{ env.AZURE_REGISTRY_LOGIN_SERVER }}/backend:${{ env.IMAGE_TAG }} -f server/Dockerfile ./server
 
       - name: Push Docker images to Azure
