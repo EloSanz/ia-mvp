@@ -80,14 +80,7 @@ export const useApi = () => {
   return context;
 };
 
-// Interceptor para agregar el token de autenticación
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// Interceptor duplicado removido - el token ya se maneja en el primer interceptor
 
 export const ApiProvider = ({ children }) => {
   // Decks API
