@@ -287,6 +287,23 @@
           }
         },
         {
+          "name": "Get Deck Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/decks/8/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "decks", "8", "stats"]
+            }
+          }
+        },
+        {
           "name": "Suggest Topics (AI)",
           "request": {
             "method": "POST",

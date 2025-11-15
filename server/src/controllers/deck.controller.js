@@ -1048,5 +1048,257 @@ export const DeckController = {
       console.error('Error clonando deck:', error);
       BaseController.error(res, `Error al clonar deck: ${error.message}`, 500);
     }
+  }),
+
+  /**
+   * @swagger
+   * /api/decks/{deckId}/stats:
+   *   get:
+   *     summary: Get detailed statistics for a specific deck
+   *     description: Returns comprehensive statistics for a deck including content metrics, organization status, and study progress
+   *     tags: [Decks]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: deckId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Deck ID to get statistics for
+   *         example: 1
+   *     responses:
+   *       200:
+   *         description: Deck statistics retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "Estadísticas del deck obtenidas exitosamente"
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     deckId:
+   *                       type: integer
+   *                       example: 1
+   *                     deckName:
+   *                       type: string
+   *                       example: "Japanese Learning"
+   *                     stats:
+   *                       type: object
+   *                       properties:
+   *                         totalFlashcards:
+   *                           type: integer
+   *                           example: 25
+   *                         untaggedFlashcards:
+   *                           type: integer
+   *                           example: 5
+   *                         taggedFlashcards:
+   *                           type: integer
+   *                           example: 20
+   *                         flashcardsByDifficulty:
+   *                           type: object
+   *                           properties:
+   *                             "1":
+   *                               type: integer
+   *                               example: 8
+   *                             "2":
+   *                               type: integer
+   *                               example: 12
+   *                             "3":
+   *                               type: integer
+   *                               example: 5
+   *                         flashcardsByTag:
+   *                           type: array
+   *                           items:
+   *                             type: object
+   *                             properties:
+   *                               tagId:
+   *                                 type: integer
+   *                                 example: 1
+   *                               tagName:
+   *                                 type: string
+   *                                 example: "Grammar"
+   *                               count:
+   *                                 type: integer
+   *                                 example: 10
+   *                               percentage:
+   *                                 type: number
+   *                                 example: 40.0
+   *                         organizationMetrics:
+   *                           type: object
+   *                           properties:
+   *                             organizationPercentage:
+   *                               type: number
+   *                               example: 80.0
+   *                             organizationStatus:
+   *                               type: string
+   *                               enum: [empty, needs_organization, organized]
+   *                               example: "organized"
+   *                             tagsCount:
+   *                               type: integer
+   *                               example: 3
+   *                             averageTagsPerFlashcard:
+   *                               type: number
+   *                               example: 1.0
+   *                         studyMetrics:
+   *                           type: object
+   *                           properties:
+   *                             totalReviews:
+   *                               type: integer
+   *                               example: 150
+   *                             averageDifficulty:
+   *                               type: number
+   *                               example: 2.1
+   *                             lastStudied:
+   *                               type: string
+   *                               format: date-time
+   *                               nullable: true
+   *                               example: "2025-11-15T10:30:00Z"
+   *                     lastUpdated:
+   *                       type: string
+   *                       format: date-time
+   *                       example: "2025-11-15T11:45:00Z"
+   *       403:
+   *         description: Forbidden - User does not own this deck
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       404:
+   *         description: Deck not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+
+  /**
+   * Obtiene estadísticas detalladas de un deck
+   */
+  getDeckStats: BaseController.wrap(async (req, res) => {
+    const { deckId } = req.params;
+    const parsedDeckId = BaseController.validateId(deckId);
+
+    // Verificar que el deck pertenece al usuario
+    const deck = await Deck.findById(parsedDeckId);
+    if (!deck || deck.userId !== req.userId) {
+      throw new ForbiddenError('No tienes permiso para ver este deck');
+    }
+
+    // Obtener todas las flashcards del deck con sus tags
+    const { FlashcardRepository } = await import('../repositories/flashcard.repository.js');
+    const flashcards = await FlashcardRepository.findByDeckIdAll(parsedDeckId);
+
+    // Estadísticas básicas
+    const totalFlashcards = flashcards.length;
+    const untaggedFlashcards = flashcards.filter(f => !f.tagId).length;
+    const taggedFlashcards = totalFlashcards - untaggedFlashcards;
+
+    // Distribución por dificultad
+    const flashcardsByDifficulty = {
+      1: flashcards.filter(f => f.difficulty === 1).length,
+      2: flashcards.filter(f => f.difficulty === 2).length,
+      3: flashcards.filter(f => f.difficulty === 3).length,
+      4: 0, // No existe dificultad 4 en el esquema actual
+      5: 0  // No existe dificultad 5 en el esquema actual
+    };
+
+    // Distribución por tags (cada flashcard tiene máximo 1 tag)
+    const tagMap = new Map();
+    flashcards.forEach(flashcard => {
+      if (flashcard.tag) {
+        const tagId = flashcard.tag.id;
+        const tagName = flashcard.tag.name;
+        if (tagMap.has(tagId)) {
+          tagMap.get(tagId).count++;
+        } else {
+          tagMap.set(tagId, {
+            tagId,
+            tagName,
+            count: 1
+          });
+        }
+      }
+    });
+
+    const flashcardsByTag = Array.from(tagMap.values())
+      .map(tag => ({
+        ...tag,
+        percentage: totalFlashcards > 0 ? Math.round((tag.count / totalFlashcards) * 100 * 10) / 10 : 0
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    // Métricas de organización
+    const organizationPercentage = totalFlashcards > 0
+      ? Math.round((taggedFlashcards / totalFlashcards) * 100 * 10) / 10
+      : 0;
+
+    const organizationStatus =
+      totalFlashcards === 0 ? 'empty' :
+      untaggedFlashcards > 0 ? 'needs_organization' :
+      'organized';
+
+    // Calcular promedio de tags por flashcard (máximo 1 en el esquema actual)
+    const totalTagsAssigned = taggedFlashcards; // Ya que cada flashcard tagged tiene exactamente 1 tag
+    const averageTagsPerFlashcard = totalFlashcards > 0
+      ? Math.round((totalTagsAssigned / totalFlashcards) * 10) / 10
+      : 0;
+
+    // Métricas de estudio (basadas en campos disponibles)
+    const totalReviews = flashcards.reduce((sum, f) => sum + (f.reviewCount || 0), 0);
+
+    // Calcular dificultad promedio
+    const averageDifficulty = totalFlashcards > 0
+      ? flashcards.reduce((sum, f) => sum + (f.difficulty || 2), 0) / totalFlashcards
+      : 0;
+
+    // Encontrar última fecha de estudio
+    const lastStudiedDates = flashcards
+      .map(f => f.lastReviewed)
+      .filter(date => date !== null);
+
+    const lastStudied = lastStudiedDates.length > 0
+      ? new Date(Math.max(...lastStudiedDates.map(d => new Date(d).getTime()))).toISOString()
+      : null;
+
+    // Nota: No podemos calcular accuracy, correctReviews, etc. sin modelo Review
+    // Por ahora retornamos valores básicos o null
+
+    const response = {
+      deckId: parsedDeckId,
+      deckName: deck.name,
+      stats: {
+        totalFlashcards,
+        untaggedFlashcards,
+        taggedFlashcards,
+        flashcardsByDifficulty,
+        flashcardsByTag,
+        organizationMetrics: {
+          organizationPercentage,
+          organizationStatus,
+          tagsCount: flashcardsByTag.length,
+          averageTagsPerFlashcard
+        },
+        studyMetrics: {
+          totalReviews,
+          correctReviews: null, // No disponible sin modelo Review
+          incorrectReviews: null, // No disponible sin modelo Review
+          accuracyRate: null, // No disponible sin modelo Review
+          averageDifficulty: Math.round(averageDifficulty * 10) / 10,
+          lastStudied,
+          currentStreak: null // No disponible sin modelo Review detallado
+        }
+      },
+      lastUpdated: new Date().toISOString()
+    };
+
+    BaseController.success(res, response, 'Estadísticas del deck obtenidas exitosamente');
   })
 };
