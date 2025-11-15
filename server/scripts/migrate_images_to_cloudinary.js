@@ -9,13 +9,13 @@ const prisma = new PrismaClient();
 
         // Obtener todos los decks con imágenes en base64
         const decks = await prisma.deck.findMany({
+            // Busca decks cuyo coverUrl no sea nulo y NO empiece con 'http'
+            // Esto seleccionará solo los que tienen base64.
             where: {
-                coverUrl: {
-                    not: {
-                        startsWith: 'https:',
-                    },
-                    not: null,
-                },
+                coverUrl: { not: null },
+                NOT: {
+                    coverUrl: { startsWith: 'http' }
+                }
             },
         });
 

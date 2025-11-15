@@ -1,19 +1,18 @@
-# Despliegue y publicación de imágenes Docker (resumen para el equipo)
+# Guía de Despliegue en Azure
 
-Este documento resume los pasos para construir imágenes Docker del frontend y backend, etiquetarlas, subirlas a Azure Container Registry (ACR) y desplegarlas en Azure App Service o mediante docker-compose en producción. Incluye comandos y fallos comunes para facilitar el trabajo del equipo.
+Este documento describe el proceso completo para construir, publicar y desplegar las imágenes Docker de la aplicación en Azure. Se divide en dos flujos principales: el despliegue manual desde una máquina local y el despliegue automatizado a través de nuestro pipeline de CI/CD.
 
-## Nota sobre el ACR usado en este proyecto
+---
 
-En este repositorio usamos el registro de contenedores `icardflash.azurecr.io` (creado desde el Portal de Azure). En todas las instrucciones de este documento puedes sustituir `icardflash` por el nombre de tu propio ACR si vas a usar un registry distinto.
+## 0. Prerrequisitos y Configuración Inicial de Azure
 
-Si prefieres que cada desarrollador tenga su propio registry para pruebas, cualquiera puede crear uno con Azure CLI. Ejemplo:
+Antes de poder desplegar, necesitas un **Azure Container Registry (ACR)** para almacenar las imágenes Docker.
+
+**ACR del Proyecto:** `icardflash.azurecr.io`
 
 ```powershell
-# Crear un Azure Container Registry (reemplaza <ACR_NAME> y <RG_NAME>)
-az acr create --resource-group <RG_NAME> --name <ACR_NAME> --sku Basic --location "Canada Central"
-
-# Ejemplo real:
-az acr create --resource-group rg-icardflash --name willianicardacr --sku Basic --location "Canada Central"
+# Si necesitas crear tu propio ACR para pruebas:
+az acr create --resource-group <TU_RESOURCE_GROUP> --name <TU_ACR_NAME> --sku Basic --location "Canada Central"
 ```
 
 Autenticación y push de imágenes:
@@ -171,7 +170,7 @@ Si queréis, puedo añadir ejemplos concretos para App Service o AKS y un script
 Si deseás crear las imágenes automáticamente y levantar los contenedores:
 
 # Al levanatar luego de actualizar las imagenes se detecta si hubo error. Puede haber caso qeu se creen pero que no se levante el back op front
-docker compose up 
+docker compose up --build
 
 Esto generará las imágenes:
 

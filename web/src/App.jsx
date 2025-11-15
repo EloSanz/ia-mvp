@@ -21,29 +21,30 @@ export default function App() {
   return (
     <ThemeProvider>
       <CssBaseline />
-      <AuthProvider>
+      <Router>
         <ApiProvider>
-          <ThemeContext.Consumer>
-            {({ themeName, themes }) => (
-              <div style={{ position: 'fixed', inset: 0, zIndex: -1 }}>
-                {themeName === 'kyoto' && themes.kyoto.customBackground?.image && (
-                  <div
-                    style={{
-                      width: '100vw',
-                      height: '100vh',
-                      background: `url(${themes.kyoto.customBackground.image}) center center / cover no-repeat`,
-                      filter: `blur(${themes.kyoto.customBackground.blur}px) brightness(${themes.kyoto.customBackground.brightness})`,
-                      opacity: themes.kyoto.customBackground.opacity,
-                      position: 'fixed',
-                      inset: 0,
-                      zIndex: -1
-                    }}
-                  />
-                )}
-              </div>
-            )}
-          </ThemeContext.Consumer>
-          <Router>
+          <AuthProvider>
+            {/* El ThemeContext.Consumer puede ir aquí si es necesario, o refactorizarlo a un hook */}
+            <ThemeContext.Consumer>
+              {({ themeName, themes }) => (
+                <div style={{ position: 'fixed', inset: 0, zIndex: -1 }}>
+                  {themeName === 'kyoto' && themes.kyoto.customBackground?.image && (
+                    <div
+                      style={{
+                        width: '100vw',
+                        height: '100vh',
+                        background: `url(${themes.kyoto.customBackground.image}) center center / cover no-repeat`,
+                        filter: `blur(${themes.kyoto.customBackground.blur}px) brightness(${themes.kyoto.customBackground.brightness})`,
+                        opacity: themes.kyoto.customBackground.opacity,
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: -1
+                      }}
+                    />
+                  )}
+                </div>
+              )}
+            </ThemeContext.Consumer>
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
@@ -97,9 +98,9 @@ export default function App() {
                 }
               />
             </Routes>
-          </Router>
+          </AuthProvider>
         </ApiProvider>
-      </AuthProvider>
+      </Router>
     </ThemeProvider>
   );
 }

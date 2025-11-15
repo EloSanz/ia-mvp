@@ -20,6 +20,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import os from 'os';
 
 // Define __dirname para módulos ES
 const __filename = fileURLToPath(import.meta.url);
@@ -53,6 +54,9 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
   customSiteTitle: 'iCards API Documentation',
   customfavIcon: '/favicon.ico'
 }));
+
+// Root route for health checks
+app.get('/', (_req, res) => res.status(200).send('API is running.'));
 
 // Health check route
 app.get('/api/health', (_req, res) => BaseController.success(res, { ok: true }, 'Health check exitoso'));
@@ -111,26 +115,34 @@ app.use(errorLogger);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   // Permitimos este console.log para información de inicio del servidor
   // eslint-disable-next-line no-console
   console.log(`API on :${PORT}`);
+
+  // Ejecutar la migración de imágenes en segundo plano DESPUÉS de que el servidor haya arrancado.
+  runImageMigrationInBackground();
 });
 
-const migrationFlagPath = path.join(__dirname, 'migration_done.txt');
+// Usamos el directorio temporal del sistema operativo (os.tmpdir()) para el archivo de bandera.
+// Esto asegura que funcione tanto en Windows (local) como en Linux (Docker/Azure).
+const migrationFlagPath = path.join(os.tmpdir(), 'icards_migration_done.txt');
 
-(async () => {
+async function runImageMigrationInBackground() {
   if (!fs.existsSync(migrationFlagPath)) {
     console.log('Ejecutando script de migración de imágenes a Cloudinary...');
 
     try {
+      // Usamos un import() dinámico para ejecutar el script como un módulo separado.
       await import('../scripts/migrate_images_to_cloudinary.js');
       fs.writeFileSync(migrationFlagPath, 'La migración se ejecutó el ' + new Date().toISOString());
-      console.log('Migración completada y registrada.');
+      console.log('Migración registrada y en proceso.');
     } catch (error) {
       console.error('Error durante la migración:', error);
     }
   } else {
-    console.log('La migración ya se ejecutó previamente.');
+    console.log('La migración de sistema de imagenes ya se ejecutó previamente.');
   }
-})();
+}
+
+export default server; // Exportar el servidor para pruebas de integración
