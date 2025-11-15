@@ -86,3 +86,5 @@ Genera una **ilustración abstracta y conceptual** para una cubierta/tarjeta.
     return { base64: null, error };
   }
 }
+
+

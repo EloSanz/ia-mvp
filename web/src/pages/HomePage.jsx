@@ -157,14 +157,13 @@ const HomePage = () => {
   /***Interval para monitorisar la deck creada */
   useEffect(() => {
     let interval;
-    if (deckMonitory && !deckMonitory.coverUrl) {
+    if (deckMonitory && !deckMonitory.coverUrl.startsWith('https:')) {
       interval = setInterval(async () => {
         try {
           const { data: updated } = await decks.getById(deckMonitory.id);
-          if (updated.data.coverUrl) {
+          if (updated.data.coverUrl.startsWith('https:')) {
             setDecksList((prev) => prev.map((d) => (d.id === updated.data.id ? updated.data : d)));
             setDeckMonitory(null); // dejar de monitorear
-            // loadDecks();             // refresca lista completa
             clearInterval(interval);
           }
         } catch (err) {
