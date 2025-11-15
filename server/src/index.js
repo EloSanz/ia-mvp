@@ -34,7 +34,11 @@ app.use(apiLogger);     // Logging específico de API
 
 // Middlewares
 app.use(cors());
-app.use(express.json());
+// Usamos una configuración más robusta para express.json() para asegurar
+// que el cuerpo de la petición se parsee correctamente incluso detrás de un proxy.
+app.use(express.json({
+  type: ['application/json', 'application/vnd.api+json', 'text/plain']
+}));
 
 // Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {

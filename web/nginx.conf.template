@@ -14,14 +14,23 @@ server {
   }
 
   # Proxy API requests to backend (set VITE_API_URL env var to e.g. http://backend:3000)
-  location /api/ {
-    proxy_pass ${NGINX_PROXY_URL};
+  # La barra al final de /api/ es importante para que coincida con la barra en proxy_pass
+  location /api/ { 
+    # La barra al final aquí asegura que /api/ se reemplace correctamente.
+    # Ejemplo: /api/auth/login -> http://backend:3000/api/auth/login
+    proxy_pass ${NGINX_PROXY_URL}; 
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_http_version 1.1;
     proxy_set_header Connection "";
+    # Asegura que el cuerpo de la petición (POST data) se reenvíe correctamente.
+    proxy_set_header Content-Length $content_length;
+
+    # Para depuración: Añade una cabecera a la respuesta para confirmar que el proxy se usó.
+    # La directiva 'always' asegura que se añada incluso en respuestas de error (4xx, 5xx).
+    add_header X-Proxy-Status "Active" always;
   }
 
   # Optional: serve compressed files if present

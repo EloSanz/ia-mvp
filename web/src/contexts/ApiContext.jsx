@@ -3,6 +3,10 @@ import axios from 'axios';
 
 // Configurar axios con la URL base
 const api = axios.create({
+  // Usamos una ruta relativa para que Nginx pueda actuar como proxy.
+  // Esto desacopla el frontend de la URL del backend, haciéndolo portable.
+  // Vite se encargará de redirigir esto a `localhost:3000` en desarrollo local gracias a `vite.config.js`.
+  // baseURL: '/',
   //timeout y  20000, bajar a 10000 cuando la IA esté optimizada y el backend pueda manejarlo
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
   timeout: 20000,
@@ -170,6 +174,7 @@ export const ApiProvider = ({ children }) => {
     // Revisar card
     reviewCard: (sessionId, cardId, difficulty, responseTime) =>
       api.post(`/api/study/${sessionId}/review`, {
+
         cardId,
         difficulty,
         responseTime
