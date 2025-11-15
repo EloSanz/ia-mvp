@@ -6,7 +6,7 @@ import { deckGeneratorService } from '../services/deckGenerator.service.js';
 import { TagRepository } from '../repositories/tag.repository.js';
 import { FlashcardRepository } from '../repositories/flashcard.repository.js';
 import { generateDeckCoverBase64 } from '../services/aiImage.service.js';
-import { uploadImageToCloudinary } from '../utils/cloudinary.js';
+import { uploadImageToCloudinary, deleteImageFromCloudinary } from '../utils/cloudinary.js';
 
 export const DeckController = {
   /**
@@ -240,20 +240,20 @@ export const DeckController = {
                 console.log("✅ ~ URL de la imagen subida a Cloudinary:", url);
 
               } catch (uploadError) {
-                console.error(`❌ Error subiendo la imagen a Cloudinary para deck ${deckId}:`, uploadError);
+                console.error(`❌ Error subiendo la imagen a Cloudinary para deck ${deck.id}:`, uploadError);
               }
               try {
                 // Actualizar la URL de la imagen en la base de datos
-                await Deck.update(deckId, { coverUrl: url });
+                await Deck.update(deck.id, { coverUrl: url });
               } catch (updateError) {
-                console.error(`❌ Error asignando la imagen para deck ${deckId}:`, updateError);
+                console.error(`❌ Error asignando la imagen para deck ${deck.id}:`, updateError);
               }
-              console.log(`✅ Portada generada y subida exitosamente para deck ${deckId}`);
+              console.log(`✅ Portada generada y subida exitosamente para deck ${deck.id}`);
             } else {
-              console.error(`❌ Error generando portada para deck ${deckId}:`, result.error);
+              console.error(`❌ Error generando portada para deck ${deck.id}:`, result.error);
             }
           } catch (error) {
-            console.error(`❌ Error generando portada para deck ${deckId}:`, error);
+            console.error(`❌ Error generando portada para deck ${deck.id}:`, error);
           }
 
         })();
@@ -413,6 +413,12 @@ export const DeckController = {
 
     if (existingDeck.userId !== req.userId) {
       throw new ForbiddenError('No tienes permiso para eliminar este deck');
+    }
+
+    // Eliminar la imagen de portada de Cloudinary si existe
+    if (existingDeck.coverUrl) {
+      console.log(`Eliminando imagen de portada para deck ${id}: ${existingDeck.coverUrl}`);
+      await deleteImageFromCloudinary(existingDeck.coverUrl);
     }
 
     await Deck.delete(id);
