@@ -233,27 +233,22 @@ export const DeckController = {
             const result = await generateDeckCoverBase64(name, description);
 
             if (result.base64) {
-              let url = null;
               try {
                 const formattedBase64 = `data:image/png;base64,${result.base64}`;
-                url = await uploadImageToCloudinary(formattedBase64, 'ICards');
+                const url = await uploadImageToCloudinary(formattedBase64, 'ICards');
                 console.log("✅ ~ URL de la imagen subida a Cloudinary:", url);
 
+                // Actualizar el deck con la URL de la imagen
+                await Deck.update(deck.id, { coverUrl: url });
+                console.log(`✅ Portada generada y asignada exitosamente para deck ${deck.id}`);
               } catch (uploadError) {
-                console.error(`❌ Error subiendo la imagen a Cloudinary para deck ${deckId}:`, uploadError);
+                console.error(`❌ Error subiendo la imagen a Cloudinary para deck ${deck.id}:`, uploadError);
               }
-              try {
-                // Actualizar la URL de la imagen en la base de datos
-                await Deck.update(deckId, { coverUrl: url });
-              } catch (updateError) {
-                console.error(`❌ Error asignando la imagen para deck ${deckId}:`, updateError);
-              }
-              console.log(`✅ Portada generada y subida exitosamente para deck ${deckId}`);
             } else {
-              console.error(`❌ Error generando portada para deck ${deckId}:`, result.error);
+              console.error(`❌ Error generando la imagen base64 para deck ${deck.id}:`, result.error);
             }
           } catch (error) {
-            console.error(`❌ Error generando portada para deck ${deckId}:`, error);
+            console.error(`❌ Error en el proceso de generación de portada para deck ${deck.id}:`, error);
           }
 
         })();
@@ -1026,7 +1021,7 @@ export const DeckController = {
 
       // Clonar flashcards con tags
       const prisma = (await import('../config/database.js')).default;
-      
+
       // Primero clonar los tags
       const tagMapping = new Map();
       if (sourceDeck.tags && sourceDeck.tags.length > 0) {

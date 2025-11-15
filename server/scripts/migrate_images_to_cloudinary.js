@@ -30,6 +30,7 @@ const prisma = new PrismaClient();
             try {
                 console.log(`Migrando imagen del deck con ID ${deck.id}...`);
 
+                // Si la URL ya es de Cloudinary, saltar. No debería pasar por el filtro, pero por si acaso.
                 if (deck.coverUrl.startsWith('https:')) {
                     console.log(`Deck ${deck.id} ya tiene una URL válida en Cloudinary. Se omite.`);
                     continue;

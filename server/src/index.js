@@ -137,6 +137,7 @@ async function runImageMigrationInBackground() {
       await import('../scripts/migrate_images_to_cloudinary.js');
       fs.writeFileSync(migrationFlagPath, 'La migración se ejecutó el ' + new Date().toISOString());
       console.log('Migración registrada y en proceso.');
+      console.log('Proceso de verificación de migración completado y registrado.');
     } catch (error) {
       console.error('Error durante la migración:', error);
     }
