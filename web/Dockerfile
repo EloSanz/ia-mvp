@@ -2,11 +2,11 @@
 FROM node:20-alpine as builder
 WORKDIR /app
 
-COPY package*.json ./
+COPY web/package*.json ./
 RUN npm install --production=false
 
 
-COPY . .
+COPY web/ .
 RUN npm run build
 
 # Etapa 2: Servir con Nginx
@@ -18,13 +18,12 @@ RUN apk add --no-cache gettext
 WORKDIR /usr/share/nginx/html
 
 # Copiar build estático
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist .
 
 # Copiar plantilla de nginx y script de entrada para renderizar variables de entorno
-COPY nginx.conf.template /etc/nginx/templates/nginx.conf.template
-COPY docker-entrypoint.sh /docker-entrypoint.sh
+COPY web/nginx.conf.template /etc/nginx/templates/nginx.conf.template
+COPY web/docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
-
 
 
 EXPOSE 80

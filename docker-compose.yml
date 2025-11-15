@@ -13,7 +13,9 @@ services:
   #     - "5432:5432"
 
   backend:
-    build: ./server
+    build:
+      context: .
+      dockerfile: server/Dockerfile
     container_name: ia-flashcards-api
     env_file:
       - ./server/.env
@@ -21,13 +23,14 @@ services:
       - PORT=3000
     volumes:
       - ./server:/usr/src/app
-      # - /usr/src/app/node_modules
     ports:
       - "3000:3000"
     command: sh -c "npm run dockerStart"
 
   frontend:
-    build: ./web
+    build:
+      context: .
+      dockerfile: web/Dockerfile
     container_name: ia-flashcards-web
     env_file:
       - ./web/.env
@@ -35,7 +38,6 @@ services:
       - VITE_API_URL=http://localhost:3000
     volumes:
       - ./web:/usr/src/app
-      - /usr/src/app/node_modules
     ports:
       - "5173:5173"
     depends_on:
