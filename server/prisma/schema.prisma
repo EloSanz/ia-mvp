@@ -6,7 +6,10 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // Usa el pooler para la app.
+  url = env("DATABASE_URL")
+  // Usa la conexión directa para migraciones. Si no existe, usa la URL principal.
+  // Esto asegura compatibilidad con entornos locales que no tienen un pooler.
   directUrl = env("DIRECT_URL")
 }
 
