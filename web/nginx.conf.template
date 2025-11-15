@@ -15,7 +15,7 @@ server {
 
   # Proxy API requests to backend (set VITE_API_URL env var to e.g. http://backend:3000)
   location /api/ {
-    proxy_pass ${VITE_API_URL};
+    proxy_pass ${NGINX_PROXY_URL};
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

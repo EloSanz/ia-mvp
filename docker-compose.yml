@@ -37,7 +37,7 @@ services:
     # Esta variable ahora es para Nginx en tiempo de ejecución, no para Vite en tiempo de construcción.
     # Apunta al servicio 'backend' en el puerto 3000 dentro de la red de Docker.
     environment:
-      - VITE_API_URL=http://backend:3000
+      - NGINX_PROXY_URL=http://backend:3000
     volumes:
       - ./web:/usr/src/app
     ports:
