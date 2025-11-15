@@ -468,10 +468,7 @@ const DeckPage = () => {
         {/* Información del deck */}
         {deck && (
           <Box sx={{ mb: 3 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap"
-              flexDirection={{ xs: 'column', md: 'row' }}   // 👈 columna en mobile, fila en desktop
-              gap={2}                        // 👈 buen espaciado entre bloques
-            >
+            <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={2}>
               <Box flex={1}>
                 <Typography
                   variant="h4"
@@ -494,13 +491,13 @@ const DeckPage = () => {
                   </Typography>
                 )}
               </Box>
-
+              
               {/* Visibility Toggle */}
-              <Box sx={{
-                display: 'flex',
-                alignItems: 'center',
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
                 gap: 2,
-                flexDirection: { xs: 'row', md: 'column' }, // 👈 en mobile, en fila; en desktop, en columna
+                flexDirection: 'column'
               }}>
                 <FormControlLabel
                   control={

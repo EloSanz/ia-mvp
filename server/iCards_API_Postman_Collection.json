@@ -113,7 +113,8 @@
               "raw": "{{base_url}}/api/decks/mcp",
               "host": ["{{base_url}}"],
               "path": ["api", "decks", "mcp"]
-            }
+            },
+            "description": "Retrieves all flashcard decks owned by the authenticated user without cover images, optimized for MCP tools. Includes tags for each deck."
           }
         },
         {

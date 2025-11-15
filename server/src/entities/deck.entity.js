@@ -13,6 +13,7 @@ export class DeckEntity {
     this.clonesCount = data.clonesCount || 0;
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
+    this.tags = data.tags || [];
   }
 
   /**
@@ -45,7 +46,8 @@ export class DeckEntity {
       visibility: prismaData.visibility,
       clonesCount: prismaData.clonesCount,
       createdAt: prismaData.createdAt,
-      updatedAt: prismaData.updatedAt
+      updatedAt: prismaData.updatedAt,
+      tags: prismaData.tags || []
     });
   }
 
