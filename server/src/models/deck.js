@@ -1,5 +1,6 @@
 import { DeckEntity } from '../entities/deck.entity.js';
 import { DeckRepository } from '../repositories/deck.repository.js';
+import { uploadImageToCloudinary } from '../utils/cloudinary.js';
 
 /**
  * Deck - Modelo de dominio con lógica de negocio
@@ -22,7 +23,7 @@ export class Deck {
   }
 
   /**
-   * Crea un nuevo deck aplicando reglas de negocio
+   * Crea un nuevo deck aplicando reglas de negocio .
    */
   static async create(deckData) {
     const deck = new Deck(deckData);
@@ -31,6 +32,7 @@ export class Deck {
     deck.name = deck.name.trim();
     deck.description = deck.description.trim();
     deck.updatedAt = new Date();
+
 
     // Convertir a entidad para persistir
     const entity = new DeckEntity(deck);

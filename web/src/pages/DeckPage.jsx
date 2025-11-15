@@ -275,14 +275,14 @@ const DeckPage = () => {
   // Función para cambiar la visibilidad del deck
   const handleVisibilityChange = async (event) => {
     const newVisibility = event.target.checked ? 'public' : 'private';
-    
+
     try {
       setChangingVisibility(true);
       await decks.updateVisibility(deckId, newVisibility);
-      
+
       // Actualizar el deck local
       setDeck(prev => ({ ...prev, visibility: newVisibility }));
-      
+
       // Mostrar snackbar con animación
       setSnackbar({
         open: true,
@@ -474,7 +474,10 @@ const DeckPage = () => {
                   variant="h4"
                   component="h1"
                   gutterBottom
-                  sx={{ fontFamily: muiTheme.fontFamily, fontWeight: 'bold' }}
+                  sx={{
+                    fontFamily: muiTheme.fontFamily, fontWeight: 'bold',
+                    fontSize: { xs: '1.5rem', md: '2rem' }, // 👈 tamaño de título adaptativo
+                  }}
                 >
                   {deck.name}
                 </Typography>
