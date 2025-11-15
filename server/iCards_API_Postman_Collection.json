@@ -625,7 +625,7 @@
           }
         },
         {
-          "name": "Create Multiple Flashcards",
+          "name": "Bulk Create Flashcards",
           "request": {
             "method": "POST",
             "header": [
@@ -640,7 +640,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"flashcards\": [\n    {\n      \"front\": \"Good morning\",\n      \"back\": \"Buenos días\",\n      \"deckId\": 7\n    },\n    {\n      \"front\": \"Good night\",\n      \"back\": \"Buenas noches\",\n      \"deckId\": 7,\n      \"difficulty\": 3\n    }\n  ]\n}",
+              "raw": "{\n  \"deck_name\": \"Japanese Learning\",\n  \"flashcards\": [\n    {\n      \"front\": \"こんにちは\",\n      \"back\": \"Hola / Buenos días (usado generalmente durante el día)\",\n      \"difficulty\": 1\n    },\n    {\n      \"front\": \"ありがとうございます\",\n      \"back\": \"Muchas gracias (forma formal y educada)\",\n      \"difficulty\": 1\n    },\n    {\n      \"front\": \"すみません\",\n      \"back\": \"Disculpe / Perdón (para pedir atención o disculparse)\",\n      \"difficulty\": 1\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -648,9 +648,9 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/api/flashcards/batch",
+              "raw": "{{base_url}}/api/flashcards/bulk",
               "host": ["{{base_url}}"],
-              "path": ["api", "flashcards", "batch"]
+              "path": ["api", "flashcards", "bulk"]
             }
           }
         }

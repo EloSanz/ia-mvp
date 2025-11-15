@@ -67,7 +67,7 @@ router.get('/:id', FlashcardController.getFlashcardById);
  */
 router.post('/', FlashcardController.createFlashcard);
 router.post('/ai-generate', FlashcardController.generateAIFlashcards);
-router.post('/batch', FlashcardController.createManyFlashcards);
+router.post('/bulk', FlashcardController.createManyFlashcards);
 
 /**
  * @route PUT /api/flashcards/:id
