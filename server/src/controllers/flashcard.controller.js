@@ -1,6 +1,9 @@
 import { Flashcard } from '../models/flashcard.js';
+import { Deck } from '../models/deck.js';
 import { FlashcardDto } from '../dtos/flashcard.dto.js';
+import { FlashcardRepository } from '../repositories/flashcard.repository.js';
 import { BaseController } from './base.controller.js';
+import { ForbiddenError } from '../utils/custom.errors.js';
 import { generateFromAI } from '../services/flashcard.service.js';
 
 export const FlashcardController = {
@@ -505,6 +508,172 @@ export const FlashcardController = {
       page,
       pageSize,
       message: tagId ? 'Flashcards del deck filtradas por tag obtenidas exitosamente' : 'Flashcards del deck obtenidas exitosamente'
+    });
+  }),
+
+  /**
+   * @swagger
+   * /api/flashcards/deck/{deckId}/no-tags:
+   *   get:
+   *     summary: Get flashcards by deck ID without tag information
+   *     description: Retrieves flashcards for a specific deck without including tag information, optimized for performance
+   *     tags: [Flashcards]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: deckId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Deck ID to get flashcards for
+   *         example: 1
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           minimum: 0
+   *           default: 0
+   *         description: Page number for pagination
+   *         example: 0
+   *       - in: query
+   *         name: pageSize
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 100
+   *           default: 50
+   *         description: Number of flashcards per page
+   *         example: 50
+   *       - in: query
+   *         name: all
+   *         schema:
+   *           type: string
+   *           enum: [true]
+   *         description: Set to 'true' to get all flashcards without pagination
+   *         example: true
+   *     responses:
+   *       200:
+   *         description: Flashcards retrieved successfully without tag information
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       id:
+   *                         type: integer
+   *                         example: 1
+   *                       front:
+   *                         type: string
+   *                         example: "こんにちは"
+   *                       back:
+   *                         type: string
+   *                         example: "Hello"
+   *                       deckId:
+   *                         type: integer
+   *                         example: 1
+   *                       difficulty:
+   *                         type: integer
+   *                         minimum: 1
+   *                         maximum: 3
+   *                         example: 1
+   *                       lastReviewed:
+   *                         type: string
+   *                         format: date-time
+   *                         nullable: true
+   *                         example: null
+   *                       nextReview:
+   *                         type: string
+   *                         format: date-time
+   *                         nullable: true
+   *                         example: null
+   *                       reviewCount:
+   *                         type: integer
+   *                         example: 0
+   *                       createdAt:
+   *                         type: string
+   *                         format: date-time
+   *                         example: "2025-11-15T00:02:05.922Z"
+   *                       updatedAt:
+   *                         type: string
+   *                         format: date-time
+   *                         example: "2025-11-15T00:02:05.922Z"
+   *                 total:
+   *                   type: integer
+   *                   example: 20
+   *                 page:
+   *                   type: integer
+   *                   example: 0
+   *                 pageSize:
+   *                   type: integer
+   *                   example: 50
+   *                 message:
+   *                   type: string
+   *                   example: "Flashcards del deck obtenidas exitosamente (sin tags)"
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       403:
+   *         description: Forbidden - User does not own this deck
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       404:
+   *         description: Deck not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+
+  /**
+   * Obtiene flashcards de un deck específico SIN información de tags
+   */
+  getFlashcardsByDeckNoTags: BaseController.wrap(async (req, res) => {
+    const { deckId } = req.params;
+    const parsedDeckId = BaseController.validateId(deckId);
+    const page = parseInt(req.query.page || '0');
+    const pageSize = req.query.all === 'true' ? null : parseInt(req.query.pageSize || '50');
+
+    // Verificar que el deck pertenece al usuario
+    const deck = await Deck.findById(parsedDeckId);
+    if (!deck || deck.userId !== req.userId) {
+      throw new ForbiddenError('No tienes permiso para ver este deck');
+    }
+
+    let items, total;
+
+    if (pageSize === null) {
+      // Devolver todas las flashcards sin paginado y sin tags
+      const allFlashcards = await FlashcardRepository.findByDeckIdAllNoTags(parsedDeckId);
+      items = allFlashcards;
+      total = allFlashcards.length;
+    } else {
+      // Obtener flashcards paginadas sin tags
+      const result = await FlashcardRepository.findByDeckIdNoTags(parsedDeckId, { page, pageSize });
+      items = result.items;
+      total = result.total;
+    }
+
+    res.json({
+      success: true,
+      data: items,
+      total,
+      page,
+      pageSize,
+      message: 'Flashcards del deck obtenidas exitosamente (sin tags)'
     });
   }),
 

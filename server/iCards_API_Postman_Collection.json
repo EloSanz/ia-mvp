@@ -653,6 +653,30 @@
               "path": ["api", "flashcards", "bulk"]
             }
           }
+        },
+        {
+          "name": "Get Flashcards by Deck (No Tags)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/flashcards/deck/8/no-tags?all=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "flashcards", "deck", "8", "no-tags"],
+              "query": [
+                {
+                  "key": "all",
+                  "value": "true",
+                  "description": "Get all flashcards without pagination"
+                }
+              ]
+            }
+          }
         }
       ]
     },

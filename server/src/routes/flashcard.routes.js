@@ -48,6 +48,7 @@ router.get('/due/:deckId', FlashcardController.getDueFlashcards);
  * @access Private
  */
 router.get('/deck/:deckId', FlashcardController.getFlashcardsByDeck);
+router.get('/deck/:deckId/no-tags', FlashcardController.getFlashcardsByDeckNoTags);
 
 /**
  * @route GET /api/flashcards/:id
