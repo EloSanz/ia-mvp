@@ -41,7 +41,8 @@
     "openai": "^5.19.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "cloudinary": "^2.8.0"
   },
   "devDependencies": {
     "@babel/core": "^7.28.4",
