@@ -94,15 +94,12 @@ app.get('/api/health/detailed', (req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
-app.use('/api/decks', deckRoutes); // Middleware de auth aplicado dentro del router
-app.use('/api/decks', authMiddleware, tagRoutes);  // Tags integradas con decks
+app.use('/api/decks', deckRoutes); // Ahora deckRoutes maneja sus propias sub-rutas de tags
 app.use('/api/flashcards', flashcardRoutes);
 app.use('/api/sync', syncRoutes);
 app.use('/api/study', studyRoutes);
 app.use('/api/logging', loggingRoutes);
 app.use('/api/library', libraryRoutes);
-// Tags legacy (deprecated)
-app.use('/api/tags', authMiddleware, tagRoutes);
 
 // Middleware de logging de errores
 app.use(errorLogger);

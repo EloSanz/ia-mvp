@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { DeckController } from '../controllers/deck.controller.js';
 import { authMiddleware } from '../middlewares/auth.middleware.js';
+import tagRoutes from './tag.routes.js';
 
 const router = Router();
 
@@ -27,5 +28,9 @@ router.post('/generate-with-ai', DeckController.generateDeckWithAI);
 // Rutas para biblioteca
 router.patch('/:id/visibility', DeckController.updateVisibility);
 router.post('/:id/clone', DeckController.cloneDeck);
+
+// Anidar las rutas de los tags bajo los decks.
+// Todas las peticiones a /:id/tags serán manejadas por tagRoutes.
+router.use('/:id/tags', tagRoutes);
 
 export default router;

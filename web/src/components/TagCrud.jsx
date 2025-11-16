@@ -39,7 +39,9 @@ const TagCrud = ({
   const updateTag = async (tagId) => {
     setSelectedTagId(tagId);
     try {
-      await flashcards.update(card.id, { ...card, tagId: tagId || null });
+      // ✅ Forma correcta  evita enviar datos qeu no sonrequeridos   
+      const paylodad = card.front && card.back ? { front: card.front, back: card.back, deckId: card.deckId } : {};
+      await flashcards.update(card.id, { ...paylodad, tagId: tagId || null });
       onCardTagUpdated?.(card.id, tagId || null); // opcional: para actualizar la lista arriba
       setOpen(false);
       // Si querés recargar desde el server, hacelo después de cerrar:

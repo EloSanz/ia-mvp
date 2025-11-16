@@ -1032,7 +1032,7 @@ export const DeckController = {
 
       // Clonar flashcards con tags
       const prisma = (await import('../config/database.js')).default;
-      
+
       // Primero clonar los tags
       const tagMapping = new Map();
       if (sourceDeck.tags && sourceDeck.tags.length > 0) {
@@ -1264,8 +1264,8 @@ export const DeckController = {
 
     const organizationStatus =
       totalFlashcards === 0 ? 'empty' :
-      untaggedFlashcards > 0 ? 'needs_organization' :
-      'organized';
+        untaggedFlashcards > 0 ? 'needs_organization' :
+          'organized';
 
     // Calcular promedio de tags por flashcard (máximo 1 en el esquema actual)
     const totalTagsAssigned = taggedFlashcards; // Ya que cada flashcard tagged tiene exactamente 1 tag
