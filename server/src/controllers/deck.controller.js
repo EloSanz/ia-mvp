@@ -221,39 +221,33 @@ export const DeckController = {
         name,
         description,
         userId,
-        coverUrl: null
+        coverUrl: null,
+        // Si se solicita portada, el estado inicial es PENDING
+        coverGenerationStatus: generateCover ? 'PENDING' : null
       });
 
       BaseController.success(res, deck, "Deck creado exitosamente", 201);
 
       if (generateCover) {
         (async () => {
-
           try {
             const result = await generateDeckCoverBase64(name, description);
 
             if (result.base64) {
-              let url = null;
-              try {
-                const formattedBase64 = `data:image/png;base64,${result.base64}`;
-                url = await uploadImageToCloudinary(formattedBase64, 'ICards');
-                console.log("✅ ~ URL de la imagen subida a Cloudinary:", url);
-
-              } catch (uploadError) {
-                console.error(`❌ Error subiendo la imagen a Cloudinary para deck ${deck.id}:`, uploadError);
-              }
-              try {
-                // Actualizar la URL de la imagen en la base de datos
-                await Deck.update(deck.id, { coverUrl: url });
-              } catch (updateError) {
-                console.error(`❌ Error asignando la imagen para deck ${deck.id}:`, updateError);
-              }
+              const formattedBase64 = `data:image/png;base64,${result.base64}`;
+              const url = await uploadImageToCloudinary(formattedBase64, 'ICards');
+              // Éxito: Actualizar URL y estado a COMPLETED
+              await Deck.update(deck.id, { coverUrl: url, coverGenerationStatus: 'COMPLETED' });
               console.log(`✅ Portada generada y subida exitosamente para deck ${deck.id}`);
             } else {
+              // Fallo de la IA: Actualizar estado a FAILED
+              await Deck.update(deck.id, { coverGenerationStatus: 'FAILED' });
               console.error(`❌ Error generando portada para deck ${deck.id}:`, result.error);
             }
           } catch (error) {
-            console.error(`❌ Error generando portada para deck ${deck.id}:`, error);
+            // Fallo general: Actualizar estado a FAILED
+            await Deck.update(deck.id, { coverGenerationStatus: 'FAILED' });
+            console.error(`❌ Error en el proceso de generación de portada para deck ${deck.id}:`, error);
           }
 
         })();
@@ -488,110 +482,7 @@ export const DeckController = {
     BaseController.success(res, { topics: suggestions }, 'Temas sugeridos exitosamente');
   }),
 
-  /**
-   * @swagger
-   * /api/decks/generate-with-ai:
-   *   post:
-   *     summary: Generate a complete deck with AI
-   *     description: Creates a full flashcard deck using AI based on topic, difficulty, and other parameters
-   *     tags: [Decks, AI]
-   *     security:
-   *       - bearerAuth: []
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             required:
-   *               - mode
-   *               - topic
-   *             properties:
-   *               mode:
-   *                 type: string
-   *                 enum: [free, configured, suggested]
-   *                 example: configured
-   *                 description: Generation mode
-   *               topic:
-   *                 type: string
-   *                 minLength: 1
-   *                 example: "Spanish Vocabulary"
-   *                 description: Topic for the deck
-   *               flashcardCount:
-   *                 type: integer
-   *                 minimum: 5
-   *                 maximum: 50
-   *                 default: 10
-   *                 example: 15
-   *                 description: Number of flashcards to generate
-   *               difficulty:
-   *                 type: string
-   *                 enum: [beginner, intermediate, advanced]
-   *                 example: intermediate
-   *                 description: Difficulty level
-   *               tags:
-   *                 type: array
-   *                 items:
-   *                   type: string
-   *                 example: ["grammar", "vocabulary"]
-   *                 description: Tags for the flashcards
-   *               generateCover:
-   *                 type: boolean
-   *                 default: true
-   *                 example: true
-   *                 description: Whether to generate AI cover image
-   *           examples:
-   *             free:
-   *               summary: Free topic generation
-   *               value:
-   *                 mode: "free"
-   *                 topic: "Machine Learning"
-   *                 flashcardCount: 10
-   *                 generateCover: true
-   *             configured:
-   *               summary: Configured generation
-   *               value:
-   *                 mode: "configured"
-   *                 topic: "React Components"
-   *                 flashcardCount: 15
-   *                 difficulty: "intermediate"
-   *                 tags: ["react", "frontend"]
-   *                 generateCover: false
-   *     responses:
-   *       201:
-   *         description: Deck generated successfully
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                   example: true
-   *                 message:
-   *                   type: string
-   *                   example: Deck generado exitosamente
-   *                 data:
-   *                   $ref: '#/components/schemas/Deck'
-   *       400:
-   *         description: Bad request - Invalid input data
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/Error'
-   *       401:
-   *         description: Unauthorized - Token not provided or invalid
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/Error'
-   *       500:
-   *         description: Internal server error - AI generation failed
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/Error'
-   */
+
   /**
    * @swagger
    * /api/decks/{deckId}/tag-count:
@@ -921,6 +812,110 @@ export const DeckController = {
     }, 'Flashcards count for all decks retrieved successfully');
   }),
 
+  /**
+  * @swagger
+  * /api/decks/generate-with-ai:
+  *   post:
+  *     summary: Generate a complete deck with AI
+  *     description: Creates a full flashcard deck using AI based on topic, difficulty, and other parameters
+  *     tags: [Decks, AI]
+  *     security:
+  *       - bearerAuth: []
+  *     requestBody:
+  *       required: true
+  *       content:
+  *         application/json:
+  *           schema:
+  *             type: object
+  *             required:
+  *               - mode
+  *               - topic
+  *             properties:
+  *               mode:
+  *                 type: string
+  *                 enum: [free, configured, suggested]
+  *                 example: configured
+  *                 description: Generation mode
+  *               topic:
+  *                 type: string
+  *                 minLength: 1
+  *                 example: "Spanish Vocabulary"
+  *                 description: Topic for the deck
+  *               flashcardCount:
+  *                 type: integer
+  *                 minimum: 5
+  *                 maximum: 50
+  *                 default: 10
+  *                 example: 15
+  *                 description: Number of flashcards to generate
+  *               difficulty:
+  *                 type: string
+  *                 enum: [beginner, intermediate, advanced]
+  *                 example: intermediate
+  *                 description: Difficulty level
+  *               tags:
+  *                 type: array
+  *                 items:
+  *                   type: string
+  *                 example: ["grammar", "vocabulary"]
+  *                 description: Tags for the flashcards
+  *               generateCover:
+  *                 type: boolean
+  *                 default: true
+  *                 example: true
+  *                 description: Whether to generate AI cover image
+  *           examples:
+  *             free:
+  *               summary: Free topic generation
+  *               value:
+  *                 mode: "free"
+  *                 topic: "Machine Learning"
+  *                 flashcardCount: 10
+  *                 generateCover: true
+  *             configured:
+  *               summary: Configured generation
+  *               value:
+  *                 mode: "configured"
+  *                 topic: "React Components"
+  *                 flashcardCount: 15
+  *                 difficulty: "intermediate"
+  *                 tags: ["react", "frontend"]
+  *                 generateCover: false
+  *     responses:
+  *       201:
+  *         description: Deck generated successfully
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success:
+  *                   type: boolean
+  *                   example: true
+  *                 message:
+  *                   type: string
+  *                   example: Deck generado exitosamente
+  *                 data:
+  *                   $ref: '#/components/schemas/Deck'
+  *       400:
+  *         description: Bad request - Invalid input data
+  *         content:
+  *           application/json:
+  *             schema:
+  *               $ref: '#/components/schemas/Error'
+  *       401:
+  *         description: Unauthorized - Token not provided or invalid
+  *         content:
+  *           application/json:
+  *             schema:
+  *               $ref: '#/components/schemas/Error'
+  *       500:
+  *         description: Internal server error - AI generation failed
+  *         content:
+  *           application/json:
+  *             schema:
+  *               $ref: '#/components/schemas/Error'
+  */
   generateDeckWithAI: BaseController.wrap(async (req, res) => {
     const userId = parseInt(req.userId);
     const { mode, topic, flashcardCount, difficulty, tags, generateCover = true } = req.body;
@@ -1032,7 +1027,7 @@ export const DeckController = {
 
       // Clonar flashcards con tags
       const prisma = (await import('../config/database.js')).default;
-      
+
       // Primero clonar los tags
       const tagMapping = new Map();
       if (sourceDeck.tags && sourceDeck.tags.length > 0) {
@@ -1264,8 +1259,8 @@ export const DeckController = {
 
     const organizationStatus =
       totalFlashcards === 0 ? 'empty' :
-      untaggedFlashcards > 0 ? 'needs_organization' :
-      'organized';
+        untaggedFlashcards > 0 ? 'needs_organization' :
+          'organized';
 
     // Calcular promedio de tags por flashcard (máximo 1 en el esquema actual)
     const totalTagsAssigned = taggedFlashcards; // Ya que cada flashcard tagged tiene exactamente 1 tag
