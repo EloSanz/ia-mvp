@@ -14,6 +14,7 @@ cloudinary.v2.config({
  * @returns {Promise<string>} - URL pública de la imagen subida.
  */
 export const uploadImageToCloudinary = async (base64Image, folder) => {
+
     try {
         const result = await cloudinary.v2.uploader.upload_large(base64Image, {
             folder,

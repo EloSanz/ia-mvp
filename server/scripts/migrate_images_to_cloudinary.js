@@ -9,13 +9,16 @@ const prisma = new PrismaClient();
 
         // Obtener todos los decks con imágenes en base64
         const decks = await prisma.deck.findMany({
+            // Consulta optimizada para traer solo los decks que realmente necesitan migración
             where: {
-                coverUrl: {
-                    not: {
-                        startsWith: 'https:',
-                    },
-                    not: null,
-                },
+                AND: [
+                    { coverUrl: { not: null } }, // El campo no debe ser nulo
+                    {
+                        coverUrl: {
+                            not: { startsWith: 'https' } // Y no debe empezar con 'https'
+                        }
+                    }
+                ]
             },
         });
 

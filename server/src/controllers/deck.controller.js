@@ -5,8 +5,12 @@ import { ForbiddenError, NotFoundError } from '../utils/custom.errors.js';
 import { deckGeneratorService } from '../services/deckGenerator.service.js';
 import { TagRepository } from '../repositories/tag.repository.js';
 import { FlashcardRepository } from '../repositories/flashcard.repository.js';
-import { generateDeckCoverBase64 } from '../services/aiImage.service.js';
-import { uploadImageToCloudinary, deleteImageFromCloudinary } from '../utils/cloudinary.js';
+import { deleteImageFromCloudinary } from '../utils/cloudinary.js';
+
+let folderCloudyinary = '';
+if (process.env.CLOUDINARY_API_CARPETA && process.env.CLOUDINARY_API_CARPETA.trim() !== '') {
+  folderCloudyinary = process.env.CLOUDINARY_API_CARPETA;
+}
 
 export const DeckController = {
   /**
@@ -228,31 +232,11 @@ export const DeckController = {
 
       BaseController.success(res, deck, "Deck creado exitosamente", 201);
 
+      // Si se solicita portada, se invoca el proceso asíncrono centralizado
       if (generateCover) {
-        (async () => {
-          try {
-            const result = await generateDeckCoverBase64(name, description);
-
-            if (result.base64) {
-              const formattedBase64 = `data:image/png;base64,${result.base64}`;
-              const url = await uploadImageToCloudinary(formattedBase64, 'ICards');
-              // Éxito: Actualizar URL y estado a COMPLETED
-              await Deck.update(deck.id, { coverUrl: url, coverGenerationStatus: 'COMPLETED' });
-              console.log(`✅ Portada generada y subida exitosamente para deck ${deck.id}`);
-            } else {
-              // Fallo de la IA: Actualizar estado a FAILED
-              await Deck.update(deck.id, { coverGenerationStatus: 'FAILED' });
-              console.error(`❌ Error generando portada para deck ${deck.id}:`, result.error);
-            }
-          } catch (error) {
-            // Fallo general: Actualizar estado a FAILED
-            await Deck.update(deck.id, { coverGenerationStatus: 'FAILED' });
-            console.error(`❌ Error en el proceso de generación de portada para deck ${deck.id}:`, error);
-          }
-
-        })();
+        // No necesitamos `await` aquí, el proceso corre en segundo plano.
+        deckGeneratorService.generateAndAssignCoverAsync(deck.id, name, description);
       }
-
     } catch (error) {
       console.error("Error creating deck:", error);
       throw error;
