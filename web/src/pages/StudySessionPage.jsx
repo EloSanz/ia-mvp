@@ -86,10 +86,10 @@ export default function StudySessionPage() {
     try {
       // Primero procesamos la respuesta (esto resetea showingAnswer y inicia la animación de volteo)
       await reviewCard(difficulty);
-      
+
       // Esperamos a que termine la animación de volteo (0.6s) antes de cambiar la tarjeta
       await new Promise(resolve => setTimeout(resolve, 300));
-      
+
       // Ahora obtenemos la siguiente tarjeta
       const nextCardResult = await nextCard();
       if (nextCardResult === null) setShowFinishDialog(true);
@@ -335,7 +335,7 @@ export default function StudySessionPage() {
               Atajos
             </Button>
           </Tooltip>
-          
+
           {showShortcuts && (
             <Box sx={{
               position: 'fixed',
@@ -365,18 +365,18 @@ export default function StudySessionPage() {
                 borderTop: '6px solid #1A1F2E'
               }
             }}>
-              <Typography variant="subtitle2" sx={{ 
-                fontSize: '14px', 
-                fontWeight: 600, 
-                color: '#FFFFFF', 
-                mb: 1.5 
+              <Typography variant="subtitle2" sx={{
+                fontSize: '14px',
+                fontWeight: 600,
+                color: '#FFFFFF',
+                mb: 1.5
               }}>
                 ⌨️ Atajos de teclado
               </Typography>
-              
+
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
-                  <Box sx={{ 
+                  <Box sx={{
                     bgcolor: 'rgba(255, 255, 255, 0.08)',
                     border: '1px solid rgba(255, 255, 255, 0.15)',
                     borderRadius: '4px',
@@ -396,9 +396,9 @@ export default function StudySessionPage() {
                     Voltear tarjeta
                   </Typography>
                 </Box>
-                
+
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
-                  <Box sx={{ 
+                  <Box sx={{
                     bgcolor: 'rgba(16, 185, 129, 0.2)',
                     border: '1px solid #10B981',
                     borderRadius: '4px',
@@ -417,9 +417,9 @@ export default function StudySessionPage() {
                     Fácil
                   </Typography>
                 </Box>
-                
+
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
-                  <Box sx={{ 
+                  <Box sx={{
                     bgcolor: 'rgba(245, 158, 11, 0.2)',
                     border: '1px solid #F59E0B',
                     borderRadius: '4px',
@@ -438,9 +438,9 @@ export default function StudySessionPage() {
                     Normal
                   </Typography>
                 </Box>
-                
+
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
-                  <Box sx={{ 
+                  <Box sx={{
                     bgcolor: 'rgba(239, 68, 68, 0.2)',
                     border: '1px solid #EF4444',
                     borderRadius: '4px',
