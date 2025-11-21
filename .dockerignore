@@ -46,7 +46,9 @@ Thumbs.db
 # Docker
 Dockerfile*
 docker-compose*
-.dockerignore
+# .dockerignore
+/server/node_modules
+/web/node_modules
 
 # Temporary files
 *.swp
@@ -72,3 +74,5 @@ web/coverage
 server/dist
 server/build
 server/coverage
+
+reference/*

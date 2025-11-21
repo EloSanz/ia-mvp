@@ -75,6 +75,8 @@ prisma/*.db
 /server/uploads/
 /server/check_port.sh
 
+reference/*
+|
 # Package manager specific
 yarn.lock
 package-lock.json
