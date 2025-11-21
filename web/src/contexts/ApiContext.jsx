@@ -92,7 +92,7 @@ export const ApiProvider = ({ children }) => {
     delete: (id) => api.delete(`/api/decks/${id}`),
     // Nuevos métodos para generación con IA
     suggestTopics: (count = 3) => api.post('/api/decks/suggest-topics', { count }),
-    generateWithAI: (config) => api.post('/api/decks/generate-with-ai', config, { 
+    generateWithAI: (config) => api.post('/api/decks/generate-with-ai', config, {
       timeout: 120000  // 2 minutos para generación completa
     }),
     // Métodos para biblioteca

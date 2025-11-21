@@ -57,11 +57,11 @@ export class TagController {
   // GET /api/decks/:deckId/tags - Obtener todas las tags de un deck
   static async getByDeckId(req, res) {
     try {
-      const { deckId } = req.params;
+      const { id: deckId } = req.params; // Leer 'id' y renombrarlo a 'deckId'
       const userId = req.userId;
 
       // Verificar que el deck pertenece al usuario
-      const isOwner = await TagRepository.validateDeckOwnership(deckId, userId);
+      const isOwner = await TagRepository.validateDeckOwnership(parseInt(deckId), userId);
       if (!isOwner) {
         return res.status(403).json({
           success: false,
@@ -69,7 +69,7 @@ export class TagController {
         });
       }
 
-      const tags = await TagRepository.findByDeckId(deckId);
+      const tags = await TagRepository.findByDeckId(parseInt(deckId));
       const tagDtos = tags.map(tag => new TagDto(tag));
 
       res.json({
@@ -91,11 +91,11 @@ export class TagController {
   // GET /api/decks/:deckId/tags/:tagId - Obtener tag específica
   static async getById(req, res) {
     try {
-      const { deckId, tagId } = req.params;
+      const { id: deckId, tagId } = req.params; // Leer 'id' y renombrarlo a 'deckId'
       const userId = req.userId;
 
       // Verificar ownership del deck
-      const isOwner = await TagRepository.validateDeckOwnership(deckId, userId);
+      const isOwner = await TagRepository.validateDeckOwnership(parseInt(deckId), userId);
       if (!isOwner) {
         return res.status(403).json({
           success: false,
@@ -103,11 +103,11 @@ export class TagController {
         });
       }
 
-      const tag = await TagRepository.findById(tagId, deckId);
+      const tag = await TagRepository.findById(parseInt(tagId), parseInt(deckId));
       if (!tag) {
-        return res.status(404).json({ 
+        return res.status(404).json({
           success: false,
-          error: 'Tag not found in this deck' 
+          error: 'Tag not found in this deck'
         });
       }
 
@@ -178,12 +178,12 @@ export class TagController {
   // POST /api/decks/:deckId/tags - Crear nueva tag en un deck
   static async create(req, res) {
     try {
-      const { deckId } = req.params;
+      const { id: deckId } = req.params; // Leer 'id' y renombrarlo a 'deckId'
       const userId = req.userId;
-      const tagData = { ...req.body, deckId };
+      const tagData = { ...req.body, deckId: parseInt(deckId) };
 
       // Verificar ownership del deck
-      const isOwner = await TagRepository.validateDeckOwnership(deckId, userId);
+      const isOwner = await TagRepository.validateDeckOwnership(parseInt(deckId), userId);
       if (!isOwner) {
         return res.status(403).json({
           success: false,
@@ -192,7 +192,7 @@ export class TagController {
       }
 
       const tag = await TagRepository.create(tagData);
-      
+
       res.status(201).json({
         success: true,
         data: new TagDto(tag),
@@ -200,11 +200,11 @@ export class TagController {
       });
     } catch (error) {
       console.error('Error creating tag:', error);
-      
+
       if (error.code === 'P2002') {
-        return res.status(409).json({ 
+        return res.status(409).json({
           success: false,
-          error: 'Tag name already exists in this deck' 
+          error: 'Tag name already exists in this deck'
         });
       }
 
@@ -219,11 +219,11 @@ export class TagController {
   // PUT /api/decks/:deckId/tags/:tagId - Actualizar tag
   static async update(req, res) {
     try {
-      const { deckId, tagId } = req.params;
+      const { id: deckId, tagId } = req.params; // Leer 'id' y renombrarlo a 'deckId'
       const userId = req.userId;
 
       // Verificar ownership del deck
-      const isOwner = await TagRepository.validateDeckOwnership(deckId, userId);
+      const isOwner = await TagRepository.validateDeckOwnership(parseInt(deckId), userId);
       if (!isOwner) {
         return res.status(403).json({
           success: false,
@@ -231,8 +231,8 @@ export class TagController {
         });
       }
 
-      const tag = await TagRepository.update(tagId, deckId, req.body);
-      
+      const tag = await TagRepository.update(parseInt(tagId), parseInt(deckId), req.body);
+
       res.json({
         success: true,
         data: new TagDto(tag),
@@ -240,18 +240,18 @@ export class TagController {
       });
     } catch (error) {
       console.error('Error updating tag:', error);
-      
+
       if (error.code === 'P2002') {
-        return res.status(409).json({ 
+        return res.status(409).json({
           success: false,
-          error: 'Tag name already exists in this deck' 
+          error: 'Tag name already exists in this deck'
         });
       }
-      
+
       if (error.code === 'P2025') {
-        return res.status(404).json({ 
+        return res.status(404).json({
           success: false,
-          error: 'Tag not found in this deck' 
+          error: 'Tag not found in this deck'
         });
       }
 
@@ -266,11 +266,11 @@ export class TagController {
   // DELETE /api/decks/:deckId/tags/:tagId - Eliminar tag
   static async delete(req, res) {
     try {
-      const { deckId, tagId } = req.params;
+      const { id: deckId, tagId } = req.params; // Leer 'id' y renombrarlo a 'deckId'
       const userId = req.userId;
 
       // Verificar ownership del deck
-      const isOwner = await TagRepository.validateDeckOwnership(deckId, userId);
+      const isOwner = await TagRepository.validateDeckOwnership(parseInt(deckId), userId);
       if (!isOwner) {
         return res.status(403).json({
           success: false,
@@ -278,19 +278,19 @@ export class TagController {
         });
       }
 
-      await TagRepository.delete(tagId, deckId);
-      
+      await TagRepository.delete(parseInt(tagId), parseInt(deckId));
+
       res.json({
         success: true,
         message: 'Tag deleted successfully'
       });
     } catch (error) {
       console.error('Error deleting tag:', error);
-      
+
       if (error.code === 'P2025') {
-        return res.status(404).json({ 
+        return res.status(404).json({
           success: false,
-          error: 'Tag not found in this deck' 
+          error: 'Tag not found in this deck'
         });
       }
 
