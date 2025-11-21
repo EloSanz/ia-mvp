@@ -1,4 +1,5 @@
 import { Deck } from '../models/deck.js';
+import { Flashcard } from '../models/flashcard.js';
 import { DeckDto } from '../dtos/deck.dto.js';
 import { BaseController } from './base.controller.js';
 import { ForbiddenError, NotFoundError } from '../utils/custom.errors.js';
@@ -1047,6 +1048,140 @@ export const DeckController = {
     } catch (error) {
       console.error('Error clonando deck:', error);
       BaseController.error(res, `Error al clonar deck: ${error.message}`, 500);
+    }
+  }),
+
+  /**
+   * Genera un deck completo desde un archivo PDF/Word
+   * POST /api/decks/generate-from-document
+   */
+  generateDeckFromDocument: BaseController.wrap(async (req, res) => {
+    const userId = parseInt(req.userId);
+    const file = req.file;
+    
+    if (!file) {
+      return BaseController.error(res, 'No se proporcionó archivo', 400);
+    }
+
+    try {
+      // 1. Parsear documento desde buffer
+      const { documentParserService } = await import('../services/documentParser.service.js');
+      const { openaiService } = await import('../services/openai.service.js');
+      
+      console.log(`📄 Procesando documento: ${file.originalname} (${file.size} bytes)`);
+      
+      const documentData = await documentParserService.parseDocumentFromBuffer(
+        file.buffer,
+        file.mimetype,
+        file.originalname
+      );
+      
+      console.log(`✅ Documento parseado: ${documentData.metadata.length} caracteres, ${documentData.metadata.chunkCount} chunks`);
+      console.log(`📋 Estructura detectada: ${documentData.structure.sections?.length || 0} secciones, título: "${documentData.structure.title || 'no detectado'}"`);
+      
+      // 2. Generar metadata del deck con IA
+      const documentSummary = documentData.text.substring(0, 2000); // Primeros 2000 chars
+      const deckMetadata = await openaiService.generateDeckMetadataFromDocument(
+        documentSummary,
+        documentData.structure,
+        file.originalname
+      );
+      
+      console.log(`📝 Metadata generada: "${deckMetadata.name}"`);
+      
+      // 3. Crear deck en DB
+      const deck = await Deck.create({
+        name: deckMetadata.name,
+        description: deckMetadata.description,
+        userId,
+        coverUrl: null
+      });
+      
+      // 4. Generar flashcards con IA
+      const { flashcardCount = 15, generateCover = true } = req.body;
+      const flashcardsCount = parseInt(flashcardCount) || 15;
+      
+      console.log(`🤖 Generando ${flashcardsCount} flashcards con IA...`);
+      
+      const flashcards = await openaiService.generateFlashcardsFromDocument(documentData, {
+        flashcardCount: flashcardsCount,
+        difficulty: 'intermediate'
+      });
+      
+      // 5. Crear flashcards en batch (optimizado)
+      // 🚀 MEJORA: Validar que haya flashcards generadas
+      if (!flashcards || flashcards.length === 0) {
+        throw new Error('No se pudieron generar flashcards del documento. Intenta con un documento más largo o estructurado.');
+      }
+
+      const flashcardsData = flashcards.map(fc => ({
+        front: fc.front,
+        back: fc.back,
+        deckId: deck.id,
+        difficulty: 2
+      }));
+      
+      // 🚀 MEJORA: Usar createMany si está disponible, sino Promise.all
+      // createMany es más eficiente (1 query SQL vs N queries)
+      let createdFlashcards;
+      if (typeof Flashcard.createMany === 'function') {
+        createdFlashcards = await Flashcard.createMany(flashcardsData);
+      } else {
+        // Fallback: crear una por una en paralelo
+        createdFlashcards = await Promise.all(
+          flashcardsData.map(fc => Flashcard.create(fc))
+        );
+      }
+      
+      console.log(`✅ ${createdFlashcards.length} flashcards creadas`);
+      
+      // 6. Generar portada (async) si corresponde
+      if (generateCover === 'true' || generateCover === true) {
+        deckGeneratorService.generateCoverAsync(deck.id, deck.name, deck.description);
+      }
+      
+      BaseController.success(res, {
+        deck,
+        flashcards: createdFlashcards,
+        message: `Deck creado exitosamente desde documento con ${createdFlashcards.length} flashcards`
+      }, 'Deck generado desde documento', 201);
+      
+    } catch (error) {
+      console.error('Error generando deck desde documento:', error);
+      
+      // Clasificar errores: usuario (400) vs servidor (500)
+      let errorMessage = 'Error procesando documento';
+      let statusCode = 500;
+      
+      // Errores esperados del usuario (400 - Bad Request)
+      if (error.message.includes('escaneada') || error.message.includes('OCR')) {
+        errorMessage = error.message;
+        statusCode = 400;
+      } else if (error.message.includes('muy poco texto') || error.message.includes('caracteres')) {
+        errorMessage = error.message;
+        statusCode = 400;
+      } else if (error.message.includes('páginas')) {
+        errorMessage = error.message;
+        statusCode = 400;
+      } else if (error.message.includes('vacío')) {
+        errorMessage = error.message;
+        statusCode = 400;
+      } else if (error.message.includes('corrupto') || error.message.includes('protegido')) {
+        errorMessage = 'No se pudo extraer texto del documento. Verifica que no esté corrupto, protegido con contraseña, o sea una imagen escaneada.';
+        statusCode = 400;
+      } else if (error.message.includes('Formato no soportado')) {
+        errorMessage = error.message;
+        statusCode = 400;
+      } else if (error.message.includes('OpenAI')) {
+        // Errores de IA son del servidor
+        errorMessage = 'Error al generar contenido con IA. Por favor, intenta de nuevo en unos momentos.';
+        statusCode = 500;
+      } else if (error.message.includes('timeout') || error.message.includes('ECONNABORTED')) {
+        errorMessage = 'El procesamiento está tardando demasiado. Intenta con un documento más pequeño.';
+        statusCode = 408; // Request Timeout
+      }
+      
+      BaseController.error(res, errorMessage, statusCode);
     }
   })
 };

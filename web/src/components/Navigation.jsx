@@ -71,11 +71,11 @@ const Navigation = () => {
           display="flex"
           alignItems="center"
           sx={{ flexGrow: 1, cursor: 'pointer' }}
-          onClick={() => navigate('/')}
+          onClick={() => navigate(user ? '/home' : '/')}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') navigate('/');
+            if (e.key === 'Enter') navigate(user ? '/home' : '/');
           }}
           aria-label="Ir al inicio"
         >

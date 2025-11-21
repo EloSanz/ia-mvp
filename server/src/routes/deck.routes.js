@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { DeckController } from '../controllers/deck.controller.js';
 import { authMiddleware } from '../middlewares/auth.middleware.js';
+import { upload, handleMulterError } from '../config/multer.config.js';
 
 const router = Router();
 
@@ -22,6 +23,13 @@ router.delete('/:id', DeckController.deleteDeck);
 // Rutas para generación con IA
 router.post('/suggest-topics', DeckController.suggestTopics);
 router.post('/generate-with-ai', DeckController.generateDeckWithAI);
+
+// Ruta para generación desde documento (PDF/Word)
+router.post('/generate-from-document', 
+  upload.single('document'), 
+  handleMulterError,
+  DeckController.generateDeckFromDocument
+);
 
 // Rutas para biblioteca
 router.patch('/:id/visibility', DeckController.updateVisibility);

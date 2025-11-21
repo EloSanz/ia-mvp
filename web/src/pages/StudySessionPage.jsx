@@ -211,7 +211,7 @@ export default function StudySessionPage() {
       });
     }
   };
-  const handleGoHome = () => navigate('/');
+  const handleGoHome = () => navigate('/home');
   const handlePause = () => {
     setPaused(true);
     setSnackbar({ open: true, message: 'Sesión pausada', severity: 'info' });

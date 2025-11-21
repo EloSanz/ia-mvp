@@ -102,6 +102,18 @@ export const ApiProvider = ({ children }) => {
     generateWithAI: (config) => api.post('/api/decks/generate-with-ai', config, { 
       timeout: 120000  // 2 minutos para generación completa
     }),
+    generateFromDocument: (formData) => api.post('/api/decks/generate-from-document', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      timeout: 180000, // 3 minutos para documentos (suficiente para procesamiento con IA)
+      onUploadProgress: (progressEvent) => {
+        const percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total
+        );
+        console.log('Upload progress:', percentCompleted + '%');
+      }
+    }),
     // Métodos para biblioteca
     updateVisibility: (id, visibility) => api.patch(`/api/decks/${id}/visibility`, { visibility }),
     clone: (id) => api.post(`/api/decks/${id}/clone`)
