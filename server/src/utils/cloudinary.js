@@ -1,7 +1,7 @@
-import cloudinary from 'cloudinary';
+import { v2 as cloudinary } from 'cloudinary';
 
 // Configuración de Cloudinary
-cloudinary.v2.config({
+cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
@@ -16,7 +16,7 @@ cloudinary.v2.config({
 export const uploadImageToCloudinary = async (base64Image, folder) => {
 
     try {
-        const result = await cloudinary.v2.uploader.upload_large(base64Image, {
+        const result = await cloudinary.uploader.upload_large(base64Image, {
             folder,
         });
         return result.secure_url;
@@ -60,7 +60,7 @@ export const deleteImageFromCloudinary = async (imageUrl) => {
 
         console.log(`Eliminando imagen de Cloudinary con public_id: ${publicId}`);
 
-        const result = await cloudinary.v2.uploader.destroy(publicId);
+        const result = await cloudinary.uploader.destroy(publicId);
 
         if (result.result === 'ok') {
             console.log(`✅ Imagen eliminada exitosamente de Cloudinary: ${publicId}`);

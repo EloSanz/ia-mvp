@@ -1466,7 +1466,7 @@ export const DeckController = {
       
       // 6. Generar portada (async) si corresponde
       if (generateCover === 'true' || generateCover === true) {
-        deckGeneratorService.generateCoverAsync(deck.id, deck.name, deck.description);
+        deckGeneratorService.generateAndAssignCoverAsync(deck.id, deck.name, deck.description);
       }
       
       BaseController.success(res, {
