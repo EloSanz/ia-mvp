@@ -1,7 +1,7 @@
 import { openaiService } from './openai.service.js';
 import { Deck } from '../models/deck.js';
 import { Flashcard } from '../models/flashcard.js';
-import { generateDeckCoverBase64 } from './aiImage.service.js';
+import { generateDeckCoverBase64 } from './openIAiImage.service.js';
 import { uploadImageToCloudinary } from '../utils/cloudinary.js';
 
 /**
@@ -49,7 +49,7 @@ export class DeckGeneratorService {
 
       // 4. Generar portada en background (opcional)
       if (generateCover) {
-        this.generateCoverAsync(deck.id, aiResult.deck.name, aiResult.deck.description);
+        this.generateAndAssignCoverAsync(deck.id, aiResult.deck.name, aiResult.deck.description);
       }
 
       return {
@@ -115,7 +115,7 @@ export class DeckGeneratorService {
 
       // 4. Generar portada en background (opcional)
       if (generateCover) {
-        this.generateCoverAsync(deck.id, aiResult.deck.name, aiResult.deck.description);
+        this.generateAndAssignCoverAsync(deck.id, aiResult.deck.name, aiResult.deck.description);
       }
 
       return {
@@ -160,35 +160,31 @@ export class DeckGeneratorService {
   }
 
   /**
-   * Genera portada de forma asíncrona
+   * Genera y asigna una portada de forma asíncrona, actualizando el estado del deck.
+   * Este es el método centralizado para la generación de portadas.
    * @private
    */
-  async generateCoverAsync(deckId, name, description) {
+  async generateAndAssignCoverAsync(deckId, name, description) {
     try {
+      // 1. Generar imagen con IA
       const result = await generateDeckCoverBase64(name, description);
 
-      if (result.base64) {
-        let url = null;
-        try {
-          const formattedBase64 = `data:image/png;base64,${result.base64}`;
-          url = await uploadImageToCloudinary(formattedBase64, 'ICards');
-          console.log("✅ ~ URL de la imagen subida a Cloudinary:", url);
-
-        } catch (uploadError) {
-          console.error(`❌ Error subiendo la imagen a Cloudinary para deck ${deckId}:`, uploadError);
-        }
-        try {
-          // Actualizar la URL de la imagen en la base de datos
-          await Deck.update(deckId, { coverUrl: url });
-        } catch (updateError) {
-          console.error(`❌ Error asignando la imagen para deck ${deckId}:`, updateError);
-        }
-        console.log(`✅ Portada generada y subida exitosamente para deck ${deckId}`);
-      } else {
-        console.error(`❌ Error generando portada para deck ${deckId}:`, result.error);
+      if (!result.base64) {
+        await Deck.update(deckId, { coverGenerationStatus: 'FAILED' });
+        throw new Error(result.error || 'La IA no pudo generar la imagen base64.');
       }
+
+      // 2. Subir a Cloudinary
+      const formattedBase64 = `data:image/png;base64,${result.base64}`;
+      const url = await uploadImageToCloudinary(formattedBase64, 'ICards');
+
+      // 3. Actualizar el deck con la URL y el estado COMPLETED
+      await Deck.update(deckId, { coverUrl: url, coverGenerationStatus: 'COMPLETED' });
+      console.log(`✅ Portada generada y asignada exitosamente para deck ${deckId}`);
     } catch (error) {
-      console.error(`❌ Error generando portada para deck ${deckId}:`, error);
+      console.error(`❌ Error en el proceso de generación de portada para deck ${deckId}:`, error);
+      // En caso de cualquier error, actualizar el estado a FAILED
+      await Deck.update(deckId, { coverGenerationStatus: 'FAILED' });
     }
   }
 

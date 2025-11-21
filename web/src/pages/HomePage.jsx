@@ -138,7 +138,7 @@ const HomePage = () => {
       setCreating(true);
       const { data: createdDeck } = await decks.create(newDeck);
       if (newDeck.generateCover && createdDeck && createdDeck.data.id) {
-        console.log('Generando portada IA...:', createdDeck.data);
+        showToast('Generando portada con IA...', 'warning');
         // monitorear solo este deck recién creado
         setDeckMonitory(createdDeck.data);
       }
@@ -161,15 +161,24 @@ const HomePage = () => {
       interval = setInterval(async () => {
         try {
           const { data: updated } = await decks.getById(deckMonitory.id);
-          if (updated.data.coverUrl && updated.data.coverUrl.startsWith('https:')) {
+          console.log("🚀 ~ HomePage ~ updated:", updated)
+          if (updated.data.coverGenerationStatus === 'FAILED') {
+            setDeckMonitory(null); // dejar de monitorear
+            showToast('Error Generando la portada con IA', 'error');
+            clearInterval(interval);
+          }
+          if (updated.data.coverUrl && updated.data.coverUrl.startsWith('https:') && updated.data.coverGenerationStatus === 'COMPLETED') {
+            showToast('Portada generada exitosamente con IA', 'success');
             setDecksList((prev) => prev.map((d) => (d.id === updated.data.id ? updated.data : d)));
             setDeckMonitory(null); // dejar de monitorear
             clearInterval(interval);
           }
         } catch (err) {
+          showToast('Error registrando portada', 'error');
+          setDeckMonitory(null);
           console.error('Error fetching deck update:', err);
         }
-      }, 10000); //Por lo general suel tardar menos de 30 segundos
+      }, 15000); //Por lo general suel tardar menos de 30 segundos
     }
     return () => clearInterval(interval);
   }, [deckMonitory]);
@@ -229,12 +238,15 @@ const HomePage = () => {
     // Recargar la lista
     loadDecks();
 
-    // Si el deck fue creado pero aún no tiene portada, monitorizarlo para actualizar la portada cuando el backend la genere
-    if (result && result.deck && !result.deck.coverUrl) {
+    showToast(`Deck "${result.deck?.name || 'sin nombre'}" creado exitosamente con ${result.flashcards?.length || 0} flashcards`);
+
+    // Si el deck fue creado pero aún no tiene portada, monitorizarlo para actualizar la portada cuando el backend la genere solo si corrresponde
+    if (result && result.deck && !result.deck.coverUrl && result.deck.coverGenerationStatus === 'PENDING') {
+      showToast('Generando portada con IA...', 'warning');
       setDeckMonitory(result.deck);
     }
 
-    showToast(`Deck "${result.deck?.name || 'sin nombre'}" creado exitosamente con ${result.flashcards?.length || 0} flashcards`);
+
   };
 
   if (loading) {

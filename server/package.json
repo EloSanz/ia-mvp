@@ -14,7 +14,7 @@
     "testTimeout": 10000
   },
   "scripts": {
-    "dev": "nodemon src/index.js",
+    "dev": "npx prisma migrate deploy && npx prisma generate && nodemon src/index.js",
     "start": "node src/index.js",
     "dockerStart": "npx prisma migrate deploy && npx prisma generate && node src/index.js",
     "test": "jest",

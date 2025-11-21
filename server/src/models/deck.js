@@ -12,6 +12,7 @@ export class Deck {
     this.name = data.name || '';
     this.description = data.description || '';
     this.coverUrl = data.coverUrl || null;
+    this.coverGenerationStatus = data.coverGenerationStatus || null;
     this.visibility = data.visibility || 'private';
     this.clonesCount = data.clonesCount || 0;
     this.userId = data.userId;
@@ -120,6 +121,7 @@ export class Deck {
       name: entity.name,
       description: entity.description,
       coverUrl: entity.coverUrl,
+      coverGenerationStatus: entity.coverGenerationStatus,
       visibility: entity.visibility,
       clonesCount: entity.clonesCount,
       userId: entity.userId,
@@ -139,6 +141,7 @@ export class Deck {
       description: entity.description,
       coverUrl: entity.coverUrl,
       visibility: entity.visibility,
+      coverGenerationStatus: entity.coverGenerationStatus,
       clonesCount: entity.clonesCount,
       userId: entity.userId,
       createdAt: entity.createdAt,
@@ -157,6 +160,7 @@ export class Deck {
       name: this.name,
       description: this.description,
       coverUrl: this.coverUrl,
+      coverGenerationStatus: this.coverGenerationStatus,
       visibility: this.visibility,
       clonesCount: this.clonesCount,
       userId: this.userId,
