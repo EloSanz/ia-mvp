@@ -15,6 +15,7 @@ router.get('/untagged-flashcards-count', DeckController.getAllUntaggedFlashcards
 router.get('/:deckId/tag-count', DeckController.getDeckTagCount);
 router.get('/:deckId/flashcards-by-tag', DeckController.getDeckFlashcardsByTag);
 router.get('/:deckId/untagged-flashcards-count', DeckController.getDeckUntaggedFlashcardsCount);
+router.get('/:deckId/stats', DeckController.getDeckStats);
 router.get('/:id', DeckController.getDeckById);
 router.post('/', DeckController.createDeck);
 router.put('/:id', DeckController.updateDeck);

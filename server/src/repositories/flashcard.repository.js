@@ -478,4 +478,91 @@ export class FlashcardRepository {
       throw new Error(`Error counting untagged flashcards by deck: ${error.message}`);
     }
   }
+
+  /**
+   * Busca flashcards por deckId SIN información de tags (paginado)
+   */
+  static async findByDeckIdNoTags(deckId, { page = 0, pageSize = 50 } = {}) {
+    try {
+      const cacheKey = `deck:${deckId}:no-tags:page:${page}:size:${pageSize}`;
+
+      const cached = cacheAdapter.get(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
+      const skip = page * pageSize;
+      const take = pageSize;
+      const [flashcards, total] = await Promise.all([
+        prisma.flashcard.findMany({
+          where: { deckId: parseInt(deckId) },
+          select: {
+            id: true,
+            front: true,
+            back: true,
+            deckId: true,
+            difficulty: true,
+            lastReviewed: true,
+            nextReview: true,
+            reviewCount: true,
+            createdAt: true,
+            updatedAt: true
+            // Excluye tagId y tag
+          },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take
+        }),
+        prisma.flashcard.count({ where: { deckId: parseInt(deckId) } })
+      ]);
+
+      const result = {
+        items: flashcards,
+        total
+      };
+      cacheAdapter.set(cacheKey, result, CACHE_TTL_FLASHCARDS);
+
+      return result;
+    } catch (error) {
+      throw new Error(`Error al buscar flashcards por deck (sin tags): ${error.message}`);
+    }
+  }
+
+  /**
+   * Busca TODAS las flashcards por deckId SIN información de tags (sin paginado)
+   */
+  static async findByDeckIdAllNoTags(deckId) {
+    try {
+      const cacheKey = `deck:${deckId}:all:no-tags`;
+
+      const cached = cacheAdapter.get(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
+      const flashcards = await prisma.flashcard.findMany({
+        where: { deckId: parseInt(deckId) },
+        select: {
+          id: true,
+          front: true,
+          back: true,
+          deckId: true,
+          difficulty: true,
+          lastReviewed: true,
+          nextReview: true,
+          reviewCount: true,
+          createdAt: true,
+          updatedAt: true
+          // Excluye tagId y tag
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      cacheAdapter.set(cacheKey, flashcards, CACHE_TTL_FLASHCARDS);
+
+      return flashcards;
+    } catch (error) {
+      throw new Error(`Error al buscar todas las flashcards por deck (sin tags): ${error.message}`);
+    }
+  }
 }

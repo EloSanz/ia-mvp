@@ -113,7 +113,8 @@
               "raw": "{{base_url}}/api/decks/mcp",
               "host": ["{{base_url}}"],
               "path": ["api", "decks", "mcp"]
-            }
+            },
+            "description": "Retrieves all flashcard decks owned by the authenticated user without cover images, optimized for MCP tools. Includes tags for each deck."
           }
         },
         {
@@ -282,6 +283,23 @@
               "raw": "{{base_url}}/api/decks/7/untagged-flashcards-count",
               "host": ["{{base_url}}"],
               "path": ["api", "decks", "7", "untagged-flashcards-count"]
+            }
+          }
+        },
+        {
+          "name": "Get Deck Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/decks/8/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "decks", "8", "stats"]
             }
           }
         },
@@ -624,7 +642,7 @@
           }
         },
         {
-          "name": "Create Multiple Flashcards",
+          "name": "Bulk Create Flashcards",
           "request": {
             "method": "POST",
             "header": [
@@ -639,7 +657,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"flashcards\": [\n    {\n      \"front\": \"Good morning\",\n      \"back\": \"Buenos días\",\n      \"deckId\": 7\n    },\n    {\n      \"front\": \"Good night\",\n      \"back\": \"Buenas noches\",\n      \"deckId\": 7,\n      \"difficulty\": 3\n    }\n  ]\n}",
+              "raw": "{\n  \"deck_name\": \"Japanese Learning\",\n  \"flashcards\": [\n    {\n      \"front\": \"こんにちは\",\n      \"back\": \"Hola / Buenos días (usado generalmente durante el día)\",\n      \"difficulty\": 1\n    },\n    {\n      \"front\": \"ありがとうございます\",\n      \"back\": \"Muchas gracias (forma formal y educada)\",\n      \"difficulty\": 1\n    },\n    {\n      \"front\": \"すみません\",\n      \"back\": \"Disculpe / Perdón (para pedir atención o disculparse)\",\n      \"difficulty\": 1\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -647,9 +665,33 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/api/flashcards/batch",
+              "raw": "{{base_url}}/api/flashcards/bulk",
               "host": ["{{base_url}}"],
-              "path": ["api", "flashcards", "batch"]
+              "path": ["api", "flashcards", "bulk"]
+            }
+          }
+        },
+        {
+          "name": "Get Flashcards by Deck (No Tags)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/flashcards/deck/8/no-tags?all=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "flashcards", "deck", "8", "no-tags"],
+              "query": [
+                {
+                  "key": "all",
+                  "value": "true",
+                  "description": "Get all flashcards without pagination"
+                }
+              ]
             }
           }
         }

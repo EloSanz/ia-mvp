@@ -1,7 +1,8 @@
 import { openaiService } from './openai.service.js';
 import { Deck } from '../models/deck.js';
 import { Flashcard } from '../models/flashcard.js';
-import { generateDeckCoverBase64 } from './aiImage.service.js';
+import { generateDeckCoverBase64 } from './openIAiImage.service.js';
+import { uploadImageToCloudinary } from '../utils/cloudinary.js';
 
 /**
  * Servicio para generar decks completos con IA
@@ -21,7 +22,7 @@ export class DeckGeneratorService {
     try {
       // 1. Generar metadata y flashcards con IA
       const aiResult = await openaiService.generateCompleteDeck(topic, flashcardCount);
-      
+
       if (!aiResult.deck || !aiResult.flashcards) {
         throw new Error('Respuesta de IA inválida: faltan datos del deck o flashcards');
       }
@@ -48,7 +49,7 @@ export class DeckGeneratorService {
 
       // 4. Generar portada en background (opcional)
       if (generateCover) {
-        this.generateCoverAsync(deck.id, aiResult.deck.name, aiResult.deck.description);
+        this.generateAndAssignCoverAsync(deck.id, aiResult.deck.name, aiResult.deck.description);
       }
 
       return {
@@ -71,23 +72,23 @@ export class DeckGeneratorService {
    * @returns {Promise<Object>} Deck creado con flashcards
    */
   async generateDeckFromConfig(userId, config) {
-    const { 
-      topic, 
-      flashcardCount = 10, 
-      difficulty = 'intermediate', 
-      tags = [], 
-      generateCover = true 
+    const {
+      topic,
+      flashcardCount = 10,
+      difficulty = 'intermediate',
+      tags = [],
+      generateCover = true
     } = config;
 
     try {
       // 1. Generar metadata y flashcards con IA usando configuración
       const aiResult = await openaiService.generateCompleteDeckWithConfig(
-        topic, 
-        flashcardCount, 
-        difficulty, 
+        topic,
+        flashcardCount,
+        difficulty,
         tags
       );
-      
+
       if (!aiResult.deck || !aiResult.flashcards) {
         throw new Error('Respuesta de IA inválida: faltan datos del deck o flashcards');
       }
@@ -114,7 +115,7 @@ export class DeckGeneratorService {
 
       // 4. Generar portada en background (opcional)
       if (generateCover) {
-        this.generateCoverAsync(deck.id, aiResult.deck.name, aiResult.deck.description);
+        this.generateAndAssignCoverAsync(deck.id, aiResult.deck.name, aiResult.deck.description);
       }
 
       return {
@@ -140,7 +141,7 @@ export class DeckGeneratorService {
     try {
       // 1. Obtener decks existentes del usuario
       const userDecks = await Deck.findAll({ userId });
-      
+
       if (userDecks.length === 0) {
         // Si no tiene decks, sugerir temas generales
         return this.getDefaultTopics();
@@ -148,7 +149,7 @@ export class DeckGeneratorService {
 
       // 2. Generar sugerencias basadas en sus decks
       const suggestions = await openaiService.suggestDeckTopics(userDecks, count);
-      
+
       return suggestions || [];
 
     } catch (error) {
@@ -159,21 +160,31 @@ export class DeckGeneratorService {
   }
 
   /**
-   * Genera portada de forma asíncrona
+   * Genera y asigna una portada de forma asíncrona, actualizando el estado del deck.
+   * Este es el método centralizado para la generación de portadas.
    * @private
    */
-  async generateCoverAsync(deckId, name, description) {
+  async generateAndAssignCoverAsync(deckId, name, description) {
     try {
+      // 1. Generar imagen con IA
       const result = await generateDeckCoverBase64(name, description);
-      
-      if (result.base64) {
-        await Deck.update(deckId, { coverUrl: result.base64 });
-        console.log(`Portada generada para deck ${deckId}`);
-      } else {
-        console.error(`Error generando portada para deck ${deckId}:`, result.error);
+
+      if (!result.base64) {
+        await Deck.update(deckId, { coverGenerationStatus: 'FAILED' });
+        throw new Error(result.error || 'La IA no pudo generar la imagen base64.');
       }
+
+      // 2. Subir a Cloudinary
+      const formattedBase64 = `data:image/png;base64,${result.base64}`;
+      const url = await uploadImageToCloudinary(formattedBase64, 'ICards');
+
+      // 3. Actualizar el deck con la URL y el estado COMPLETED
+      await Deck.update(deckId, { coverUrl: url, coverGenerationStatus: 'COMPLETED' });
+      console.log(`✅ Portada generada y asignada exitosamente para deck ${deckId}`);
     } catch (error) {
-      console.error(`Error generando portada para deck ${deckId}:`, error);
+      console.error(`❌ Error en el proceso de generación de portada para deck ${deckId}:`, error);
+      // En caso de cualquier error, actualizar el estado a FAILED
+      await Deck.update(deckId, { coverGenerationStatus: 'FAILED' });
     }
   }
 

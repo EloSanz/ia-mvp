@@ -14,7 +14,7 @@
     "testTimeout": 10000
   },
   "scripts": {
-    "dev": "nodemon src/index.js",
+    "dev": "npx prisma migrate deploy && npx prisma generate && nodemon src/index.js",
     "start": "node src/index.js",
     "dockerStart": "npx prisma migrate deploy && npx prisma generate && node src/index.js",
     "test": "jest",
@@ -46,7 +46,8 @@
     "sanitize-filename": "^1.6.3",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "cloudinary": "^2.8.0"
   },
   "devDependencies": {
     "@babel/core": "^7.28.4",

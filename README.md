@@ -249,6 +249,13 @@ docker-compose up --build
    docker compose exec frontend sh
    docker compose exec postgres psql -U postgres
 ```
+# Reinicio completo del entorno Docker (desarrollo)
+
+Si tienes problemas con migraciones, datos corruptos o simplemente quieres empezar desde cero, sigue estos pasos para borrar **todos** los contenedores, imágenes y volúmenes de Docker relacionados con el proyecto:
+
+```bash
+# Detén y elimina todos los contenedores y volúmenes del proyecto
+docker-compose down -v
 
 ## Configurar MCP de Jira
 1. Cursor

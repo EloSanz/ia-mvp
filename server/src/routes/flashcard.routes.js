@@ -48,6 +48,7 @@ router.get('/due/:deckId', FlashcardController.getDueFlashcards);
  * @access Private
  */
 router.get('/deck/:deckId', FlashcardController.getFlashcardsByDeck);
+router.get('/deck/:deckId/no-tags', FlashcardController.getFlashcardsByDeckNoTags);
 
 /**
  * @route GET /api/flashcards/:id
@@ -67,7 +68,7 @@ router.get('/:id', FlashcardController.getFlashcardById);
  */
 router.post('/', FlashcardController.createFlashcard);
 router.post('/ai-generate', FlashcardController.generateAIFlashcards);
-router.post('/batch', FlashcardController.createManyFlashcards);
+router.post('/bulk', FlashcardController.createManyFlashcards);
 
 /**
  * @route PUT /api/flashcards/:id

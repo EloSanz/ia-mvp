@@ -57,7 +57,13 @@ export class DeckRepository {
           description: true,
           userId: true,
           createdAt: true,
-          updatedAt: true
+          updatedAt: true,
+          tags: {
+            select: {
+              id: true,
+              name: true
+            }
+          }
           // Excluye coverUrl explícitamente
         }
       });

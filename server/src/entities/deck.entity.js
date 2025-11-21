@@ -8,11 +8,13 @@ export class DeckEntity {
     this.name = data.name || '';
     this.description = data.description || '';
     this.userId = data.userId;
-    this.coverUrl= data.coverUrl|| null;
+    this.coverUrl = data.coverUrl || null;
     this.visibility = data.visibility || 'private';
     this.clonesCount = data.clonesCount || 0;
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
+    this.tags = data.tags || [];
+    this.coverGenerationStatus = data.coverGenerationStatus || null;
   }
 
   /**
@@ -27,6 +29,7 @@ export class DeckEntity {
       coverUrl: this.coverUrl,
       visibility: this.visibility,
       clonesCount: this.clonesCount,
+      coverGenerationStatus: this.coverGenerationStatus,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };
@@ -44,8 +47,10 @@ export class DeckEntity {
       coverUrl: prismaData.coverUrl,
       visibility: prismaData.visibility,
       clonesCount: prismaData.clonesCount,
+      coverGenerationStatus: prismaData.coverGenerationStatus,
       createdAt: prismaData.createdAt,
-      updatedAt: prismaData.updatedAt
+      updatedAt: prismaData.updatedAt,
+      tags: prismaData.tags || []
     });
   }
 

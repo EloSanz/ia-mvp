@@ -51,6 +51,7 @@ Genera una **ilustración abstracta y conceptual** para una cubierta/tarjeta.
  * @returns {Promise<{ base64: string|null, error: any|null }>}
  */
 export async function generateDeckCoverBase64(title, description) {
+
   // Límite de seguridad: DALL·E 2 tiene un límite de 1000.
   // Dejamos ~300 caracteres para las instrucciones y reservamos ~700 para los inputs.
   const MAX_INPUT_LENGTH = 700;
@@ -86,3 +87,5 @@ Genera una **ilustración abstracta y conceptual** para una cubierta/tarjeta.
     return { base64: null, error };
   }
 }
+
+
