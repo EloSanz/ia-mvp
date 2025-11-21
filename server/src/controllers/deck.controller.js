@@ -1305,8 +1305,84 @@ export const DeckController = {
   }),
 
   /**
-   * Genera un deck completo desde un archivo PDF/Word
-   * POST /api/decks/generate-from-document
+   * @swagger
+   * /api/decks/generate-from-document:
+   *   post:
+   *     summary: Generate a deck from a PDF/Word document
+   *     description: Generates a complete deck with flashcards from a PDF or Word document using AI
+   *     tags: [Decks, AI]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         multipart/form-data:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - document
+   *             properties:
+   *               document:
+   *                 type: string
+   *                 format: binary
+   *                 description: PDF or Word document file (max 5MB)
+   *               flashcardCount:
+   *                 type: integer
+   *                 minimum: 5
+   *                 maximum: 50
+   *                 default: 15
+   *                 description: Number of flashcards to generate
+   *               generateCover:
+   *                 type: boolean
+   *                 default: true
+   *                 description: Whether to generate AI cover image
+   *     responses:
+   *       201:
+   *         description: Deck generated successfully from document
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Deck generado desde documento
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     deck:
+   *                       $ref: '#/components/schemas/Deck'
+   *                     flashcards:
+   *                       type: array
+   *                       items:
+   *                         $ref: '#/components/schemas/Flashcard'
+   *       400:
+   *         description: Bad request - Invalid file, document format, or processing error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       408:
+   *         description: Request Timeout - Processing took too long
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       500:
+   *         description: Internal server error - AI generation failed
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   generateDeckFromDocument: BaseController.wrap(async (req, res) => {
     const userId = parseInt(req.userId);
