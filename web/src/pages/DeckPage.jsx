@@ -440,7 +440,7 @@ const DeckPage = () => {
           />
         )}
         <Alert severity="error">Deck no encontrado</Alert>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/')} sx={{ mt: 2 }}>
+        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/home')} sx={{ mt: 2 }}>
           Volver al Inicio
         </Button>
       </Container>

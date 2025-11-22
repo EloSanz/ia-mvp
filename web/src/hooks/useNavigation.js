@@ -115,7 +115,7 @@ export const useNavigation = () => {
   const goBackToDecks = () => {
     // Si estamos en una página de deck, volver a la lista de decks
     // Si estamos en cualquier otra página, ir a la lista de decks
-    navigate('/');
+    navigate('/home');
   };
 
   // Funciones de breadcrumb

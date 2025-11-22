@@ -28,7 +28,16 @@ import {
   CardMedia,
   Card,
   Skeleton,
-  Snackbar
+  Snackbar,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  Backdrop,
+  Zoom,
+  Grow,
+  Slide
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -41,7 +50,8 @@ import {
   ArrowForward as ArrowForwardIcon,
   AutoAwesome as AIIcon,
   Create as CreateIcon,
-  AutoFixHigh as AutoFixHighIcon
+  AutoFixHigh as AutoFixHighIcon,
+  Description as DocumentIcon
 } from '@mui/icons-material';
 import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
@@ -56,6 +66,7 @@ import { useTheme as useMuiTheme } from '@mui/material';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
 import DecksGridCard from '../components/DecksGridCard';
 import AIDeckGeneratorModal from '../components/AIDeckGeneratorModal';
+import DocumentUploadModal from '../components/DocumentUploadModal';
 const HomePage = () => {
   const muiTheme = useMuiTheme();
   const { themeName } = useAppTheme();
@@ -101,6 +112,13 @@ const HomePage = () => {
 
   // Modal para generación de deck con IA
   const [aiDeckGeneratorOpen, setAiDeckGeneratorOpen] = useState(false);
+
+  // Modal para generación desde documento
+  const [documentUploadOpen, setDocumentUploadOpen] = useState(false);
+
+  // Menu de creación de decks
+  const [createMenuAnchor, setCreateMenuAnchor] = useState(null);
+  const createMenuOpen = Boolean(createMenuAnchor);
 
   //Monitoreo de deck para portada IA
   const [deckMonitory, setDeckMonitory] = useState(null);
@@ -248,6 +266,60 @@ const HomePage = () => {
 
 
   };
+
+  const handleDocumentGenerate = (result) => {
+    console.log('Deck generado desde documento:', result);
+    // Recargar la lista
+    loadDecks();
+
+    // Si el deck fue creado pero aún no tiene portada, monitorizarlo para actualizar la portada cuando el backend la genere
+    if (result && result.deck && !result.deck.coverUrl) {
+      setDeckMonitory(result.deck);
+    }
+
+    showToast(`Deck "${result.deck?.name || 'sin nombre'}" creado exitosamente con ${result.flashcards?.length || 0} flashcards desde documento`);
+  };
+
+  // Handlers del menú de creación
+  const handleCreateMenuOpen = (event) => {
+    setCreateMenuAnchor(event.currentTarget);
+  };
+
+  const handleCreateMenuClose = () => {
+    setCreateMenuAnchor(null);
+  };
+
+  const handleCreateOption = (option) => {
+    handleCreateMenuClose();
+    
+    switch (option) {
+      case 'document':
+        setDocumentUploadOpen(true);
+        break;
+      case 'ai':
+        setAiDeckGeneratorOpen(true);
+        break;
+      case 'manual':
+        setCreateDialogOpen(true);
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Cerrar menú con tecla ESC
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape' && createMenuOpen) {
+        handleCreateMenuClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscKey);
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [createMenuOpen]);
 
   if (loading) {
     return (
@@ -438,88 +510,317 @@ const HomePage = () => {
             />
           </>
         )}
-        {/* Botones de acción flotantes */}
+        {/* Backdrop oscuro cuando el menú está abierto */}
+        <Backdrop
+          open={createMenuOpen}
+          onClick={handleCreateMenuClose}
+          sx={{
+            zIndex: (theme) => theme.zIndex.drawer - 1,
+            bgcolor: 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(2px)',
+            transition: 'opacity 0.2s ease-in-out',
+          }}
+        />
+
+        {/* Botón flotante único para crear deck con animación de rotación */}
+        <Zoom in timeout={300}>
+          <Fab
+            color="primary"
+            aria-label="crear deck"
+            aria-expanded={createMenuOpen}
+            aria-haspopup="true"
+            onClick={handleCreateMenuOpen}
+            sx={{
+              position: 'fixed',
+              bottom: 24,
+              right: 24,
+              width: 64,
+              height: 64,
+              boxShadow: 6,
+              zIndex: (theme) => theme.zIndex.drawer,
+              background: (theme) =>
+                theme.palette.mode === 'dark'
+                  ? `linear-gradient(145deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`
+                  : theme.palette.primary.main,
+              '&:hover': {
+                boxShadow: 12,
+                transform: 'scale(1.08)',
+                background: (theme) =>
+                  theme.palette.mode === 'dark'
+                    ? `linear-gradient(145deg, ${theme.palette.primary.light}, ${theme.palette.primary.main})`
+                    : theme.palette.primary.dark,
+              },
+              '&:active': {
+                transform: 'scale(0.96)',
+              },
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+          >
+            <AddIcon 
+              sx={{ 
+                fontSize: 32,
+                transform: createMenuOpen ? 'rotate(45deg)' : 'rotate(0deg)',
+                transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              }} 
+            />
+          </Fab>
+        </Zoom>
+
+        {/* Menú desplegable mejorado con animaciones escalonadas */}
         <Box
           sx={{
             position: 'fixed',
-            bottom: 24,
+            bottom: 100,
             right: 24,
+            zIndex: (theme) => theme.zIndex.drawer,
             display: 'flex',
             flexDirection: 'column',
-            gap: 2
+            gap: 1,
+            pointerEvents: createMenuOpen ? 'auto' : 'none',
           }}
         >
-          {/* Botón para crear deck con IA */}
-          <Button
-            variant="contained"
-            startIcon={<AutoFixHighIcon />}
-            onClick={() => setAiDeckGeneratorOpen(true)}
-            sx={{
-              borderRadius: '50px',
-              px: 3,
-              py: 1.5,
-              fontSize: '0.9rem',
-              fontWeight: 'bold',
-              textTransform: 'none',
-              // Neumorphism/Glassy effect
-              background: (theme) =>
-                theme.palette.mode === 'dark'
-                  ? `linear-gradient(145deg, ${theme.palette.secondary.main}15, ${theme.palette.secondary.main}25)`
-                  : `linear-gradient(145deg, ${theme.palette.secondary.main}20, ${theme.palette.secondary.main}30)`,
-              backgroundColor: 'secondary.main',
-              backdropFilter: 'blur(10px)',
-              border: (theme) =>
-                theme.palette.mode === 'dark'
-                  ? `1px solid ${theme.palette.secondary.main}40`
-                  : `1px solid ${theme.palette.secondary.main}30`,
-              boxShadow: (theme) =>
-                theme.palette.mode === 'dark'
-                  ? `0 8px 32px ${theme.palette.secondary.main}20, inset 0 1px 0 ${theme.palette.secondary.main}30`
-                  : `0 8px 32px ${theme.palette.secondary.main}15, inset 0 1px 0 ${theme.palette.secondary.main}20`,
-              '&:hover': {
-                background: (theme) =>
-                  theme.palette.mode === 'dark'
-                    ? `linear-gradient(145deg, ${theme.palette.secondary.main}25, ${theme.palette.secondary.main}35)`
-                    : `linear-gradient(145deg, ${theme.palette.secondary.main}30, ${theme.palette.secondary.main}40)`,
-                boxShadow: (theme) =>
-                  theme.palette.mode === 'dark'
-                    ? `0 12px 40px ${theme.palette.secondary.main}30, inset 0 1px 0 ${theme.palette.secondary.main}40`
-                    : `0 12px 40px ${theme.palette.secondary.main}25, inset 0 1px 0 ${theme.palette.secondary.main}30`,
-                transform: 'translateY(-2px)',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-              },
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              color: (theme) =>
-                theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.secondary.contrastText || '#ffffff'
+          {/* Opción 1: Desde Documento */}
+          <Slide
+            direction="up"
+            in={createMenuOpen}
+            timeout={{
+              enter: 300,
+              exit: 200
+            }}
+            style={{
+              transitionDelay: createMenuOpen ? '0ms' : '100ms',
             }}
           >
-            Crear con IA
-          </Button>
+            <Zoom
+              in={createMenuOpen}
+              timeout={{
+                enter: 300,
+                exit: 200
+              }}
+              style={{
+                transitionDelay: createMenuOpen ? '0ms' : '100ms',
+              }}
+            >
+              <Paper
+                elevation={6}
+                onClick={() => handleCreateOption('document')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleCreateOption('document');
+                  }
+                }}
+                tabIndex={createMenuOpen ? 0 : -1}
+                role="button"
+                aria-label="Crear deck desde documento PDF o Word"
+                sx={{
+                  px: 3,
+                  py: 1.5,
+                  borderRadius: '50px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  bgcolor: (theme) => 
+                    theme.palette.mode === 'dark' ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  border: (theme) => 
+                    theme.palette.mode === 'dark' ? '1px solid rgba(240, 147, 251, 0.3)' : '1px solid rgba(240, 147, 251, 0.2)',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    transform: 'translateX(-4px) scale(1.05)',
+                    bgcolor: (theme) => 
+                      theme.palette.mode === 'dark' ? 'rgba(40, 40, 40, 0.95)' : 'rgba(250, 250, 250, 0.95)',
+                    boxShadow: 8,
+                    border: (theme) => 
+                      theme.palette.mode === 'dark' ? '1px solid rgba(240, 147, 251, 0.5)' : '1px solid rgba(240, 147, 251, 0.4)',
+                  },
+                  '&:active': {
+                    transform: 'translateX(-4px) scale(1.02)',
+                  },
+                  '&:focus-visible': {
+                    outline: '2px solid',
+                    outlineColor: '#f093fb',
+                    outlineOffset: 2,
+                  },
+                }}
+              >
+                <DocumentIcon sx={{ color: '#f093fb', fontSize: 24 }} />
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    color: (theme) => theme.palette.text.primary,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Desde Documento
+                </Typography>
+              </Paper>
+            </Zoom>
+          </Slide>
 
-          {/* Botón para crear deck manual */}
-          <Button
-            variant="contained"
-            startIcon={<CreateIcon />}
-            onClick={() => setCreateDialogOpen(true)}
-            sx={{
-              borderRadius: '50px',
-              px: 3,
-              py: 1.5,
-              fontSize: '0.9rem',
-              fontWeight: 'bold',
-              textTransform: 'none',
-              boxShadow: 3,
-              backgroundColor: 'primary.main',
-              '&:hover': {
-                boxShadow: 6,
-                backgroundColor: 'primary.dark'
-              },
-              color: (theme) =>
-                theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.primary.contrastText || '#ffffff'
+          {/* Opción 2: Crear con IA */}
+          <Slide
+            direction="up"
+            in={createMenuOpen}
+            timeout={{
+              enter: 300,
+              exit: 200
+            }}
+            style={{
+              transitionDelay: createMenuOpen ? '50ms' : '50ms',
             }}
           >
-            Crear Manual
-          </Button>
+            <Zoom
+              in={createMenuOpen}
+              timeout={{
+                enter: 300,
+                exit: 200
+              }}
+              style={{
+                transitionDelay: createMenuOpen ? '50ms' : '50ms',
+              }}
+            >
+              <Paper
+                elevation={6}
+                onClick={() => handleCreateOption('ai')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleCreateOption('ai');
+                  }
+                }}
+                tabIndex={createMenuOpen ? 0 : -1}
+                role="button"
+                aria-label="Crear deck con inteligencia artificial desde un tema"
+                sx={{
+                  px: 3,
+                  py: 1.5,
+                  borderRadius: '50px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  bgcolor: (theme) => 
+                    theme.palette.mode === 'dark' ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  border: (theme) => 
+                    theme.palette.mode === 'dark' ? '1px solid rgba(156, 39, 176, 0.3)' : '1px solid rgba(156, 39, 176, 0.2)',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    transform: 'translateX(-4px) scale(1.05)',
+                    bgcolor: (theme) => 
+                      theme.palette.mode === 'dark' ? 'rgba(40, 40, 40, 0.95)' : 'rgba(250, 250, 250, 0.95)',
+                    boxShadow: 8,
+                    border: (theme) => 
+                      theme.palette.mode === 'dark' ? '1px solid rgba(156, 39, 176, 0.5)' : '1px solid rgba(156, 39, 176, 0.4)',
+                  },
+                  '&:active': {
+                    transform: 'translateX(-4px) scale(1.02)',
+                  },
+                  '&:focus-visible': {
+                    outline: '2px solid',
+                    outlineColor: 'secondary.main',
+                    outlineOffset: 2,
+                  },
+                }}
+              >
+                <AutoFixHighIcon color="secondary" sx={{ fontSize: 24 }} />
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    color: (theme) => theme.palette.text.primary,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Crear con IA
+                </Typography>
+              </Paper>
+            </Zoom>
+          </Slide>
+
+          {/* Opción 3: Crear Manual */}
+          <Slide
+            direction="up"
+            in={createMenuOpen}
+            timeout={{
+              enter: 300,
+              exit: 200
+            }}
+            style={{
+              transitionDelay: createMenuOpen ? '100ms' : '0ms',
+            }}
+          >
+            <Zoom
+              in={createMenuOpen}
+              timeout={{
+                enter: 300,
+                exit: 200
+              }}
+              style={{
+                transitionDelay: createMenuOpen ? '100ms' : '0ms',
+              }}
+            >
+              <Paper
+                elevation={6}
+                onClick={() => handleCreateOption('manual')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleCreateOption('manual');
+                  }
+                }}
+                tabIndex={createMenuOpen ? 0 : -1}
+                role="button"
+                aria-label="Crear deck manual vacío"
+                sx={{
+                  px: 3,
+                  py: 1.5,
+                  borderRadius: '50px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  bgcolor: (theme) => 
+                    theme.palette.mode === 'dark' ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  border: (theme) => 
+                    theme.palette.mode === 'dark' ? '1px solid rgba(25, 118, 210, 0.3)' : '1px solid rgba(25, 118, 210, 0.2)',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    transform: 'translateX(-4px) scale(1.05)',
+                    bgcolor: (theme) => 
+                      theme.palette.mode === 'dark' ? 'rgba(40, 40, 40, 0.95)' : 'rgba(250, 250, 250, 0.95)',
+                    boxShadow: 8,
+                    border: (theme) => 
+                      theme.palette.mode === 'dark' ? '1px solid rgba(25, 118, 210, 0.5)' : '1px solid rgba(25, 118, 210, 0.4)',
+                  },
+                  '&:active': {
+                    transform: 'translateX(-4px) scale(1.02)',
+                  },
+                  '&:focus-visible': {
+                    outline: '2px solid',
+                    outlineColor: 'primary.main',
+                    outlineOffset: 2,
+                  },
+                }}
+              >
+                <CreateIcon color="primary" sx={{ fontSize: 24 }} />
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    color: (theme) => theme.palette.text.primary,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Crear Manual
+                </Typography>
+              </Paper>
+            </Zoom>
+          </Slide>
         </Box>
 
         {/* Modal para crear deck */}
@@ -673,6 +974,13 @@ const HomePage = () => {
           onGenerate={handleAIDeckGenerated}
         />
 
+        {/* Modal para generación desde documento */}
+        <DocumentUploadModal
+          open={documentUploadOpen}
+          onClose={() => setDocumentUploadOpen(false)}
+          onGenerate={handleDocumentGenerate}
+        />
+
         {/* Toast de confirmación */}
         <Snackbar
           open={toast.open}
@@ -697,90 +1005,6 @@ const HomePage = () => {
             {toast.message}
           </Alert>
         </Snackbar>
-
-        {/* Botones de acción flotantes */}
-        <Box
-          sx={{
-            position: 'fixed',
-            bottom: 24,
-            right: 24,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2
-          }}
-        >
-          {/* Botón para crear deck con IA */}
-          <Button
-            variant="contained"
-            startIcon={<AutoFixHighIcon />}
-            onClick={() => setAiDeckGeneratorOpen(true)}
-            sx={{
-              borderRadius: '50px',
-              px: 3,
-              py: 1.5,
-              fontSize: '0.9rem',
-              fontWeight: 'bold',
-              textTransform: 'none',
-              // Neumorphism/Glassy effect
-              background: (theme) =>
-                theme.palette.mode === 'dark'
-                  ? `linear-gradient(145deg, ${theme.palette.secondary.main}15, ${theme.palette.secondary.main}25)`
-                  : `linear-gradient(145deg, ${theme.palette.secondary.main}20, ${theme.palette.secondary.main}30)`,
-              backgroundColor: 'secondary.main',
-              backdropFilter: 'blur(10px)',
-              border: (theme) =>
-                theme.palette.mode === 'dark'
-                  ? `1px solid ${theme.palette.secondary.main}40`
-                  : `1px solid ${theme.palette.secondary.main}30`,
-              boxShadow: (theme) =>
-                theme.palette.mode === 'dark'
-                  ? `0 8px 32px ${theme.palette.secondary.main}20, inset 0 1px 0 ${theme.palette.secondary.main}30`
-                  : `0 8px 32px ${theme.palette.secondary.main}15, inset 0 1px 0 ${theme.palette.secondary.main}20`,
-              '&:hover': {
-                background: (theme) =>
-                  theme.palette.mode === 'dark'
-                    ? `linear-gradient(145deg, ${theme.palette.secondary.main}25, ${theme.palette.secondary.main}35)`
-                    : `linear-gradient(145deg, ${theme.palette.secondary.main}30, ${theme.palette.secondary.main}40)`,
-                boxShadow: (theme) =>
-                  theme.palette.mode === 'dark'
-                    ? `0 12px 40px ${theme.palette.secondary.main}30, inset 0 1px 0 ${theme.palette.secondary.main}40`
-                    : `0 12px 40px ${theme.palette.secondary.main}25, inset 0 1px 0 ${theme.palette.secondary.main}30`,
-                transform: 'translateY(-2px)',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-              },
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              color: (theme) =>
-                theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.secondary.contrastText || '#ffffff'
-            }}
-          >
-            Crear con IA
-          </Button>
-
-          {/* Botón para crear deck manual */}
-          <Button
-            variant="contained"
-            startIcon={<CreateIcon />}
-            onClick={() => setCreateDialogOpen(true)}
-            sx={{
-              borderRadius: '50px',
-              px: 3,
-              py: 1.5,
-              fontSize: '0.9rem',
-              fontWeight: 'bold',
-              textTransform: 'none',
-              boxShadow: 3,
-              backgroundColor: 'primary.main',
-              '&:hover': {
-                boxShadow: 6,
-                backgroundColor: 'primary.dark'
-              },
-              color: (theme) =>
-                theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.primary.contrastText || '#ffffff'
-            }}
-          >
-            Crear Manual
-          </Button>
-        </Box>
       </Container>
     </>
   );
