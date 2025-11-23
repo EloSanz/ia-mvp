@@ -171,7 +171,7 @@ const DocumentUploadModal = ({ open, onClose, onGenerate }) => {
       if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
         setError('El procesamiento está tomando más tiempo del esperado. El deck podría haberse creado exitosamente, por favor verifica tu lista de decks.');
       } else {
-        const errorMessage = err.response?.data?.error || 'Error al procesar el documento';
+        const errorMessage = err.response?.data?.message || err.response?.data?.error || 'Error al procesar el documento';
         setError(errorMessage);
       }
     } finally {

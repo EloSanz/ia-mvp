@@ -27,6 +27,8 @@ import Navigation from '../components/Navigation';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { useNavigate } from 'react-router-dom';
 import { useApi } from '../contexts/ApiContext';
+import useDeckPagination from '../hooks/useDeckPagination';
+import Pagination from '../components/Pagination';
 
 export default function LibraryPage() {
   const navigate = useNavigate();
@@ -37,6 +39,18 @@ export default function LibraryPage() {
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('recent');
+
+  // Hook de paginación
+  const {
+    paginatedDecks,
+    currentPage,
+    itemsPerPage,
+    totalPages,
+    totalItems,
+    handlePageChange,
+    handleItemsPerPageChange,
+    hasItems
+  } = useDeckPagination(decks, 8); // 8 elementos por página
 
   useEffect(() => {
     loadDecks();
@@ -162,10 +176,10 @@ export default function LibraryPage() {
         )}
 
         {/* Decks Grid */}
-        {!loading && decks.length > 0 && (
+        {!loading && hasItems && (
           <Grid container spacing={1.5}>
-            {decks.map((deck) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} xl={2.4} key={deck.id}>
+            {paginatedDecks.map((deck) => (
+              <Grid item size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={deck.id}>
                 <Card
                   sx={{
                     height: '100%',
@@ -189,7 +203,7 @@ export default function LibraryPage() {
                   {deck.coverUrl ? (
                     <CardMedia
                       component="img"
-                      height="100"
+                      height="140"
                       image={`data:image/png;base64,${deck.coverUrl}`}
                       alt={deck.name}
                       sx={{ objectFit: 'cover' }}
@@ -197,28 +211,28 @@ export default function LibraryPage() {
                   ) : (
                     <CardMedia
                       component="img"
-                      height="100"
+                      height="140"
                       image="/cards.png"
                       alt={deck.name}
                       sx={{ objectFit: 'cover' }}
                     />
                   )}
 
-                  <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                  <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
                     {/* Deck Name */}
                     <Typography
                       variant="h6"
-                      fontWeight="600"
+                      fontWeight="bold"
+                      gutterBottom
                       sx={{
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        lineHeight: '1.3em',
-                        height: '2.6em',
-                        mb: 0.5,
-                        fontSize: '0.95rem'
+                        lineHeight: '1.2em',
+                        height: '2.4em',
+                        mb: 1
                       }}
                     >
                       {deck.name}
@@ -229,16 +243,15 @@ export default function LibraryPage() {
                       variant="body2"
                       color="text.secondary"
                       sx={{
-                        mb: 1,
+                        mb: 2,
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        lineHeight: '1.25em',
-                        height: '2.5em',
-                        fontSize: '0.8rem',
-                        flexGrow: 1
+                        lineHeight: '1.3em',
+                        height: '2.6em',
+                        fontSize: '0.875rem'
                       }}
                     >
                       {deck.description || 'Sin descripción'}
@@ -247,32 +260,25 @@ export default function LibraryPage() {
                     {/* Stats */}
                     <Box sx={{ mt: 'auto' }}>
                       {/* Author */}
-                      <Box display="flex" alignItems="center" gap={0.5} mb={0.75}>
-                        <PersonIcon sx={{ fontSize: 13, color: 'text.secondary' }} />
-                        <Typography variant="caption" color="text.secondary" fontSize="0.7rem" fontWeight="500">
+                      <Box display="flex" alignItems="center" gap={0.5} mb={1}>
+                        <PersonIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                        <Typography variant="caption" color="text.secondary" fontSize="0.75rem">
                           {deck.user?.username || 'Anónimo'}
                         </Typography>
                       </Box>
 
-                      {/* Metrics - Compactas en fila */}
-                      <Box display="flex" gap={0.75} alignItems="center">
+                      {/* Metrics */}
+                      <Box display="flex" gap={1.5} alignItems="center">
                         <Box display="flex" alignItems="center" gap={0.5}>
-                          <CardIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-                          <Typography variant="caption" fontSize="0.7rem" fontWeight="600">
-                            {deck.stats?.flashcardsCount || 0}
+                          <CardIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                          <Typography variant="caption" fontSize="0.75rem" fontWeight="600">
+                            {deck.stats?.flashcardsCount || 0} cards
                           </Typography>
                         </Box>
-                        <Box 
-                          sx={{ 
-                            width: '1px', 
-                            height: '12px', 
-                            bgcolor: 'divider' 
-                          }} 
-                        />
                         <Box display="flex" alignItems="center" gap={0.5}>
-                          <CopyIcon sx={{ fontSize: 14, color: 'primary.main' }} />
-                          <Typography variant="caption" fontSize="0.7rem" fontWeight="600" color="primary.main">
-                            {deck.clonesCount}
+                          <CopyIcon sx={{ fontSize: 16, color: 'primary.main' }} />
+                          <Typography variant="caption" fontSize="0.75rem" fontWeight="600" color="primary.main">
+                            {deck.clonesCount} clones
                           </Typography>
                         </Box>
                       </Box>
@@ -282,6 +288,19 @@ export default function LibraryPage() {
               </Grid>
             ))}
           </Grid>
+        )}
+
+        {/* Paginación */}
+        {!loading && hasItems && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
+            itemsPerPageOptions={[8, 16, 24]}
+          />
         )}
       </Container>
     </>
