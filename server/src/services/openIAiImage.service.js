@@ -67,6 +67,8 @@ EXAMPLE 3:
  * @returns {Promise<{url: string|null, error: any|null}>}
  */
 export async function generateDeckCoverURL(title, description) {
+  console.log("🚀 Titulo de generacion:", title)
+  console.log("🚀 Desccripcion de generacion:", description)
   // 1. Obtener palabras clave visuales (Paso 1)
   const visualKeywords = await _getVisualKeywords(title, description);
 
@@ -106,6 +108,8 @@ export async function generateDeckCoverURL(title, description) {
  * @returns {Promise<{ base64: string|null, error: any|null }>}|
  */
 export async function generateDeckCoverBase64(title, description) {
+  console.log("🚀 Titulo de generacion:", title)
+  console.log("🚀 Desccripcion de generacion:", description)
   // 1. Obtener palabras clave visuales (Paso 1)
   const visualKeywords = await _getVisualKeywords(title, description);
 
