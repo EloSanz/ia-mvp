@@ -18,6 +18,7 @@
     "start": "node src/index.js",
     "dockerStart": "npx prisma db push && npx prisma generate && node src/index.js",
     "db:reset": "echo '🛑 ATENCIÓN: Esto BORRARÁ TODOS LOS DATOS' && sleep 3 && pm2 stop ia-mvp 2>/dev/null || echo 'App not running' && npx prisma migrate reset --force --skip-generate 2>/dev/null || npx prisma db push --force-reset && npx prisma generate && npx prisma db seed 2>/dev/null || echo 'No seed' && pm2 restart ia-mvp 2>/dev/null || npm start",
+    "db:nuke": "echo '💥 NUCLEAR OPTION: Drop and recreate database' && sleep 3 && pm2 stop ia-mvp 2>/dev/null || echo 'App stopped' && sudo -u postgres psql -c 'DROP DATABASE IF EXISTS ia_flashcards;' -c 'CREATE DATABASE ia_flashcards;' && npx prisma db push && npx prisma generate && pm2 restart ia-mvp 2>/dev/null || npm start",
     "db:push": "npx prisma db push",
     "db:status": "npx prisma migrate status",
     "db:generate": "npx prisma generate",
