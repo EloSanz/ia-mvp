@@ -493,9 +493,14 @@ export class FlashcardRepository {
 
       const skip = page * pageSize;
       const take = pageSize;
+      const whereCondition = {
+        deckId: parseInt(deckId),
+        tagId: null  // Solo flashcards sin tag asignado
+      };
+
       const [flashcards, total] = await Promise.all([
         prisma.flashcard.findMany({
-          where: { deckId: parseInt(deckId) },
+          where: whereCondition,
           select: {
             id: true,
             front: true,
@@ -513,7 +518,7 @@ export class FlashcardRepository {
           skip,
           take
         }),
-        prisma.flashcard.count({ where: { deckId: parseInt(deckId) } })
+        prisma.flashcard.count({ where: whereCondition })
       ]);
 
       const result = {
@@ -541,7 +546,10 @@ export class FlashcardRepository {
       }
 
       const flashcards = await prisma.flashcard.findMany({
-        where: { deckId: parseInt(deckId) },
+        where: {
+          deckId: parseInt(deckId),
+          tagId: null  // Solo flashcards sin tag asignado
+        },
         select: {
           id: true,
           front: true,
