@@ -161,7 +161,12 @@ export const apiLogger = (req, res, next) => {
       const url = req.originalUrl || req.url;
       const colors = getColors();
 
-      console.log(`${colors.red}API ERROR${colors.reset} ${method} ${url} ${statusCode} - ${data.message || 'Unknown error'}`);
+      // Para errores de autenticación, ser menos verboso
+      if (statusCode === 401) {
+        console.log(`${colors.yellow}AUTH ERROR${colors.reset} ${method} ${url} - Token inválido o expirado`);
+      } else {
+        console.log(`${colors.red}API ERROR${colors.reset} ${method} ${url} ${statusCode} - ${data.message || 'Unknown error'}`);
+      }
     }
 
     return originalJson.call(this, data);

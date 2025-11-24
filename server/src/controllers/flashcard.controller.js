@@ -264,6 +264,10 @@ export const FlashcardController = {
     // Crear flashcard
     const newFlashcard = await Flashcard.create(validation.data.toModel());
 
+    // Invalidar cache del deck después de crear la flashcard
+    const { FlashcardRepository } = await import('../repositories/flashcard.repository.js');
+    FlashcardRepository.invalidateDeckCache(newFlashcard.deckId);
+
     BaseController.success(res, newFlashcard, 'Flashcard creada exitosamente', 201);
   }),
 

@@ -5,8 +5,14 @@ import { CustomError } from '../utils/custom.errors.js';
  */
 export const errorHandler = (error, req, res, next) => {
   // Log interno para debug, nunca mostrar al usuario
+  // Solo mostrar stack trace en desarrollo para errores no relacionados con auth
   if (process.env.NODE_ENV === 'development') {
-    console.error('Error capturado por middleware:', error);
+    if (error.name !== 'AuthError') {
+      console.error('Error capturado por middleware:', error);
+    } else {
+      // Para errores de auth, solo mostrar el mensaje sin stack trace
+      console.log('Auth error:', error.message);
+    }
   }
 
   if (res.headersSent) {

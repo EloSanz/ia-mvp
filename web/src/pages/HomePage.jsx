@@ -51,7 +51,8 @@ import {
   AutoAwesome as AIIcon,
   Create as CreateIcon,
   AutoFixHigh as AutoFixHighIcon,
-  Description as DocumentIcon
+  Description as DocumentIcon,
+  VpnKey as TokenIcon
 } from '@mui/icons-material';
 import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
@@ -562,6 +563,58 @@ const HomePage = () => {
                 transform: createMenuOpen ? 'rotate(45deg)' : 'rotate(0deg)',
                 transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
               }} 
+            />
+          </Fab>
+        </Zoom>
+
+        {/* Botón flotante para copiar token JWT */}
+        <Zoom in timeout={500}>
+          <Fab
+            color="success"
+            aria-label="copiar token"
+            onClick={() => {
+              const token = localStorage.getItem('token');
+              if (token) {
+                navigator.clipboard.writeText(token);
+                showToast('Token copiado al portapapeles con éxito');
+              } else {
+                showToast('No hay token disponible', 'warning');
+              }
+            }}
+            sx={{
+              position: 'fixed',
+              bottom: 24,
+              left: 24,
+              width: 64,
+              height: 64,
+              boxShadow: 6,
+              zIndex: (theme) => theme.zIndex.drawer,
+              background: (theme) =>
+                theme.palette.mode === 'dark'
+                  ? `linear-gradient(145deg, ${theme.palette.success.main}, ${theme.palette.success.dark})`
+                  : theme.palette.success.main,
+              '&:hover': {
+                boxShadow: 12,
+                transform: 'scale(1.08)',
+                background: (theme) =>
+                  theme.palette.mode === 'dark'
+                    ? `linear-gradient(145deg, ${theme.palette.success.light}, ${theme.palette.success.main})`
+                    : theme.palette.success.dark,
+              },
+              '&:active': {
+                transform: 'scale(0.96)',
+              },
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+          >
+            <TokenIcon
+              sx={{
+                fontSize: 28,
+                transition: 'transform 0.3s ease',
+                '&:hover': {
+                  transform: 'rotate(15deg)',
+                },
+              }}
             />
           </Fab>
         </Zoom>
