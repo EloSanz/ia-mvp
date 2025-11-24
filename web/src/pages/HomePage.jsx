@@ -37,7 +37,11 @@ import {
   Backdrop,
   Zoom,
   Grow,
-  Slide
+  Slide,
+  Stepper,
+  Step,
+  StepLabel,
+  LinearProgress
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -131,6 +135,18 @@ const HomePage = () => {
     setToast({ open: true, message, severity });
   };
 
+  const [estimatedTime, setEstimatedTime] = useState(null);
+
+  const [statusDialogManualOpen, setStatusDialogManualOpen] = useState(false); // Para el nuevo modal de estado
+
+  const [generationManualStep, setGenerationManualStep] = useState(0);
+
+  const generationManualSteps = [
+    'Generando Deck...',
+    'Creando portada...'
+  ];
+
+
   const loadDecks = useCallback(async () => {
     try {
       setLoading(true);
@@ -149,25 +165,54 @@ const HomePage = () => {
     loadDecks();
   }, [loadDecks]);
 
+
   const handleCreateDeck = async () => {
     if (!newDeck.name.trim()) return;
 
     try {
       setCreating(true);
-      const { data: createdDeck } = await decks.create(newDeck);
-      if (newDeck.generateCover && createdDeck && createdDeck.data.id) {
-        showToast('Generando portada con IA...', 'warning');
-        // monitorear solo este deck recién creado
-        setDeckMonitory(createdDeck.data);
+
+      if (!newDeck.generateCover) {
+        // --- RUTA A: FLUJO SIMPLE (SIN PORTADA CON IA) NI MONITOREO ---
+        await decks.create(newDeck);
+
+        setCreateDialogOpen(false);
+        setNewDeck({ name: '', description: '', generateCover: false });
+        loadDecks(); // Recargar la lista
+        showToast(`Deck "${newDeck.name}" creado exitosamente`);
+
       }
 
-      setCreateDialogOpen(false);
-      setNewDeck({ name: '', description: '', generateCover: false });
-      loadDecks(); // Recargar la lista
-      showToast(`Deck "${newDeck.name}" creado exitosamente`);
+      else {
+        // --- RUTA B: FLUJO CON ESTADOS (PORTADA CON IA) ---
+
+        setCreateDialogOpen(false);
+        setStatusDialogManualOpen(true);
+        setEstimatedTime(20); // Estimar 20 segundos para todo el proceso de creación
+        setGenerationManualStep(0);
+
+        // Llama al endpoint que inicia el trabajo asíncrono
+        const { data: createdDeck } = await decks.create(newDeck);
+        setGenerationManualStep(1);
+
+        if (createdDeck && createdDeck.data.id) {
+          showToast('Generando portada con IA...', 'warning');
+          // monitorear solo este deck recién creado
+          setDeckMonitory(createdDeck.data);
+        }
+
+        setNewDeck({ name: '', description: '', generateCover: false });
+        loadDecks(); // Recargar la lista
+        showToast(`Deck "${newDeck.name}" creado exitosamente`);
+
+      }
+
     } catch (err) {
       console.error('Error creating deck:', err);
+      setStatusDialogManualOpen(false);
+      setEstimatedTime(null);
     } finally {
+
       setCreating(false);
     }
   };
@@ -178,28 +223,45 @@ const HomePage = () => {
     if (deckMonitory && (!deckMonitory.coverUrl || !deckMonitory.coverUrl.startsWith('https:'))) {
       interval = setInterval(async () => {
         try {
-          const { data: updated } = await decks.getById(deckMonitory.id);
-          console.log("🚀 ~ HomePage ~ updated:", updated)
-          if (updated.data.coverGenerationStatus === 'FAILED') {
-            setDeckMonitory(null); // dejar de monitorear
+          // Usar el nuevo endpoint que solo trae el estado
+          const { data: statusResult } = await decks.getCoverStatusById(deckMonitory.id);
+          const updatedStatus = statusResult.data;
+
+          console.log("🚀 ~ HomePage ~ Deck Status:", updatedStatus);
+
+          if (updatedStatus.coverGenerationStatus === 'FAILED') {
+            setDeckMonitory(null);
             showToast('Error Generando la portada con IA', 'error');
             clearInterval(interval);
+            if (statusDialogManualOpen) {
+              setStatusDialogManualOpen(false);
+            }
           }
-          if (updated.data.coverUrl && updated.data.coverUrl.startsWith('https:') && updated.data.coverGenerationStatus === 'COMPLETED') {
+
+          if (updatedStatus.coverUrl && updatedStatus.coverUrl.startsWith('https:') && updatedStatus.coverGenerationStatus === 'COMPLETED') {
             showToast('Portada generada exitosamente con IA', 'success');
-            setDecksList((prev) => prev.map((d) => (d.id === updated.data.id ? updated.data : d)));
-            setDeckMonitory(null); // dejar de monitorear
+            
+            // Ahora que está lista, obtener el deck completo para actualizar la UI
+            const { data: finalDeck } = await decks.getById(deckMonitory.id);
+            
+            setDecksList((prev) => prev.map((d) => (d.id === finalDeck.data.id ? finalDeck.data : d)));
+            setDeckMonitory(null);
             clearInterval(interval);
+
+            if (statusDialogManualOpen) {
+              setGenerationManualStep(2);
+              setStatusDialogManualOpen(false);
+            }
           }
         } catch (err) {
-          showToast('Error registrando portada', 'error');
+          showToast('Error consultando estado de la portada', 'error');
           setDeckMonitory(null);
-          console.error('Error fetching deck update:', err);
+          console.error('Error fetching deck status update:', err);
         }
-      }, 15000); //Por lo general suel tardar menos de 30 segundos
+      }, 15000); // Por lo general suele tardar menos de 30 segundos
     }
     return () => clearInterval(interval);
-  }, [deckMonitory]);
+  }, [deckMonitory, decks, showToast, statusDialogManualOpen]);
 
   const handleEditDeck = async () => {
     if (!editingDeck?.name?.trim()) return;
@@ -291,7 +353,7 @@ const HomePage = () => {
 
   const handleCreateOption = (option) => {
     handleCreateMenuClose();
-    
+
     switch (option) {
       case 'document':
         setDocumentUploadOpen(true);
@@ -556,12 +618,12 @@ const HomePage = () => {
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
-            <AddIcon 
-              sx={{ 
+            <AddIcon
+              sx={{
                 fontSize: 32,
                 transform: createMenuOpen ? 'rotate(45deg)' : 'rotate(0deg)',
                 transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-              }} 
+              }}
             />
           </Fab>
         </Zoom>
@@ -620,18 +682,18 @@ const HomePage = () => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 1.5,
-                  bgcolor: (theme) => 
+                  bgcolor: (theme) =>
                     theme.palette.mode === 'dark' ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
                   backdropFilter: 'blur(10px)',
-                  border: (theme) => 
+                  border: (theme) =>
                     theme.palette.mode === 'dark' ? '1px solid rgba(240, 147, 251, 0.3)' : '1px solid rgba(240, 147, 251, 0.2)',
                   transition: 'all 0.2s ease',
                   '&:hover': {
                     transform: 'translateX(-4px) scale(1.05)',
-                    bgcolor: (theme) => 
+                    bgcolor: (theme) =>
                       theme.palette.mode === 'dark' ? 'rgba(40, 40, 40, 0.95)' : 'rgba(250, 250, 250, 0.95)',
                     boxShadow: 8,
-                    border: (theme) => 
+                    border: (theme) =>
                       theme.palette.mode === 'dark' ? '1px solid rgba(240, 147, 251, 0.5)' : '1px solid rgba(240, 147, 251, 0.4)',
                   },
                   '&:active': {
@@ -645,9 +707,9 @@ const HomePage = () => {
                 }}
               >
                 <DocumentIcon sx={{ color: '#f093fb', fontSize: 24 }} />
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
+                <Typography
+                  variant="body2"
+                  sx={{
                     fontWeight: 600,
                     fontSize: '0.95rem',
                     color: (theme) => theme.palette.text.primary,
@@ -701,18 +763,18 @@ const HomePage = () => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 1.5,
-                  bgcolor: (theme) => 
+                  bgcolor: (theme) =>
                     theme.palette.mode === 'dark' ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
                   backdropFilter: 'blur(10px)',
-                  border: (theme) => 
+                  border: (theme) =>
                     theme.palette.mode === 'dark' ? '1px solid rgba(156, 39, 176, 0.3)' : '1px solid rgba(156, 39, 176, 0.2)',
                   transition: 'all 0.2s ease',
                   '&:hover': {
                     transform: 'translateX(-4px) scale(1.05)',
-                    bgcolor: (theme) => 
+                    bgcolor: (theme) =>
                       theme.palette.mode === 'dark' ? 'rgba(40, 40, 40, 0.95)' : 'rgba(250, 250, 250, 0.95)',
                     boxShadow: 8,
-                    border: (theme) => 
+                    border: (theme) =>
                       theme.palette.mode === 'dark' ? '1px solid rgba(156, 39, 176, 0.5)' : '1px solid rgba(156, 39, 176, 0.4)',
                   },
                   '&:active': {
@@ -726,9 +788,9 @@ const HomePage = () => {
                 }}
               >
                 <AutoFixHighIcon color="secondary" sx={{ fontSize: 24 }} />
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
+                <Typography
+                  variant="body2"
+                  sx={{
                     fontWeight: 600,
                     fontSize: '0.95rem',
                     color: (theme) => theme.palette.text.primary,
@@ -782,18 +844,18 @@ const HomePage = () => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 1.5,
-                  bgcolor: (theme) => 
+                  bgcolor: (theme) =>
                     theme.palette.mode === 'dark' ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
                   backdropFilter: 'blur(10px)',
-                  border: (theme) => 
+                  border: (theme) =>
                     theme.palette.mode === 'dark' ? '1px solid rgba(25, 118, 210, 0.3)' : '1px solid rgba(25, 118, 210, 0.2)',
                   transition: 'all 0.2s ease',
                   '&:hover': {
                     transform: 'translateX(-4px) scale(1.05)',
-                    bgcolor: (theme) => 
+                    bgcolor: (theme) =>
                       theme.palette.mode === 'dark' ? 'rgba(40, 40, 40, 0.95)' : 'rgba(250, 250, 250, 0.95)',
                     boxShadow: 8,
-                    border: (theme) => 
+                    border: (theme) =>
                       theme.palette.mode === 'dark' ? '1px solid rgba(25, 118, 210, 0.5)' : '1px solid rgba(25, 118, 210, 0.4)',
                   },
                   '&:active': {
@@ -807,9 +869,9 @@ const HomePage = () => {
                 }}
               >
                 <CreateIcon color="primary" sx={{ fontSize: 24 }} />
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
+                <Typography
+                  variant="body2"
+                  sx={{
                     fontWeight: 600,
                     fontSize: '0.95rem',
                     color: (theme) => theme.palette.text.primary,
@@ -872,6 +934,40 @@ const HomePage = () => {
             >
               {creating ? <CircularProgress size={20} /> : 'Crear'}
             </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Modal para Controlar estados deck manuales*/}
+        <Dialog
+          open={statusDialogManualOpen}
+          onClose={() => setStatusDialogManualOpen(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>Crear Nuevo Deck Con Portada</DialogTitle>
+          <DialogContent>
+            {/* Proceso de generación */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Generando tu deck...
+              </Typography>
+              <Stepper activeStep={generationManualStep} alternativeLabel>
+                {generationManualSteps.map((label) => (
+                  <Step key={label}>
+                    <StepLabel>{label}</StepLabel>
+                  </Step>
+                ))}
+              </Stepper>
+              <LinearProgress sx={{ mt: 2 }} />
+              {estimatedTime && (
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
+                  Tiempo estimado: {estimatedTime} seg.
+                </Typography>
+              )}
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setStatusDialogManualOpen(false)}>  <CircularProgress size={20} /> Generando...</Button>
           </DialogActions>
         </Dialog>
 

@@ -31,7 +31,7 @@ import {
 const DocumentUploadModal = ({ open, onClose, onGenerate }) => {
   const muiTheme = useMuiTheme();
   const { decks } = useApi();
-  
+
   // Estados
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -39,7 +39,7 @@ const DocumentUploadModal = ({ open, onClose, onGenerate }) => {
   const [generationStep, setGenerationStep] = useState(0);
   const [dragActive, setDragActive] = useState(false);
   const [estimatedTime, setEstimatedTime] = useState(null);
-  
+
   // Configuración
   const [formData, setFormData] = useState({
     flashcardCount: 10,
@@ -68,7 +68,7 @@ const DocumentUploadModal = ({ open, onClose, onGenerate }) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileChange(e.dataTransfer.files[0]);
     }
@@ -81,25 +81,25 @@ const DocumentUploadModal = ({ open, onClose, onGenerate }) => {
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'application/msword'
     ];
-    
+
     if (!validTypes.includes(selectedFile.type)) {
       setError('Solo se permiten archivos PDF, DOCX y DOC');
       return;
     }
-    
+
     // Validar tamaño (5MB)
     const maxSize = 5 * 1024 * 1024;
     if (selectedFile.size > maxSize) {
       setError('El archivo es demasiado grande. Máximo 5MB');
       return;
     }
-    
+
     // Validar que no esté vacío
     if (selectedFile.size === 0) {
       setError('El archivo está vacío');
       return;
     }
-    
+
     // Calcular tiempo estimado basado en tamaño
     const sizeMB = selectedFile.size / (1024 * 1024);
     let estimatedMin = 1;
@@ -114,7 +114,7 @@ const DocumentUploadModal = ({ open, onClose, onGenerate }) => {
     } else {
       estimatedMin = 3;
     }
-    
+
     setEstimatedTime(`${Math.floor(estimatedMin)}-${Math.ceil(estimatedMin + 1)} minutos`);
     setFile(selectedFile);
     setError(null);
@@ -150,7 +150,7 @@ const DocumentUploadModal = ({ open, onClose, onGenerate }) => {
       }, 2500);
 
       const response = await decks.generateFromDocument(formDataToSend);
-      
+
       clearInterval(stepInterval);
       stepInterval = null;
       setGenerationStep(generationSteps.length - 1);
@@ -166,7 +166,7 @@ const DocumentUploadModal = ({ open, onClose, onGenerate }) => {
 
     } catch (err) {
       console.error('Error uploading document:', err);
-      
+
       // Manejar timeout específicamente
       if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
         setError('El procesamiento está tomando más tiempo del esperado. El deck podría haberse creado exitosamente, por favor verifica tu lista de decks.');
@@ -217,12 +217,12 @@ const DocumentUploadModal = ({ open, onClose, onGenerate }) => {
 
   // Determina el tipo de alerta según el error
   const getErrorSeverity = (errorMessage) => {
-    if (errorMessage.includes('escaneada') || 
-        errorMessage.includes('OCR') ||
-        errorMessage.includes('muy poco texto') ||
-        errorMessage.includes('páginas') ||
-        errorMessage.includes('demasiado grande') ||
-        errorMessage.includes('Solo se permiten')) {
+    if (errorMessage.includes('escaneada') ||
+      errorMessage.includes('OCR') ||
+      errorMessage.includes('muy poco texto') ||
+      errorMessage.includes('páginas') ||
+      errorMessage.includes('demasiado grande') ||
+      errorMessage.includes('Solo se permiten')) {
       return 'warning'; // Errores que el usuario puede corregir
     }
     if (errorMessage.includes('IA') || errorMessage.includes('servidor')) {
@@ -263,19 +263,19 @@ const DocumentUploadModal = ({ open, onClose, onGenerate }) => {
   };
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={handleClose} 
-      maxWidth="md" 
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="md"
       fullWidth
       disableEscapeKeyDown={uploading}
     >
       <DialogTitle
-        sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: 1, 
-          fontFamily: muiTheme.fontFamily 
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          fontFamily: muiTheme.fontFamily
         }}
       >
         <FileIcon /> Crear Deck desde Documento
@@ -283,9 +283,9 @@ const DocumentUploadModal = ({ open, onClose, onGenerate }) => {
 
       <DialogContent sx={{ fontFamily: muiTheme.fontFamily }}>
         {error && (
-          <Alert 
-            severity={getErrorSeverity(error)} 
-            sx={{ mb: 2 }} 
+          <Alert
+            severity={getErrorSeverity(error)}
+            sx={{ mb: 2 }}
             onClose={() => setError(null)}
           >
             <Typography variant="body2" component="div">
@@ -390,13 +390,13 @@ const DocumentUploadModal = ({ open, onClose, onGenerate }) => {
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {(file.size / 1024).toFixed(2)} KB
-                    {estimatedTime && ` • Tiempo estimado: ${estimatedTime}`}
+                    {estimatedTime && ` • Tiempo estimado: ${estimatedTime} seg.`}
                   </Typography>
                 </Box>
-                <Chip 
-                  label={getFileExtension(file.name)} 
-                  size="small" 
-                  color="primary" 
+                <Chip
+                  label={getFileExtension(file.name)}
+                  size="small"
+                  color="primary"
                   variant="outlined"
                 />
                 <Button
@@ -414,7 +414,7 @@ const DocumentUploadModal = ({ open, onClose, onGenerate }) => {
               <Typography variant="subtitle2" gutterBottom fontWeight="600">
                 ⚙️ Configuración
               </Typography>
-              
+
               <Box display="flex" alignItems="center" gap={1} mb={2}>
                 <Typography variant="body2" sx={{ minWidth: 160 }}>
                   Cantidad de flashcards:
