@@ -110,6 +110,25 @@ export class DeckRepository {
   }
 
   /**
+   * Busca el estado de la portada de un deck por ID
+   */
+  static async findCoverStatusById(id) {
+    try {
+      const deck = await prisma.deck.findUnique({
+        where: { id: parseInt(id) },
+        select: {
+          coverGenerationStatus: true,
+          coverUrl: true,
+          userId: true,
+        }
+      });
+      return deck;
+    } catch (error) {
+      throw new Error(`Error al buscar estado de portada: ${error.message}`);
+    }
+  }
+
+  /**
    * Crea un nuevo deck
    */
   static async create(deckEntity) {

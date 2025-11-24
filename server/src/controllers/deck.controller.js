@@ -169,6 +169,75 @@ export const DeckController = {
 
   /**
    * @swagger
+   * /api/decks/{id}/cover-status:
+   *   get:
+   *     summary: Get cover generation status for a specific deck
+   *     description: Retrieves the cover generation status and cover URL for a single deck with ownership verification
+   *     tags: [Decks]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Deck ID to retrieve status for
+   *         example: 1
+   *     responses:
+   *       200:
+   *         description: Cover status retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Estado de la portada obtenido exitosamente
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     coverGenerationStatus:
+   *                       type: string
+   *                       enum: [PENDING, COMPLETED, FAILED]
+   *                       example: COMPLETED
+   *                     coverUrl:
+   *                       type: string
+   *                       format: uri
+   *                       nullable: true
+   *                       example: "https://res.cloudinary.com/..."
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *       403:
+   *         description: Forbidden - User does not own this deck
+   *       404:
+   *         description: Deck not found
+   */
+  getCoverGenerationStatus: BaseController.wrap(async (req, res) => {
+    const { id } = req.params;
+    const { DeckRepository } = await import('../repositories/deck.repository.js');
+    const deckStatus = await DeckRepository.findCoverStatusById(id);
+
+    if (!deckStatus) {
+      throw new NotFoundError('Deck no encontrado');
+    }
+
+    if (deckStatus.userId !== req.userId) {
+      throw new ForbiddenError('No tienes permiso para ver el estado de este deck');
+    }
+
+    BaseController.success(res, {
+      coverGenerationStatus: deckStatus.coverGenerationStatus,
+      coverUrl: deckStatus.coverUrl
+    }, 'Estado de la portada obtenido exitosamente');
+  }),
+
+  /**
+   * @swagger
    * /api/decks:
    *   post:
    *     summary: Create a new deck
