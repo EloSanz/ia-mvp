@@ -80,20 +80,14 @@ export const useApi = () => {
   return context;
 };
 
-// Interceptor para agregar el token de autenticación
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// Interceptor duplicado removido - el token ya se maneja en el primer interceptor
 
 export const ApiProvider = ({ children }) => {
   // Decks API
   const decks = {
     getAll: () => api.get('/api/decks'),
     getById: (id) => api.get(`/api/decks/${id}`),
+    getCoverStatusById: (id) => api.get(`/api/decks/${id}/cover-status`),
     create: (data) => api.post('/api/decks', data, { timeout: 30000 }),
     update: (id, data) => api.put(`/api/decks/${id}`, data),
     delete: (id) => api.delete(`/api/decks/${id}`),
@@ -101,6 +95,18 @@ export const ApiProvider = ({ children }) => {
     suggestTopics: (count = 3) => api.post('/api/decks/suggest-topics', { count }),
     generateWithAI: (config) => api.post('/api/decks/generate-with-ai', config, {
       timeout: 120000  // 2 minutos para generación completa
+    }),
+    generateFromDocument: (formData) => api.post('/api/decks/generate-from-document', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      timeout: 180000, // 3 minutos para documentos (suficiente para procesamiento con IA)
+      onUploadProgress: (progressEvent) => {
+        const percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total
+        );
+        console.log('Upload progress:', percentCompleted + '%');
+      }
     }),
     // Métodos para biblioteca
     updateVisibility: (id, visibility) => api.patch(`/api/decks/${id}/visibility`, { visibility }),

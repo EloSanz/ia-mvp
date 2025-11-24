@@ -2,11 +2,11 @@
 FROM node:20-alpine as builder
 WORKDIR /app
 
-COPY package*.json ./
+
+COPY web/package*.json ./
 RUN npm install --production=false
 
-
-COPY . .
+COPY web/ .
 RUN npm run build
 
 # Etapa 2: Servir con Nginx

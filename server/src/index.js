@@ -16,6 +16,14 @@ import { requestLogger, apiLogger, errorLogger } from './middlewares/logging.mid
 import { getQueryStats } from './config/database.js';
 import { swaggerUi, specs } from './config/swagger.config.js';
 import { BaseController } from './controllers/base.controller.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Define __dirname para módulos ES
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 
@@ -86,15 +94,12 @@ app.get('/api/health/detailed', (req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
-app.use('/api/decks', deckRoutes); // Middleware de auth aplicado dentro del router
-app.use('/api/decks', authMiddleware, tagRoutes);  // Tags integradas con decks
+app.use('/api/decks', deckRoutes); // Ahora deckRoutes maneja sus propias sub-rutas de tags
 app.use('/api/flashcards', flashcardRoutes);
 app.use('/api/sync', syncRoutes);
 app.use('/api/study', studyRoutes);
 app.use('/api/logging', loggingRoutes);
 app.use('/api/library', libraryRoutes);
-// Tags legacy (deprecated)
-app.use('/api/tags', authMiddleware, tagRoutes);
 
 // Middleware de logging de errores
 app.use(errorLogger);
@@ -108,3 +113,21 @@ app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`API on :${PORT}`);
 });
+
+const migrationFlagPath = path.join(__dirname, 'migration_done.txt');
+
+(async () => {
+  if (!fs.existsSync(migrationFlagPath)) {
+    console.log('Ejecutando script de migración de imágenes a Cloudinary...');
+
+    try {
+      await import('../scripts/migrate_images_to_cloudinary.js');
+      fs.writeFileSync(migrationFlagPath, 'La migración se ejecutó el ' + new Date().toISOString());
+      console.log('Migración completada y registrada.');
+    } catch (error) {
+      console.error('Error durante la migración:', error);
+    }
+  } else {
+    console.log('La migración ya se ejecutó previamente.');
+  }
+})();

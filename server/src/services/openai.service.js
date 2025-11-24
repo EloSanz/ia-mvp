@@ -295,6 +295,360 @@ class OpenAIService {
       throw new Error('Failed to parse OpenAI response');
     }
   }
+
+  /**
+   * Genera flashcards desde un documento estructurado
+   * @param {Object} documentData - Datos del documento parseado
+   * @param {Object} options - Opciones de generación
+   * @returns {Promise<Array>} Array de flashcards generadas
+   */
+  async generateFlashcardsFromDocument(documentData, options = {}) {
+    if (!this.openai) {
+      throw new Error('OpenAI service is not configured');
+    }
+
+    const { text, structure, chunks } = documentData;
+    const { flashcardCount = 15, difficulty = 'intermediate' } = options;
+
+    // Si el documento es corto (un solo chunk), procesarlo completo
+    if (chunks.length === 1) {
+      return this.generateFlashcards(text, options);
+    }
+
+    // Si se detectaron secciones con títulos, generar por secciones temáticas
+    if (structure.sections && structure.sections.length > 1) {
+      console.log(`📚 Generando flashcards por ${structure.sections.length} secciones temáticas detectadas`);
+      return this.generateFlashcardsBySections(structure.sections, flashcardCount, difficulty);
+    }
+
+    // Si es largo pero sin secciones claras, procesar por chunks
+    console.log(`📄 Generando flashcards por ${chunks.length} chunks de texto`);
+    const systemPrompt = `Eres un experto en creación de contenido educativo a partir de documentos.
+  
+CONTEXTO:
+- Estás analizando un documento de ${chunks.length} secciones
+- Estructura detectada: ${JSON.stringify(structure)}
+- Nivel de dificultad: ${difficulty}
+
+INSTRUCCIONES:
+- Identifica los conceptos MÁS importantes de cada sección
+- Crea flashcards que cubran el documento completo
+- Evita redundancias entre secciones
+- Prioriza conceptos clave, definiciones, y relaciones importantes
+- Genera aproximadamente ${Math.ceil(flashcardCount / chunks.length)} flashcards por sección
+- Usa formato claro: pregunta/concepto en front, respuesta/explicación en back
+
+Devuelve en formato JSON:
+{
+  "flashcards": [
+    {
+      "front": "Pregunta o concepto",
+      "back": "Respuesta o explicación"
+    }
+  ]
+}`;
+
+    // Procesar cada chunk
+    const allFlashcards = [];
+    
+    for (let i = 0; i < chunks.length; i++) {
+      const chunkPrompt = `SECCIÓN ${i + 1} de ${chunks.length}:\n\n${chunks[i]}`;
+      
+      try {
+        const response = await this.openai.chat.completions.create({
+          model: this.config.model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: chunkPrompt }
+          ],
+          max_tokens: this.config.maxTokens,
+          temperature: this.config.temperature,
+          response_format: { type: 'json_object' }
+        });
+
+        const result = JSON.parse(response.choices[0].message.content);
+        if (result.flashcards && Array.isArray(result.flashcards)) {
+          allFlashcards.push(...result.flashcards);
+        }
+      } catch (error) {
+        console.error(`Error parsing chunk ${i + 1}:`, error);
+        // Continuar con los demás chunks aunque falle uno
+      }
+    }
+
+    // Limitar al número solicitado (tomar las primeras)
+    return allFlashcards.slice(0, flashcardCount);
+  }
+
+  /**
+   * Genera flashcards organizadas por secciones temáticas del documento
+   * @param {Array} sections - Array de secciones con título y contenido
+   * @param {number} flashcardCount - Número total de flashcards a generar
+   * @param {string} difficulty - Nivel de dificultad
+   * @returns {Promise<Array>} Array de flashcards generadas
+   */
+  async generateFlashcardsBySections(sections, flashcardCount, difficulty) {
+    if (!this.openai) {
+      throw new Error('OpenAI service is not configured');
+    }
+
+    // 🚀 MEJORA: Limitar número de secciones para evitar timeouts y costos excesivos
+    const MAX_SECTIONS = 15;
+    const sectionsToProcess = sections.slice(0, MAX_SECTIONS);
+    
+    if (sections.length > MAX_SECTIONS) {
+      console.log(`⚠️  Limitando procesamiento a ${MAX_SECTIONS} de ${sections.length} secciones detectadas`);
+    }
+
+    const flashcardsPerSection = Math.ceil(flashcardCount / sectionsToProcess.length);
+    
+    console.log(`📝 Generando ~${flashcardsPerSection} flashcards por cada una de ${sectionsToProcess.length} secciones`);
+
+    // 🚀 MEJORA: Procesar secciones EN PARALELO para velocidad 5-10x más rápida
+    const sectionPromises = sectionsToProcess.map(async (section, i) => {
+      const sectionText = section.content.join('\n');
+      
+      // Saltar secciones muy cortas
+      if (sectionText.length < 50) {
+        console.log(`⏭️  Saltando sección "${section.title}" (muy corta)`);
+        return [];
+      }
+
+      // 🚀 MEJORA: Limitar contenido de sección muy larga (evita tokens excesivos)
+      const MAX_SECTION_LENGTH = 8000; // ~2000 tokens
+      const truncatedText = sectionText.length > MAX_SECTION_LENGTH 
+        ? sectionText.substring(0, MAX_SECTION_LENGTH) + '...' 
+        : sectionText;
+
+      const systemPrompt = `Eres un experto en creación de contenido educativo.
+
+CONTEXTO:
+- Estás analizando la sección "${section.title}" de un documento más amplio
+- Esta es la sección ${i + 1} de ${sectionsToProcess.length}
+- Nivel de dificultad: ${difficulty}
+
+INSTRUCCIONES:
+- Identifica los conceptos MÁS importantes de ESTA SECCIÓN ESPECÍFICA
+- Genera ${flashcardsPerSection} flashcards de alta calidad
+- Enfócate en: definiciones, conceptos clave, relaciones importantes, ejemplos
+- Cada flashcard debe ser autocontenida (no asumir conocimiento de otras secciones)
+- Usa el contexto del tema "${section.title}" en las flashcards cuando sea útil
+- Formato: pregunta/concepto en front, respuesta/explicación detallada en back
+
+Devuelve en formato JSON:
+{
+  "flashcards": [
+    {
+      "front": "Pregunta o concepto",
+      "back": "Respuesta o explicación"
+    }
+  ]
+}`;
+
+      try {
+        const response = await this.openai.chat.completions.create({
+          model: this.config.model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `Contenido de la sección:\n\n${truncatedText}` }
+          ],
+          max_tokens: this.config.maxTokens,
+          temperature: this.config.temperature,
+          response_format: { type: 'json_object' }
+        });
+
+        const result = JSON.parse(response.choices[0].message.content);
+        if (result.flashcards && Array.isArray(result.flashcards)) {
+          console.log(`✅ Generadas ${result.flashcards.length} flashcards para "${section.title}"`);
+          return result.flashcards;
+        }
+        return [];
+      } catch (error) {
+        console.error(`❌ Error procesando sección "${section.title}":`, error.message);
+        // Retornar array vacío para que Promise.allSettled continúe
+        return [];
+      }
+    });
+
+    // Esperar todas las promesas (incluso si algunas fallan)
+    const results = await Promise.allSettled(sectionPromises);
+    
+    // Recolectar todas las flashcards exitosas
+    const allFlashcards = results
+      .filter(result => result.status === 'fulfilled')
+      .flatMap(result => result.value);
+
+    console.log(`📦 Total de flashcards generadas: ${allFlashcards.length}`);
+
+    // 🚀 MEJORA: Distribución más inteligente si hay exceso
+    if (allFlashcards.length > flashcardCount) {
+      console.log(`📊 Distribuyendo de ${allFlashcards.length} a ${flashcardCount} flashcards de forma balanceada`);
+      // Tomar proporcionalmente de cada sección en vez de solo las primeras
+      const ratio = flashcardCount / allFlashcards.length;
+      const selectedFlashcards = [];
+      let index = 0;
+      
+      while (selectedFlashcards.length < flashcardCount && index < allFlashcards.length) {
+        selectedFlashcards.push(allFlashcards[index]);
+        index = Math.floor(selectedFlashcards.length / ratio);
+      }
+      
+      return selectedFlashcards;
+    }
+
+    return allFlashcards;
+  }
+
+  /**
+   * Genera metadata del deck desde contenido del documento
+   * @param {string} documentSummary - Resumen o inicio del documento
+   * @param {Object} structure - Estructura del documento (título, secciones)
+   * @param {string} filename - Nombre del archivo como fallback
+   * @returns {Promise<Object>} Metadata del deck (name, description)
+   */
+  async generateDeckMetadataFromDocument(documentSummary, structure = {}, filename = '') {
+    if (!this.openai) {
+      throw new Error('OpenAI service is not configured');
+    }
+
+    // Usar título extraído del documento si existe
+    if (structure.title && structure.title.length > 5) {
+      console.log(`📌 Usando título extraído del documento: "${structure.title}"`);
+      
+      // Generar solo la descripción con IA
+      const systemPrompt = `Eres un experto en análisis de contenido educativo.
+
+El título del documento ya está definido: "${structure.title}"
+
+Analiza el contenido y genera SOLO una descripción clara y concisa:
+
+INSTRUCCIONES:
+- Escribe una descripción educativa del contenido (2-3 oraciones)
+- Identifica el tema principal y subtemas
+- Explica qué aprenderá el usuario con este deck
+- NO repitas el título en la descripción
+
+Devuelve en formato JSON:
+{
+  "description": "Descripción detallada del contenido y objetivos de aprendizaje"
+}`;
+
+      try {
+        const response = await this.openai.chat.completions.create({
+          model: this.config.model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `Contenido del documento:\n\n${documentSummary}` }
+          ],
+          max_tokens: 300,
+          temperature: 0.7,
+          response_format: { type: 'json_object' }
+        });
+
+        const result = JSON.parse(response.choices[0].message.content);
+        return {
+          name: structure.title,
+          description: result.description
+        };
+      } catch (error) {
+        console.error('Error generating description:', error);
+        // Fallback: usar título extraído con descripción genérica
+        return {
+          name: structure.title,
+          description: `Contenido de aprendizaje basado en el documento "${structure.title}".`
+        };
+      }
+    }
+
+    // Fallback: usar nombre de archivo limpio si no hay título en el documento
+    if (!structure.title && filename) {
+      const cleanFilename = filename
+        .replace(/\.(pdf|docx?|txt)$/i, '')
+        .replace(/[-_]/g, ' ')
+        .trim();
+      
+      if (cleanFilename.length > 5 && cleanFilename.length < 100) {
+        console.log(`📌 Usando nombre de archivo como título: "${cleanFilename}"`);
+        
+        const systemPrompt = `Eres un experto en análisis de contenido educativo.
+
+El título del deck está basado en el nombre del archivo: "${cleanFilename}"
+
+Analiza el contenido y genera SOLO una descripción clara:
+
+INSTRUCCIONES:
+- Escribe una descripción educativa del contenido (2-3 oraciones)
+- Identifica el tema principal
+- Explica qué aprenderá el usuario
+- NO repitas el título en la descripción
+
+Devuelve en formato JSON:
+{
+  "description": "Descripción detallada del contenido"
+}`;
+
+        try {
+          const response = await this.openai.chat.completions.create({
+            model: this.config.model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: `Contenido del documento:\n\n${documentSummary}` }
+            ],
+            max_tokens: 300,
+            temperature: 0.7,
+            response_format: { type: 'json_object' }
+          });
+
+          const result = JSON.parse(response.choices[0].message.content);
+          return {
+            name: cleanFilename,
+            description: result.description
+          };
+        } catch (error) {
+          console.error('Error generating description:', error);
+          return {
+            name: cleanFilename,
+            description: `Contenido de aprendizaje basado en "${cleanFilename}".`
+          };
+        }
+      }
+    }
+
+    // Último fallback: generar ambos con IA
+    const systemPrompt = `Eres un experto en análisis de contenido educativo.
+  
+Analiza el siguiente contenido de documento y genera metadata para un deck de flashcards:
+
+INSTRUCCIONES:
+- Crea un título descriptivo y atractivo (máximo 60 caracteres)
+- Escribe una descripción clara del contenido (2-3 oraciones)
+- Identifica el tema principal
+- La descripción debe explicar qué aprenderá el usuario con este deck
+
+Devuelve en formato JSON:
+{
+  "name": "Título del deck",
+  "description": "Descripción detallada del contenido y objetivos de aprendizaje"
+}`;
+
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: this.config.model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `Contenido del documento:\n\n${documentSummary}` }
+        ],
+        max_tokens: 500,
+        temperature: 0.7,
+        response_format: { type: 'json_object' }
+      });
+
+      return JSON.parse(response.choices[0].message.content);
+    } catch (error) {
+      console.error('Error generating deck metadata:', error);
+      throw new Error('Failed to generate deck metadata from document');
+    }
+  }
 }
 
 export const openaiService = new OpenAIService();

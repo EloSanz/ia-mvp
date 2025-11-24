@@ -1,16 +1,14 @@
-import express from 'express';
+import { Router } from 'express';
 import { TagController } from '../controllers/tag.controller.js';
 
-const router = express.Router();
+// Creamos un router con mergeParams: true para que pueda acceder a los parámetros de la ruta padre (ej: :id de /decks/:id)
+const router = Router({ mergeParams: true });
 
-// Nuevas rutas nested bajo /decks/:deckId
-router.get('/:deckId/tags', TagController.getByDeckId);
-router.get('/:deckId/tags/:tagId', TagController.getById);
-router.post('/:deckId/tags', TagController.create);
-router.put('/:deckId/tags/:tagId', TagController.update);
-router.delete('/:deckId/tags/:tagId', TagController.delete);
-
-// Rutas legacy (deprecated) - mantener temporalmente para compatibilidad
-router.get('/tags', TagController.getAll);
+// Rutas para tags anidadas bajo /api/decks/:id/tags
+router.get('/', TagController.getByDeckId);
+router.post('/', TagController.create);
+router.get('/:tagId', TagController.getById);
+router.put('/:tagId', TagController.update);
+router.delete('/:tagId', TagController.delete);
 
 export default router;

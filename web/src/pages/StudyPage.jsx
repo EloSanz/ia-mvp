@@ -158,7 +158,7 @@ export default function StudyPage() {
             />
           </>
         ) : (
-          <EmptyState onGoHome={() => navigate('/')} />
+          <EmptyState onGoHome={() => navigate('/home')} />
         )}
       </Container>
     </>

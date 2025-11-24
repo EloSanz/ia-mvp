@@ -1,6 +1,9 @@
 import { Flashcard } from '../models/flashcard.js';
+import { Deck } from '../models/deck.js';
 import { FlashcardDto } from '../dtos/flashcard.dto.js';
+import { FlashcardRepository } from '../repositories/flashcard.repository.js';
 import { BaseController } from './base.controller.js';
+import { ForbiddenError } from '../utils/custom.errors.js';
 import { generateFromAI } from '../services/flashcard.service.js';
 
 export const FlashcardController = {
@@ -261,6 +264,10 @@ export const FlashcardController = {
     // Crear flashcard
     const newFlashcard = await Flashcard.create(validation.data.toModel());
 
+    // Invalidar cache del deck después de crear la flashcard
+    const { FlashcardRepository } = await import('../repositories/flashcard.repository.js');
+    FlashcardRepository.invalidateDeckCache(newFlashcard.deckId);
+
     BaseController.success(res, newFlashcard, 'Flashcard creada exitosamente', 201);
   }),
 
@@ -509,6 +516,172 @@ export const FlashcardController = {
   }),
 
   /**
+   * @swagger
+   * /api/flashcards/deck/{deckId}/no-tags:
+   *   get:
+   *     summary: Get flashcards by deck ID without tag information
+   *     description: Retrieves flashcards for a specific deck without including tag information, optimized for performance
+   *     tags: [Flashcards]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: deckId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Deck ID to get flashcards for
+   *         example: 1
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           minimum: 0
+   *           default: 0
+   *         description: Page number for pagination
+   *         example: 0
+   *       - in: query
+   *         name: pageSize
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 100
+   *           default: 50
+   *         description: Number of flashcards per page
+   *         example: 50
+   *       - in: query
+   *         name: all
+   *         schema:
+   *           type: string
+   *           enum: [true]
+   *         description: Set to 'true' to get all flashcards without pagination
+   *         example: true
+   *     responses:
+   *       200:
+   *         description: Flashcards retrieved successfully without tag information
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       id:
+   *                         type: integer
+   *                         example: 1
+   *                       front:
+   *                         type: string
+   *                         example: "こんにちは"
+   *                       back:
+   *                         type: string
+   *                         example: "Hello"
+   *                       deckId:
+   *                         type: integer
+   *                         example: 1
+   *                       difficulty:
+   *                         type: integer
+   *                         minimum: 1
+   *                         maximum: 3
+   *                         example: 1
+   *                       lastReviewed:
+   *                         type: string
+   *                         format: date-time
+   *                         nullable: true
+   *                         example: null
+   *                       nextReview:
+   *                         type: string
+   *                         format: date-time
+   *                         nullable: true
+   *                         example: null
+   *                       reviewCount:
+   *                         type: integer
+   *                         example: 0
+   *                       createdAt:
+   *                         type: string
+   *                         format: date-time
+   *                         example: "2025-11-15T00:02:05.922Z"
+   *                       updatedAt:
+   *                         type: string
+   *                         format: date-time
+   *                         example: "2025-11-15T00:02:05.922Z"
+   *                 total:
+   *                   type: integer
+   *                   example: 20
+   *                 page:
+   *                   type: integer
+   *                   example: 0
+   *                 pageSize:
+   *                   type: integer
+   *                   example: 50
+   *                 message:
+   *                   type: string
+   *                   example: "Flashcards del deck obtenidas exitosamente (sin tags)"
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       403:
+   *         description: Forbidden - User does not own this deck
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       404:
+   *         description: Deck not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+
+  /**
+   * Obtiene flashcards de un deck específico SIN información de tags
+   */
+  getFlashcardsByDeckNoTags: BaseController.wrap(async (req, res) => {
+    const { deckId } = req.params;
+    const parsedDeckId = BaseController.validateId(deckId);
+    const page = parseInt(req.query.page || '0');
+    const pageSize = req.query.all === 'true' ? null : parseInt(req.query.pageSize || '50');
+
+    // Verificar que el deck pertenece al usuario
+    const deck = await Deck.findById(parsedDeckId);
+    if (!deck || deck.userId !== req.userId) {
+      throw new ForbiddenError('No tienes permiso para ver este deck');
+    }
+
+    let items, total;
+
+    if (pageSize === null) {
+      // Devolver todas las flashcards sin paginado y sin tags
+      const allFlashcards = await FlashcardRepository.findByDeckIdAllNoTags(parsedDeckId);
+      items = allFlashcards;
+      total = allFlashcards.length;
+    } else {
+      // Obtener flashcards paginadas sin tags
+      const result = await FlashcardRepository.findByDeckIdNoTags(parsedDeckId, { page, pageSize });
+      items = result.items;
+      total = result.total;
+    }
+
+    res.json({
+      success: true,
+      data: items,
+      total,
+      page,
+      pageSize,
+      message: 'Flashcards del deck obtenidas exitosamente (sin tags)'
+    });
+  }),
+
+  /**
    * Obtiene flashcards que necesitan revisión
    */
   getDueFlashcards: BaseController.wrap(async (req, res) => {
@@ -569,6 +742,121 @@ export const FlashcardController = {
   /**
    * Busca flashcards por contenido
    */
+
+  /**
+   * @swagger
+   * /api/flashcards/bulk:
+   *   post:
+   *     summary: Create multiple flashcards
+   *     description: Creates multiple flashcards at once. If the deck doesn't exist, it will be created automatically.
+   *     tags: [Flashcards]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - deck_name
+   *               - flashcards
+   *             properties:
+   *               deck_name:
+   *                 type: string
+   *                 description: Name of the deck (will be created if it doesn't exist)
+   *                 example: "Japanese Learning"
+   *               flashcards:
+   *                 type: array
+   *                 description: Array of flashcards to create
+   *                 items:
+   *                   type: object
+   *                   required:
+   *                     - front
+   *                     - back
+   *                   properties:
+   *                     front:
+   *                       type: string
+   *                       description: Front side of the flashcard
+   *                       example: "こんにちは"
+   *                     back:
+   *                       type: string
+   *                       description: Back side of the flashcard
+   *                       example: "Hola / Buenos días"
+   *                     difficulty:
+   *                       type: integer
+   *                       minimum: 1
+   *                       maximum: 3
+   *                       default: 2
+   *                       description: Difficulty level (1=easy, 2=normal, 3=hard)
+   *                       example: 1
+   *           example:
+   *             deck_name: "Japanese Learning"
+   *             flashcards: [
+   *               {
+   *                 "front": "こんにちは",
+   *                 "back": "Hola / Buenos días",
+   *                 "difficulty": 1
+   *               },
+   *               {
+   *                 "front": "ありがとうございます",
+   *                 "back": "Muchas gracias",
+   *                 "difficulty": 1
+   *               }
+   *             ]
+   *     responses:
+   *       201:
+   *         description: Flashcards created successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "20 flashcards creadas exitosamente en el deck \"Japanese Learning\""
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     deck:
+   *                       type: object
+   *                       properties:
+   *                         id:
+   *                           type: integer
+   *                           example: 1
+   *                         name:
+   *                           type: string
+   *                           example: "Japanese Learning"
+   *                         description:
+   *                           type: string
+   *                           example: "Deck creado automáticamente para importar flashcards"
+   *                     flashcards:
+   *                       type: array
+   *                       items:
+   *                         $ref: '#/components/schemas/Flashcard'
+   *       400:
+   *         description: Bad request - Invalid input data
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       401:
+   *         description: Unauthorized - Token not provided or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+
   /**
    * Crea múltiples flashcards
    */
@@ -576,19 +864,55 @@ export const FlashcardController = {
     // Ayuda de depuración: muestra cómo llega el cuerpo
     console.log('POST /api/flashcards/batch req.body:', req.body);
 
-    const { flashcards } = req.body;
+    const { deck_name, flashcards } = req.body;
+
+    if (!deck_name || typeof deck_name !== 'string' || deck_name.trim().length === 0) {
+      return BaseController.error(res, 'Se requiere un "deck_name" válido', 400, [
+        'Nombre del deck requerido'
+      ]);
+    }
 
     if (!Array.isArray(flashcards) || flashcards.length === 0) {
       // Mensaje adicional para ayudar al frontend
-      console.warn('⚠️ Estructura esperada: { flashcards: [ ... ] }');
-      return BaseController.error(res, 'Se requiere un array de flashcards en la propiedad "flashcards" del body. Ejemplo: { flashcards: [ ... ] }', 400, [
+      console.warn('⚠️ Estructura esperada: { deck_name: "...", flashcards: [ ... ] }');
+      return BaseController.error(res, 'Se requiere un array de flashcards en la propiedad "flashcards" del body. Ejemplo: { deck_name: "...", flashcards: [ ... ] }', 400, [
         'Array de flashcards vacío o inválido'
       ]);
     }
 
+    // Buscar o crear el deck
+    let deck;
+    try {
+      // Intentar encontrar el deck por nombre para este usuario
+      const { DeckRepository } = await import('../repositories/deck.repository.js');
+      const decks = await DeckRepository.findAll({ userId: req.userId, name: deck_name.trim() });
+
+      if (decks.length > 0) {
+        deck = decks[0];
+      } else {
+        // Crear nuevo deck si no existe
+        const { Deck } = await import('../models/deck.js');
+        deck = await Deck.create({
+          name: deck_name.trim(),
+          description: `Deck creado automáticamente para importar flashcards`,
+          userId: req.userId,
+          visibility: 'private'
+        });
+      }
+    } catch (error) {
+      console.error('Error al buscar/crear deck:', error);
+      return BaseController.error(res, 'Error al procesar el deck', 500, [error.message]);
+    }
+
+    // Preparar flashcards con el deckId encontrado
+    const flashcardsWithDeckId = flashcards.map(flashcard => ({
+      ...flashcard,
+      deckId: deck.id
+    }));
+
     // Validar cada flashcard
     const validatedFlashcards = [];
-    for (const [index, flashcard] of flashcards.entries()) {
+    for (const [index, flashcard] of flashcardsWithDeckId.entries()) {
       const validation = FlashcardDto.validateCreate(flashcard);
 
       if (!validation.success) {
@@ -610,8 +934,15 @@ export const FlashcardController = {
 
     BaseController.success(
       res,
-      createdFlashcards,
-      `${createdFlashcards.length} flashcards creadas exitosamente`,
+      {
+        deck: {
+          id: deck.id,
+          name: deck.name,
+          description: deck.description
+        },
+        flashcards: createdFlashcards
+      },
+      `${createdFlashcards.length} flashcards creadas exitosamente en el deck "${deck.name}"`,
       201
     );
   }),

@@ -57,7 +57,13 @@ export class DeckRepository {
           description: true,
           userId: true,
           createdAt: true,
-          updatedAt: true
+          updatedAt: true,
+          tags: {
+            select: {
+              id: true,
+              name: true
+            }
+          }
           // Excluye coverUrl explícitamente
         }
       });
@@ -100,6 +106,25 @@ export class DeckRepository {
       return deck ? DeckEntity.fromPrisma(deck) : null;
     } catch (error) {
       throw new Error(`Error al buscar deck: ${error.message}`);
+    }
+  }
+
+  /**
+   * Busca el estado de la portada de un deck por ID
+   */
+  static async findCoverStatusById(id) {
+    try {
+      const deck = await prisma.deck.findUnique({
+        where: { id: parseInt(id) },
+        select: {
+          coverGenerationStatus: true,
+          coverUrl: true,
+          userId: true,
+        }
+      });
+      return deck;
+    } catch (error) {
+      throw new Error(`Error al buscar estado de portada: ${error.message}`);
     }
   }
 

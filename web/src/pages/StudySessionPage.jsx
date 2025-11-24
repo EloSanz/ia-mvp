@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Container, Box, Alert, Snackbar, Typography, Button, Tooltip } from '@mui/material';
+import { Container, Box, Alert, Snackbar, Typography, Button, Tooltip, LinearProgress } from '@mui/material';
 import { Keyboard as KeyboardIcon } from '@mui/icons-material';
 
 import Navigation from '../components/Navigation';
@@ -50,6 +50,11 @@ export default function StudySessionPage() {
   const [showFinishDialog, setShowFinishDialog] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
+  // Estado para el modo contrarreloj
+  const [isTimeTrial, setIsTimeTrial] = useState(false);
+  const [totalTime, setTotalTime] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(0);
+
   // Ref para evitar múltiples inicializaciones de sesión
   const initializedRef = useRef(new Set());
 
@@ -78,6 +83,26 @@ export default function StudySessionPage() {
     }
   }, [deckId]);
 
+  // Lógica del temporizador para el modo contrarreloj
+  useEffect(() => {
+    if (isTimeTrial && !paused && timeLeft > 0 && totalTime > 0) {
+      const timerId = setInterval(() => {
+        setTimeLeft(prevTime => prevTime - 1);
+      }, 1000);
+
+      return () => clearInterval(timerId);
+    }
+  }, [isTimeTrial, paused, timeLeft]);
+
+  // Finalizar sesión cuando el tiempo se acaba
+  useEffect(() => {
+    if (isTimeTrial && timeLeft <= 0 && hasActiveSession) {
+      setSnackbar({ open: true, message: '¡Se acabó el tiempo!', severity: 'warning' });
+      handleFinish();
+    }
+  }, [timeLeft, isTimeTrial, hasActiveSession]);
+
+
   const handleShowAnswer = () => {
     if (canShowAnswer) showAnswer();
   };
@@ -86,10 +111,10 @@ export default function StudySessionPage() {
     try {
       // Primero procesamos la respuesta (esto resetea showingAnswer y inicia la animación de volteo)
       await reviewCard(difficulty);
-      
+
       // Esperamos a que termine la animación de volteo (0.6s) antes de cambiar la tarjeta
       await new Promise(resolve => setTimeout(resolve, 300));
-      
+
       // Ahora obtenemos la siguiente tarjeta
       const nextCardResult = await nextCard();
       if (nextCardResult === null) setShowFinishDialog(true);
@@ -152,8 +177,21 @@ export default function StudySessionPage() {
 
   const initializeSession = async () => {
     try {
-      await startSession(deckId, studyOptions.limit, studyOptions.tagId);
+      // startSession ya actualiza el estado 'session' en el hook, que contiene los datos.
+      // Lo llamamos y luego usamos el estado actualizado.
+      const sessionData = await startSession(deckId, studyOptions.limit, studyOptions.tagId);
+      console.log("🚀 ~ initializeSession ~ sessionData:", sessionData)
+
       setSnackbar({ open: true, message: '¡Sesión de estudio iniciada!', severity: 'success' });
+
+      if (studyOptions.mode === 'quick_review') {
+        const timePerCard = 15; // 15 segundos por tarjeta
+        const calculatedTotalTime = sessionData.totalCards * timePerCard;
+        setTotalTime(calculatedTotalTime);
+        setTimeLeft(calculatedTotalTime);
+        setIsTimeTrial(true);
+      }
+
     } catch (err) {
       setSnackbar({
         open: true,
@@ -211,7 +249,13 @@ export default function StudySessionPage() {
       });
     }
   };
-  const handleGoHome = () => navigate('/');
+
+  const handleStudyAnotherDeck = () => {
+    // Navegar a la página de estudio para seleccionar otro deck
+    navigate('/study');
+  };
+
+  const handleGoHome = () => navigate('/home');
   const handlePause = () => {
     setPaused(true);
     setSnackbar({ open: true, message: 'Sesión pausada', severity: 'info' });
@@ -238,7 +282,7 @@ export default function StudySessionPage() {
         <SessionFinished
           stats={finalStats}
           formatTime={formatTime}
-          onRestart={handleRestart}
+          onRestart={handleStudyAnotherDeck}
           onHome={handleGoHome}
         />
       </>
@@ -271,6 +315,22 @@ export default function StudySessionPage() {
           stats={sessionStats || { easyCount: 0, normalCount: 0, hardCount: 0 }}
           progress={getProgress()}
         />
+
+        {isTimeTrial && timeLeft > 0 && (
+          <Box sx={{ my: 2 }}>
+            <Typography variant="h6" align="center" gutterBottom>
+              Contrarreloj: {formatTime(timeLeft * 1000)}
+            </Typography>
+            <LinearProgress
+              variant="determinate"
+              value={(timeLeft / totalTime) * 100}
+              sx={{
+                height: 10,
+                borderRadius: 5,
+              }}
+            />
+          </Box>
+        )}
 
         {paused && (
           <Alert severity="info" sx={{ mb: 3 }}>
@@ -335,7 +395,7 @@ export default function StudySessionPage() {
               Atajos
             </Button>
           </Tooltip>
-          
+
           {showShortcuts && (
             <Box sx={{
               position: 'fixed',
@@ -365,18 +425,18 @@ export default function StudySessionPage() {
                 borderTop: '6px solid #1A1F2E'
               }
             }}>
-              <Typography variant="subtitle2" sx={{ 
-                fontSize: '14px', 
-                fontWeight: 600, 
-                color: '#FFFFFF', 
-                mb: 1.5 
+              <Typography variant="subtitle2" sx={{
+                fontSize: '14px',
+                fontWeight: 600,
+                color: '#FFFFFF',
+                mb: 1.5
               }}>
                 ⌨️ Atajos de teclado
               </Typography>
-              
+
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
-                  <Box sx={{ 
+                  <Box sx={{
                     bgcolor: 'rgba(255, 255, 255, 0.08)',
                     border: '1px solid rgba(255, 255, 255, 0.15)',
                     borderRadius: '4px',
@@ -396,9 +456,9 @@ export default function StudySessionPage() {
                     Voltear tarjeta
                   </Typography>
                 </Box>
-                
+
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
-                  <Box sx={{ 
+                  <Box sx={{
                     bgcolor: 'rgba(16, 185, 129, 0.2)',
                     border: '1px solid #10B981',
                     borderRadius: '4px',
@@ -417,9 +477,9 @@ export default function StudySessionPage() {
                     Fácil
                   </Typography>
                 </Box>
-                
+
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
-                  <Box sx={{ 
+                  <Box sx={{
                     bgcolor: 'rgba(245, 158, 11, 0.2)',
                     border: '1px solid #F59E0B',
                     borderRadius: '4px',
@@ -438,9 +498,9 @@ export default function StudySessionPage() {
                     Normal
                   </Typography>
                 </Box>
-                
+
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
-                  <Box sx={{ 
+                  <Box sx={{
                     bgcolor: 'rgba(239, 68, 68, 0.2)',
                     border: '1px solid #EF4444',
                     borderRadius: '4px',

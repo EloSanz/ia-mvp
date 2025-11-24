@@ -50,7 +50,7 @@ export default function DecksGridCard({ decks, deckMonitory, onEdit, onDelete, o
                 <CardMedia
                   component="img"
                   height="140"
-                  image={`data:image/png;base64,${deck.coverUrl}`}
+                  image={deck.coverUrl}
                   alt={deck.name}
                   sx={{ objectFit: 'cover' }}
                 />
@@ -115,9 +115,9 @@ export default function DecksGridCard({ decks, deckMonitory, onEdit, onDelete, o
                     {deck.description}
                   </Typography>
                 )}
-                <Box 
-                  display="flex" 
-                  justifyContent="flex-end" 
+                <Box
+                  display="flex"
+                  justifyContent="flex-end"
                   gap={1.5}
                   sx={{ mt: 'auto' }}
                 >
