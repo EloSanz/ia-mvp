@@ -108,9 +108,6 @@ const HomePage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deckToDelete, setDeckToDelete] = useState(null);
 
-  // Modal para mostrar token
-  const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
-
   // Modal para contacto
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
 
@@ -570,12 +567,20 @@ const HomePage = () => {
           </Fab>
         </Zoom>
 
-        {/* Botón flotante para obtener token JWT */}
+        {/* Botón flotante para copiar token JWT */}
         <Zoom in timeout={500}>
           <Fab
-            color="secondary"
-            aria-label="obtener token"
-            onClick={() => setTokenDialogOpen(true)}
+            color="success"
+            aria-label="copiar token"
+            onClick={() => {
+              const token = localStorage.getItem('token');
+              if (token) {
+                navigator.clipboard.writeText(token);
+                showToast('Token copiado al portapapeles con éxito');
+              } else {
+                showToast('No hay token disponible', 'warning');
+              }
+            }}
             sx={{
               position: 'fixed',
               bottom: 24,
@@ -586,15 +591,15 @@ const HomePage = () => {
               zIndex: (theme) => theme.zIndex.drawer,
               background: (theme) =>
                 theme.palette.mode === 'dark'
-                  ? `linear-gradient(145deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.dark})`
-                  : theme.palette.secondary.main,
+                  ? `linear-gradient(145deg, ${theme.palette.success.main}, ${theme.palette.success.dark})`
+                  : theme.palette.success.main,
               '&:hover': {
                 boxShadow: 12,
                 transform: 'scale(1.08)',
                 background: (theme) =>
                   theme.palette.mode === 'dark'
-                    ? `linear-gradient(145deg, ${theme.palette.secondary.light}, ${theme.palette.secondary.main})`
-                    : theme.palette.secondary.dark,
+                    ? `linear-gradient(145deg, ${theme.palette.success.light}, ${theme.palette.success.main})`
+                    : theme.palette.success.dark,
               },
               '&:active': {
                 transform: 'scale(0.96)',
@@ -1028,54 +1033,6 @@ const HomePage = () => {
           onClose={() => setDocumentUploadOpen(false)}
           onGenerate={handleDocumentGenerate}
         />
-
-        {/* Modal para mostrar token JWT */}
-        <Dialog
-          open={tokenDialogOpen}
-          onClose={() => setTokenDialogOpen(false)}
-          maxWidth="md"
-          fullWidth
-        >
-          <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <TokenIcon />
-            Token JWT de Sesión
-          </DialogTitle>
-          <DialogContent>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Este es tu token de autenticación actual. Úsalo para hacer llamadas directas a la API.
-            </Typography>
-            <Paper
-              sx={{
-                p: 2,
-                bgcolor: 'grey.100',
-                fontFamily: 'monospace',
-                fontSize: '0.875rem',
-                wordBreak: 'break-all',
-                borderRadius: 1
-              }}
-            >
-              {localStorage.getItem('token') || 'No hay token disponible'}
-            </Paper>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setTokenDialogOpen(false)}>
-              Cerrar
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => {
-                const token = localStorage.getItem('token');
-                if (token) {
-                  navigator.clipboard.writeText(token);
-                  showToast('Token copiado al portapapeles');
-                }
-              }}
-              startIcon={<TokenIcon />}
-            >
-              Copiar Token
-            </Button>
-          </DialogActions>
-        </Dialog>
 
         {/* Toast de confirmación */}
         <Snackbar
