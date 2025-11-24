@@ -4,7 +4,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'http://72.61.45.36:3000',
         changeOrigin: true,
         secure: false,
         configure: (proxy, options) => {
@@ -12,7 +12,6 @@ export default defineConfig({
             console.log('proxy error', err);
           });
           proxy.on('proxyReq', (proxyReq, req, res) => {
-            // Limpiar headers duplicados
             if (proxyReq.getHeader('authorization')) {
               proxyReq.setHeader('authorization', proxyReq.getHeader('authorization'));
             }
@@ -20,7 +19,7 @@ export default defineConfig({
         },
       },
     },
-    host: true,
+    host: '0.0.0.0',  // IMPORTANTE: Permitir conexiones externas
     port: 5173,
   },
 });
