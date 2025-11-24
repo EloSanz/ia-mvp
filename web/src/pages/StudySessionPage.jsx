@@ -249,6 +249,12 @@ export default function StudySessionPage() {
       });
     }
   };
+
+  const handleStudyAnotherDeck = () => {
+    // Navegar a la página de estudio para seleccionar otro deck
+    navigate('/study');
+  };
+
   const handleGoHome = () => navigate('/home');
   const handlePause = () => {
     setPaused(true);
@@ -276,7 +282,7 @@ export default function StudySessionPage() {
         <SessionFinished
           stats={finalStats}
           formatTime={formatTime}
-          onRestart={handleRestart}
+          onRestart={handleStudyAnotherDeck}
           onHome={handleGoHome}
         />
       </>

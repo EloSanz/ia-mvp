@@ -50,21 +50,34 @@ class DocumentParserService {
           break;
         
         default:
-          throw new Error(`Formato no soportado: ${mimetype}`);
-      }
-    } catch (error) {
-      console.error('Error extrayendo texto:', error);
-      throw new Error(`No se pudo extraer texto del documento. Verifica que no esté corrupto o protegido.`);
+      throw new Error(`Formato no soportado: ${mimetype}`);
     }
+  } catch (error) {
+    console.error('Error extrayendo texto:', error);
+    throw new Error(`No se pudo extraer texto del documento. Verifica que no esté corrupto o protegido.`);
+  }
 
-    // Validar páginas máximas (solo para PDFs)
-    if (pageCount > 0 && pageCount > this.MAX_PAGES) {
-      throw new Error(`El documento tiene ${pageCount} páginas. El máximo permitido es ${this.MAX_PAGES} páginas.`);
+    // Limpieza y procesamiento
+    const cleanedText = this.cleanText(text);
+    
+    // 🚀 Estimar páginas para formatos que no reportan pageCount (DOCX, DOC)
+    if (pageCount === 0 && cleanedText.length > 0) {
+      // Estimación: ~2500 caracteres por página (promedio entre documentos densos y espaciados)
+      const CHARS_PER_PAGE = 2500;
+      pageCount = Math.ceil(cleanedText.length / CHARS_PER_PAGE);
     }
-
-    // Detectar PDF escaneado
-    if (mimetype === 'application/pdf' && pageCount > 0) {
-      const avgCharsPerPage = text.length / pageCount;
+    
+    // 🚀 Validar páginas máximas (aplica a todos los formatos)
+    if (pageCount > this.MAX_PAGES) {
+      throw new Error(
+        `El documento tiene ${pageCount} páginas ${mimetype.includes('word') ? '(estimadas)' : ''}. ` +
+        `El máximo permitido es ${this.MAX_PAGES} páginas.`
+      );
+    }
+    
+    // Detectar PDF escaneado (solo para PDFs reales con pageCount)
+    if (mimetype === 'application/pdf') {
+      const avgCharsPerPage = cleanedText.length / pageCount;
       if (avgCharsPerPage < this.SCANNED_PDF_THRESHOLD) {
         throw new Error(
           'Este PDF parece ser una imagen escaneada sin texto seleccionable. ' +
@@ -72,9 +85,6 @@ class DocumentParserService {
         );
       }
     }
-
-    // Limpieza y procesamiento
-    const cleanedText = this.cleanText(text);
     
     // 🚀 MEJORA: Validar texto mínimo
     if (cleanedText.length < this.MIN_CHARS) {
