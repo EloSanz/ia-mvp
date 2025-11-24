@@ -264,6 +264,10 @@ export const FlashcardController = {
     // Crear flashcard
     const newFlashcard = await Flashcard.create(validation.data.toModel());
 
+    // Invalidar cache del deck después de crear la flashcard
+    const { FlashcardRepository } = await import('../repositories/flashcard.repository.js');
+    FlashcardRepository.invalidateDeckCache(newFlashcard.deckId);
+
     BaseController.success(res, newFlashcard, 'Flashcard creada exitosamente', 201);
   }),
 
@@ -927,6 +931,10 @@ export const FlashcardController = {
     const createdFlashcards = await Promise.all(
       validatedFlashcards.map((flashcard) => Flashcard.create(flashcard))
     );
+
+    // Invalidar cache del deck después de crear todas las flashcards
+    const { FlashcardRepository } = await import('../repositories/flashcard.repository.js');
+    FlashcardRepository.invalidateDeckCache(deck.id);
 
     BaseController.success(
       res,
