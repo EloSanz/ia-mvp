@@ -932,10 +932,6 @@ export const FlashcardController = {
       validatedFlashcards.map((flashcard) => Flashcard.create(flashcard))
     );
 
-    // Invalidar cache del deck después de crear todas las flashcards
-    const { FlashcardRepository } = await import('../repositories/flashcard.repository.js');
-    FlashcardRepository.invalidateDeckCache(deck.id);
-
     BaseController.success(
       res,
       {

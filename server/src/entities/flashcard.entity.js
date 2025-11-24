@@ -41,15 +41,19 @@ export class FlashcardEntity {
    * Crea una instancia desde datos de Prisma
    */
   static fromPrisma(prismaData) {
+    // Forzar consistencia: si no hay tag, tagId debe ser null
+    const tag = prismaData.tag
+      ? { id: prismaData.tag.id, name: prismaData.tag.name }
+      : null;
+    const tagId = tag ? (prismaData.tagId ?? tag.id) : null;
+
     return new FlashcardEntity({
       id: prismaData.id,
       front: prismaData.front,
       back: prismaData.back,
       deckId: prismaData.deckId,
-      tagId: prismaData.tagId ?? prismaData.tag?.id ?? null,
-      tag: prismaData.tag
-        ? { id: prismaData.tag.id, name: prismaData.tag.name }
-        : null,
+      tagId: tagId,
+      tag: tag,
       difficulty: prismaData.difficulty,
       lastReviewed: prismaData.lastReviewed,
       nextReview: prismaData.nextReview,
