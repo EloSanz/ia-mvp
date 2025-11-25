@@ -2,13 +2,19 @@ FROM node:20-bullseye-slim
 
 WORKDIR /usr/src/app
 
-# Copia los archivos de dependencias desde la carpeta 'server'
+# Copy package files and install all dependencies to run build steps
 COPY server/package*.json ./
+RUN npm install
 
-# Instala solo las dependencias de producción para una imagen más ligera
-RUN npm install --omit=dev
-
-# Copia el resto del código de la aplicación desde la carpeta 'server'
+# Copy the rest of the application code from the 'server' directory
 COPY server/ .
 
-CMD ["npm", "run", "dockerStart"]
+# Generate the Prisma client during the build
+RUN npx prisma generate
+
+# Remove devDependencies to keep the final image lean
+RUN npm prune --omit=dev
+
+# Set a production-ready default command.
+# This will be overridden by the startup command in Azure App Service settings.
+CMD ["sh", "-c", "npx prisma migrate deploy && node src/index.js"]

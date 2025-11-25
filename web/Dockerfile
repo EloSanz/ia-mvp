@@ -21,8 +21,8 @@ WORKDIR /usr/share/nginx/html
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Copiar plantilla de nginx y script de entrada para renderizar variables de entorno
-COPY nginx.conf.template /etc/nginx/templates/nginx.conf.template
-COPY docker-entrypoint.sh /docker-entrypoint.sh
+COPY web/nginx.conf.template /etc/nginx/templates/nginx.conf.template
+COPY web/docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 
