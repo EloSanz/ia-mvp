@@ -80,7 +80,7 @@ Type=simple
 User=root
 WorkingDirectory=/root/ia-mvp/server
 Environment=NODE_ENV=production
-ExecStart=/usr/bin/npm run dev
+ExecStart=/usr/local/bin/npm run dev
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -104,7 +104,7 @@ Type=simple
 User=root
 WorkingDirectory=/root/ia-mvp/web
 Environment=NODE_ENV=production
-ExecStart=/usr/bin/npm run dev
+ExecStart=/usr/local/bin/npm run dev
 Restart=always
 RestartSec=10
 StandardOutput=journal
