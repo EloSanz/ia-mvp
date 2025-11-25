@@ -1,0 +1,19 @@
+[Unit]
+Description=iCards MCP Server
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/iCardsMCP
+Environment=AUTH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc2NDAxODE1OCwiZXhwIjoxNzY0MTA0NTU4fQ.lO1m4NTVPsoKnRbzd18uj9w-31apLUm9lKYYQ3df-bA
+ExecStart=/usr/local/bin/uv run python server.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=icards-mcp
+
+[Install]
+WantedBy=multi-user.target

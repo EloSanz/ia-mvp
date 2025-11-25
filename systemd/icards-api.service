@@ -1,0 +1,20 @@
+[Unit]
+Description=iCards API Backend
+After=network.target postgresql.service
+Wants=network.target
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/ia-mvp/server
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/npm run dev
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=icards-api
+
+[Install]
+WantedBy=multi-user.target
