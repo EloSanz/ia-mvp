@@ -102,13 +102,13 @@ export default function LandingPage() {
         {
             text: '“La generación de flashcards con IA es increíble. Me ahorra horas de trabajo y me permite enfocarme en lo que realmente importa: aprender.”',
             name: 'Ana G.',
-            role: 'Estudiante de Medicina',
+            role: 'Recluter',
             img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAQXBp6iSFwfFgiY95hYTW4ubWsUAz6-NzKorGZXnmlMmZkmGqMSRV26GKtcXVpY9wwUbmUA609b0EB4aLOpQwn0b_gkFzFENLuGk3Jxg40N8PXaKx5tLOhUXBBCpSwNq8gusXzQAhgdioXnweHsmH38XQT0jEyzacGJDF63iDTul1RETNymcNOVlL42mPKoT2E03pF9CWervJtGmJic4G5fohi6F0jHRoFIbM1pO4_9XG8d-i1qBr46l9Asxv3R2pBoDBboZhQrzMA',
         },
         {
-            text: '“El sistema de seguimiento de progreso me mantiene motivado. Ver cómo mejoro día a día es la mejor recompensa. ¡Totalmente recomendado!”',
-            name: 'Carlos R.',
-            role: 'Opositor',
+            text: '“Esta bueno, estaria piola algo que deje responder antes de mostrar respuesta, capaz agregar n respuestas. y capaz algun runner que te deje ir automaticamente de flashcard en flashcard. Bastante bueno”',
+            name: 'Ariel R.',
+            role: 'Estudiante de Ingeniería',
             img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC80ms12pLrCKoezpIZbEhju7Pxt_3umkHqrGVBAH0fwvbjr2lrWqrErjwN93g-A09HkWqgOr_8BsLfT1SaAnrHcfh7VbPetfUlCeLgmTkGPNtCq3A7kn8Z2jypzc4-EhZ1hWswAKwjzuPM0xdFf-fojeBYis3mHF0-ik66Pjs2QEq_COlXYupHR0_xotDwSoncCG7RCjAqLuNdgCYBefi012AadtcSNc5IeCuuAswCZv6MgzzMXVDR9tZ1JYGn3wsiMP0-ENRYW5uC',
         },
         {
