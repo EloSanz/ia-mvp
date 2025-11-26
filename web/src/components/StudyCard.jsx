@@ -3,6 +3,7 @@
  *
  * Componente principal para mostrar flashcards durante las sesiones de estudio
  * Maneja la transición entre pregunta y respuesta con animación 3D de volteo
+ * v2: Altura dinámica + Scroll inteligente + Responsive
  */
 
 import React from 'react';
@@ -15,7 +16,9 @@ import {
   Chip,
   IconButton,
   Tooltip,
-  LinearProgress
+  LinearProgress,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import {
   Flip as FlipIcon,
@@ -30,6 +33,9 @@ const StudyCard = ({
   loading = false,
   disabled = false
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
 
   if (!card) {
     return (
@@ -71,22 +77,60 @@ const StudyCard = ({
     }
   };
 
+  // Estilos del scrollbar personalizado
+  const scrollbarStyles = {
+    '&::-webkit-scrollbar': {
+      width: '8px',
+    },
+    '&::-webkit-scrollbar-track': {
+      background: 'rgba(255, 255, 255, 0.05)',
+      borderRadius: '4px',
+    },
+    '&::-webkit-scrollbar-thumb': {
+      background: 'rgba(255, 255, 255, 0.2)',
+      borderRadius: '4px',
+      '&:hover': {
+        background: 'rgba(255, 255, 255, 0.3)',
+      },
+    },
+    // Firefox
+    scrollbarWidth: 'thin',
+    scrollbarColor: 'rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05)',
+  };
+
+  // Dimensiones dinámicas según dispositivo
+  const cardDimensions = {
+    width: isMobile ? '100%' : isTablet ? 700 : 800,
+    minHeight: isMobile ? 400 : 500,
+    maxHeight: isMobile ? '75vh' : '80vh',
+  };
+
+  // Tamaños de fuente responsive
+  const fontSizes = {
+    question: isMobile ? '24px' : '32px',
+    answer: isMobile ? '20px' : '24px',
+    buttonLabel: isMobile ? '16px' : '18px',
+    buttonSubtext: isMobile ? '11px' : '12px',
+  };
+
   return (
     <Box
       sx={{
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        minHeight: 500,
-        perspective: '1000px'
+        minHeight: isMobile ? 450 : 550,
+        perspective: '1000px',
+        px: isMobile ? 1 : 0,
       }}
     >
       {/* Contenedor de la tarjeta con animación 3D */}
       <Box
         sx={{
           position: 'relative',
-          width: 800,
-          height: 500,
+          width: cardDimensions.width,
+          minHeight: cardDimensions.minHeight,
+          maxHeight: cardDimensions.maxHeight,
           transformStyle: 'preserve-3d',
           transition: 'transform 0.6s ease-in-out',
           transform: showingAnswer ? 'rotateY(180deg)' : 'rotateY(0deg)',
@@ -103,16 +147,26 @@ const StudyCard = ({
             backfaceVisibility: 'hidden',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            p: 3,
             boxShadow: 4,
-            borderRadius: 3
+            borderRadius: isMobile ? 2 : 3,
+            overflow: 'hidden',
           }}
         >
-          {/* Header con información de la card */}
-          <Box sx={{ position: 'absolute', top: 16, left: 16, right: 16 }}>
-            <Box display="flex" gap={1} alignItems="center" justifyContent="flex-start">
+          {/* Barra de progreso para mostrar que se está cargando */}
+          {loading && (
+            <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
+              <LinearProgress />
+            </Box>
+          )}
+
+          {/* Header con información de la card - FIXED */}
+          <Box sx={{ 
+            px: isMobile ? 2 : 3, 
+            pt: isMobile ? 2 : 3,
+            pb: 1,
+            flexShrink: 0,
+          }}>
+            <Box display="flex" gap={1} alignItems="center" justifyContent="flex-start" flexWrap="wrap">
               <Chip
                 size="small"
                 label={getDifficultyLabel(card.difficulty)}
@@ -130,76 +184,87 @@ const StudyCard = ({
             </Box>
           </Box>
 
-          {/* Barra de progreso para mostrar que se está cargando */}
-          {loading && (
-            <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
-              <LinearProgress />
-            </Box>
-          )}
-
-          {/* Contenido de la pregunta */}
-          <Box sx={{ textAlign: 'center', px: 2, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          {/* Contenido de la pregunta - SCROLLEABLE */}
+          <Box sx={{ 
+            flex: 1,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            px: isMobile ? 2 : 4,
+            py: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            ...scrollbarStyles,
+          }}>
             <Typography
               variant="h4"
               component="div"
               sx={{
                 fontWeight: 600,
-                fontSize: '32px',
+                fontSize: fontSizes.question,
                 lineHeight: 1.4,
                 color: '#FFFFFF',
                 textAlign: 'center',
-                mb: 3,
-                textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                textShadow: '0 1px 2px rgba(0,0,0,0.1)',
               }}
             >
               {card.front}
             </Typography>
           </Box>
 
-          {/* Botón en la parte inferior */}
-          <Box sx={{ position: 'absolute', bottom: 20, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
+          {/* Botón en la parte inferior - FIXED */}
+          <Box sx={{ 
+            px: isMobile ? 2 : 3,
+            pb: isMobile ? 2 : 3,
+            pt: 1,
+            display: 'flex', 
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}>
             <Button
               variant="contained"
-              size="large"
+              size={isMobile ? "medium" : "large"}
               disabled={disabled || loading}
               startIcon={<FlipIcon />}
               sx={{
-                px: 4,
-                py: 1.5,
+                px: isMobile ? 3 : 4,
+                py: isMobile ? 1 : 1.5,
                 borderRadius: 3,
                 textTransform: 'none',
-                fontSize: '1.1rem',
+                fontSize: isMobile ? '1rem' : '1.1rem',
                 position: 'relative'
               }}
             >
               Mostrar Respuesta
-              <Box
-                sx={{
-                  position: 'absolute',
-                  bottom: 'calc(100% + 12px)',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  bgcolor: 'rgba(0, 0, 0, 0.8)',
-                  backdropFilter: 'blur(8px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '6px',
-                  px: 1.5,
-                  py: 0.5,
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  color: '#FFFFFF',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
-                  animation: 'subtlePulse 2s ease-in-out infinite',
-                  '@keyframes subtlePulse': {
-                    '0%, 100%': { opacity: 0.8, transform: 'translateX(-50%) scale(1)' },
-                    '50%': { opacity: 1, transform: 'translateX(-50%) scale(1.05)' }
-                  }
-                }}
-              >
-                ESPACIO
-              </Box>
+              {!isMobile && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: 'calc(100% + 12px)',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    bgcolor: 'rgba(0, 0, 0, 0.8)',
+                    backdropFilter: 'blur(8px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '6px',
+                    px: 1.5,
+                    py: 0.5,
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: '#FFFFFF',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+                    animation: 'subtlePulse 2s ease-in-out infinite',
+                    '@keyframes subtlePulse': {
+                      '0%, 100%': { opacity: 0.8, transform: 'translateX(-50%) scale(1)' },
+                      '50%': { opacity: 1, transform: 'translateX(-50%) scale(1.05)' }
+                    }
+                  }}
+                >
+                  ESPACIO
+                </Box>
+              )}
             </Button>
           </Box>
         </Card>
@@ -214,16 +279,19 @@ const StudyCard = ({
             transform: 'rotateY(180deg)',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            p: 3,
             boxShadow: 4,
-            borderRadius: 3
+            borderRadius: isMobile ? 2 : 3,
+            overflow: 'hidden',
           }}
         >
-          {/* Header con información de la card */}
-          <Box sx={{ position: 'absolute', top: 16, left: 16, right: 16 }}>
-            <Box display="flex" gap={1} alignItems="center" justifyContent="flex-start">
+          {/* Header con información de la card - FIXED */}
+          <Box sx={{ 
+            px: isMobile ? 2 : 3, 
+            pt: isMobile ? 2 : 3,
+            pb: 1,
+            flexShrink: 0,
+          }}>
+            <Box display="flex" gap={1} alignItems="center" justifyContent="flex-start" flexWrap="wrap">
               <Chip
                 size="small"
                 label={getDifficultyLabel(card.difficulty)}
@@ -241,26 +309,42 @@ const StudyCard = ({
             </Box>
           </Box>
 
-          {/* Contenido de la respuesta */}
-          <Box sx={{ textAlign: 'center', px: 2, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            {/* Pregunta sin label redundante */}
+          {/* Pregunta recordatorio - FIXED (siempre visible) */}
+          <Box sx={{ 
+            px: isMobile ? 2 : 4,
+            pt: isMobile ? 1.5 : 2,
+            pb: isMobile ? 1 : 1.5,
+            flexShrink: 0,
+          }}>
             <Typography
               sx={{
-                mb: 5, // margin 40px
-                fontSize: '18px',
+                fontSize: isMobile ? '14px' : '16px',
                 fontWeight: 500,
                 color: 'rgba(255, 255, 255, 0.7)',
                 fontStyle: 'italic',
-                lineHeight: 1.5
+                lineHeight: 1.4,
+                textAlign: 'center',
               }}
             >
               {card.front}
             </Typography>
+          </Box>
 
+          {/* Contenido de la respuesta - SCROLLEABLE */}
+          <Box sx={{ 
+            flex: 1,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            px: isMobile ? 2 : 4,
+            py: isMobile ? 1 : 1.5,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-start',
+            ...scrollbarStyles,
+          }}>
             <Box sx={{
-              my: 5,
-              py: 4,
-              px: 4,
+              py: isMobile ? 2 : 3,
+              px: isMobile ? 2 : 3,
               bgcolor: 'rgba(255, 255, 255, 0.03)',
               borderRadius: 2,
               border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -268,12 +352,12 @@ const StudyCard = ({
             }}>
               <Typography
                 sx={{
-                  fontSize: '14px',
+                  fontSize: isMobile ? '12px' : '14px',
                   fontWeight: 500,
                   color: 'rgba(255, 255, 255, 0.5)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px',
-                  mb: 2
+                  mb: isMobile ? 1.5 : 2
                 }}
               >
                 Respuesta:
@@ -281,11 +365,12 @@ const StudyCard = ({
               <Typography
                 component="div"
                 sx={{
-                  fontSize: '24px',
+                  fontSize: fontSizes.answer,
                   lineHeight: 1.6,
                   fontWeight: 400,
                   color: '#FFFFFF',
-                  textAlign: 'center'
+                  textAlign: 'center',
+                  wordBreak: 'break-word',
                 }}
               >
                 {card.back}
@@ -293,9 +378,19 @@ const StudyCard = ({
             </Box>
           </Box>
 
-          {/* Botones de dificultad en la parte inferior */}
-          <Box sx={{ position: 'absolute', bottom: 20, left: 0, right: 0, px: 2, mt: 8 }}>
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+          {/* Botones de dificultad - FIXED y RESPONSIVE */}
+          <Box sx={{ 
+            px: isMobile ? 2 : 3,
+            pb: isMobile ? 2 : 3,
+            pt: 1,
+            flexShrink: 0,
+          }}>
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: isMobile ? 'column' : 'row',
+              gap: isMobile ? 1.5 : 2, 
+              justifyContent: 'center',
+            }}>
               {/* Botón Fácil */}
               <Button
                 onClick={() => onReview(1)}
@@ -303,11 +398,13 @@ const StudyCard = ({
                 sx={{
                   position: 'relative',
                   display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  minWidth: 140,
-                  p: 2,
-                  borderRadius: '12px',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  width: isMobile ? '100%' : 'auto',
+                  minWidth: isMobile ? 'auto' : 140,
+                  p: isMobile ? 1.5 : 2,
+                  borderRadius: isMobile ? '8px' : '12px',
                   border: '2px solid transparent',
                   bgcolor: 'rgba(255, 255, 255, 0.05)',
                   textTransform: 'none',
@@ -322,11 +419,16 @@ const StudyCard = ({
                   }
                 }}
               >
-                {/* Badge numérico esquina superior derecha */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1 }}>
+                  <Typography sx={{ fontSize: fontSizes.buttonLabel, fontWeight: 600, color: '#FFFFFF', lineHeight: 1.2 }}>
+                    Fácil
+                  </Typography>
+                  <Typography sx={{ fontSize: fontSizes.buttonSubtext, fontWeight: 500, color: 'rgba(255, 255, 255, 0.6)', lineHeight: 1.2 }}>
+                    Revisar en 7 días
+                  </Typography>
+                </Box>
+                {/* Badge numérico */}
                 <Box sx={{
-                  position: 'absolute',
-                  top: 8,
-                  right: 8,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -336,18 +438,11 @@ const StudyCard = ({
                   fontSize: '12px',
                   fontWeight: 700,
                   bgcolor: '#10B981',
-                  color: '#FFFFFF'
+                  color: '#FFFFFF',
+                  ml: 1,
                 }}>
                   1
                 </Box>
-                {/* Label principal */}
-                <Typography sx={{ fontSize: '18px', fontWeight: 600, color: '#FFFFFF', lineHeight: 1.2 }}>
-                  Fácil
-                </Typography>
-                {/* Intervalo */}
-                <Typography sx={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.6)', lineHeight: 1.2 }}>
-                  Revisar en 7 días
-                </Typography>
               </Button>
 
               {/* Botón Normal */}
@@ -357,11 +452,13 @@ const StudyCard = ({
                 sx={{
                   position: 'relative',
                   display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  minWidth: 140,
-                  p: 2,
-                  borderRadius: '12px',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  width: isMobile ? '100%' : 'auto',
+                  minWidth: isMobile ? 'auto' : 140,
+                  p: isMobile ? 1.5 : 2,
+                  borderRadius: isMobile ? '8px' : '12px',
                   border: '2px solid transparent',
                   bgcolor: 'rgba(255, 255, 255, 0.05)',
                   textTransform: 'none',
@@ -376,10 +473,15 @@ const StudyCard = ({
                   }
                 }}
               >
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1 }}>
+                  <Typography sx={{ fontSize: fontSizes.buttonLabel, fontWeight: 600, color: '#FFFFFF', lineHeight: 1.2 }}>
+                    Normal
+                  </Typography>
+                  <Typography sx={{ fontSize: fontSizes.buttonSubtext, fontWeight: 500, color: 'rgba(255, 255, 255, 0.6)', lineHeight: 1.2 }}>
+                    Revisar en 3 días
+                  </Typography>
+                </Box>
                 <Box sx={{
-                  position: 'absolute',
-                  top: 8,
-                  right: 8,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -389,16 +491,11 @@ const StudyCard = ({
                   fontSize: '12px',
                   fontWeight: 700,
                   bgcolor: '#F59E0B',
-                  color: '#FFFFFF'
+                  color: '#FFFFFF',
+                  ml: 1,
                 }}>
                   2
                 </Box>
-                <Typography sx={{ fontSize: '18px', fontWeight: 600, color: '#FFFFFF', lineHeight: 1.2 }}>
-                  Normal
-                </Typography>
-                <Typography sx={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.6)', lineHeight: 1.2 }}>
-                  Revisar en 3 días
-                </Typography>
               </Button>
 
               {/* Botón Difícil */}
@@ -408,11 +505,13 @@ const StudyCard = ({
                 sx={{
                   position: 'relative',
                   display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  minWidth: 140,
-                  p: 2,
-                  borderRadius: '12px',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  width: isMobile ? '100%' : 'auto',
+                  minWidth: isMobile ? 'auto' : 140,
+                  p: isMobile ? 1.5 : 2,
+                  borderRadius: isMobile ? '8px' : '12px',
                   border: '2px solid transparent',
                   bgcolor: 'rgba(255, 255, 255, 0.05)',
                   textTransform: 'none',
@@ -427,10 +526,15 @@ const StudyCard = ({
                   }
                 }}
               >
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1 }}>
+                  <Typography sx={{ fontSize: fontSizes.buttonLabel, fontWeight: 600, color: '#FFFFFF', lineHeight: 1.2 }}>
+                    Difícil
+                  </Typography>
+                  <Typography sx={{ fontSize: fontSizes.buttonSubtext, fontWeight: 500, color: 'rgba(255, 255, 255, 0.6)', lineHeight: 1.2 }}>
+                    Revisar pronto
+                  </Typography>
+                </Box>
                 <Box sx={{
-                  position: 'absolute',
-                  top: 8,
-                  right: 8,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -440,16 +544,11 @@ const StudyCard = ({
                   fontSize: '12px',
                   fontWeight: 700,
                   bgcolor: '#EF4444',
-                  color: '#FFFFFF'
+                  color: '#FFFFFF',
+                  ml: 1,
                 }}>
                   3
                 </Box>
-                <Typography sx={{ fontSize: '18px', fontWeight: 600, color: '#FFFFFF', lineHeight: 1.2 }}>
-                  Difícil
-                </Typography>
-                <Typography sx={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.6)', lineHeight: 1.2 }}>
-                  Revisar pronto
-                </Typography>
               </Button>
             </Box>
           </Box>
