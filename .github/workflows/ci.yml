@@ -77,3 +77,25 @@ jobs:
     - name: Run integration tests
       working-directory: ./server
       run: npm run test:integration
+
+
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: root
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: 22
+        timeout: 30s
+        script: |
+          echo "➡️ Actualizando proyecto en VPS..."
+          cd /root/ia-mvp || exit 1
+          git pull origin develop
+
+          echo "➡️ Configurando PATH..."
+          export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+
+          echo "➡️ Iniciando servicios Backend y Frontend con Screen..."
+          chmod +x start_services_screen.sh
+          ./start_services_screen.sh
+          echo "✅ Servicios levantados con Screen"
