@@ -77,3 +77,38 @@ jobs:
     - name: Run integration tests
       working-directory: ./server
       run: npm run test:integration
+
+  deploy:
+
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+
+    steps:
+    - name: Verify SSH credentials exist
+      run: |
+        if [ -z "${{ secrets.SSH_HOST }}" ]; then echo "❌ SSH_HOST no está configurado"; exit 1; fi
+        if [ -z "${{ secrets.SSH_PASSWORD }}" ]; then echo "❌ SSH_PASSWORD no está configurado"; exit 1; fi
+        echo "✔ Credenciales SSH verificadas"
+    
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: root
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: 22
+        timeout: 30s
+        script: |
+          echo "➡️ Actualizando proyecto en VPS..."
+          cd /root/ia-mvp || exit 1
+          git pull origin develop
+
+          echo "➡️ Configurando PATH..."
+          export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+
+          echo "➡️ Iniciando servicios Backend y Frontend con Screen..."
+          chmod +x start_services_screen.sh
+          ./start_services_screen.sh
+          echo "✅ Servicios levantados con Screen"
