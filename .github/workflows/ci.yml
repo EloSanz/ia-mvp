@@ -78,8 +78,7 @@ jobs:
       working-directory: ./server
       run: npm run test:integration
 
-
-    deploy:
+  deploy:
 
     name: Deploy to VPS
     runs-on: ubuntu-latest
