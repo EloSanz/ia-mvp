@@ -43,8 +43,14 @@ mkdir -p "$TEMP_DIR"
 
 print_info "Creando archivos de servicio..."
 
+# Detectar rutas de ejecutables
+NPM_PATH=$(which npm 2>/dev/null || find /root -name npm -type f 2>/dev/null | head -1 || echo "/usr/local/bin/npm")
+UV_PATH=$(which uv 2>/dev/null || find /root -name uv -type f 2>/dev/null | head -1 || echo "/usr/local/bin/uv")
+
+print_info "Rutas detectadas - npm: $NPM_PATH, uv: $UV_PATH"
+
 # 1. Servicio MCP
-cat > "$TEMP_DIR/icards-mcp.service" << 'EOF'
+cat > "$TEMP_DIR/icards-mcp.service" << EOF
 [Unit]
 Description=iCards MCP Server
 After=network.target
@@ -55,7 +61,7 @@ Type=simple
 User=root
 WorkingDirectory=/root/iCardsMCP
 Environment=AUTH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc2NDAxODE1OCwiZXhwIjoxNzY0MTA0NTU4fQ.lO1m4NTVPsoKnRbzd18uj9w-31apLUm9lKYYQ3df-bA
-ExecStart=/usr/local/bin/uv run python server.py
+ExecStart=$UV_PATH run python server.py
 Restart=always
 RestartSec=10
 StandardOutput=journal
