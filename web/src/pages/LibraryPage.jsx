@@ -204,7 +204,7 @@ export default function LibraryPage() {
                     <CardMedia
                       component="img"
                       height="140"
-                      image={`data:image/png;base64,${deck.coverUrl}`}
+                      image={deck.coverUrl}
                       alt={deck.name}
                       sx={{ objectFit: 'cover' }}
                     />
