@@ -87,6 +87,12 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
 
     steps:
+    - name: Verify SSH credentials exist
+      run: |
+        if [ -z "${{ secrets.SSH_HOST }}" ]; then echo "❌ SSH_HOST no está configurado"; exit 1; fi
+        if [ -z "${{ secrets.SSH_PASSWORD }}" ]; then echo "❌ SSH_PASSWORD no está configurado"; exit 1; fi
+        echo "✔ Credenciales SSH verificadas"
+    
     - name: Deploy to server
       uses: appleboy/ssh-action@v1.0.3
       with:
