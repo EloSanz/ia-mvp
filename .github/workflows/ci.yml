@@ -108,7 +108,12 @@ jobs:
           echo "➡️ Configurando PATH..."
           export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 
+          echo "➡️ Reseteando base de datos..."
+          cd /root/ia-mvp/server
+          npx prisma migrate reset --force --skip-generate
+
           echo "➡️ Iniciando servicios Backend y Frontend con Screen..."
+          cd /root/ia-mvp
           chmod +x start_services_screen.sh
           ./start_services_screen.sh
           echo "✅ Servicios levantados con Screen"
