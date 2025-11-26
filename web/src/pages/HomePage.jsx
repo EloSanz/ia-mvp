@@ -634,11 +634,28 @@ const HomePage = () => {
           <Fab
             color="success"
             aria-label="copiar token"
-            onClick={() => {
+            onClick={async () => {
               const token = localStorage.getItem('token');
               if (token) {
-                navigator.clipboard.writeText(token);
-                showToast('Token copiado al portapapeles con éxito');
+                try {
+                  // Intentar con Clipboard API (solo funciona en HTTPS o localhost)
+                  if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(token);
+                  } else {
+                    // Fallback para HTTP: usar textarea temporal
+                    const textArea = document.createElement('textarea');
+                    textArea.value = token;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-9999px';
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                  }
+                  showToast('Token copiado al portapapeles con éxito');
+                } catch (err) {
+                  showToast('Error al copiar el token', 'error');
+                }
               } else {
                 showToast('No hay token disponible', 'warning');
               }
