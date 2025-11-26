@@ -14,7 +14,8 @@
     "testTimeout": 10000
   },
   "scripts": {
-    "dev": "npx prisma db push && npx prisma generate && nodemon src/index.js",
+    "dev": "npx prisma generate && nodemon src/index.js",
+    "db:sync": "npx prisma db push && npx prisma generate",
     "start": "node src/index.js",
     "dockerStart": "npx prisma db push && npx prisma generate && node src/index.js",
     "db:reset": "echo '🛑 ATENCIÓN: Esto BORRARÁ TODOS LOS DATOS' && sleep 3 && pm2 stop ia-mvp 2>/dev/null || echo 'App not running' && npx prisma migrate reset --force --skip-generate 2>/dev/null || npx prisma db push --force-reset && npx prisma generate && npx prisma db seed 2>/dev/null || echo 'No seed' && pm2 restart ia-mvp 2>/dev/null || npm start",
