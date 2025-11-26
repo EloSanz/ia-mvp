@@ -132,6 +132,9 @@ export const AuthController = {
     // Generar token
     const token = generateToken(user.id);
 
+    console.log(`🔐 LOGIN SUCCESS: User ${username} (ID: ${user.id}) logged in successfully`);
+    console.log(`🔑 TOKEN GENERATED for user ${username}: ${token.substring(0, 20)}...`);
+
     BaseController.success(
       res,
       {
