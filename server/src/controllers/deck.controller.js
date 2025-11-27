@@ -464,7 +464,8 @@ export const DeckController = {
     }
 
     // Eliminar la imagen de portada de Cloudinary si existe
-    if (existingDeck.coverUrl) {
+    // Eliminar solo si es propio, el campo de coverGenerationStatus indica que fue generado por el sistema y no se comparte en la clonacion
+    if (existingDeck.coverUrl && (existingDeck.coverGenerationStatus === 'COMPLETED' || existingDeck.coverGenerationStatus)) {
       console.log(`Eliminando imagen de portada para deck ${id}: ${existingDeck.coverUrl}`);
       await deleteImageFromCloudinary(existingDeck.coverUrl);
     }
@@ -1456,7 +1457,7 @@ export const DeckController = {
   generateDeckFromDocument: BaseController.wrap(async (req, res) => {
     const userId = parseInt(req.userId);
     const file = req.file;
-    
+
     if (!file) {
       return BaseController.error(res, 'No se proporcionó archivo', 400);
     }
@@ -1465,18 +1466,18 @@ export const DeckController = {
       // 1. Parsear documento desde buffer
       const { documentParserService } = await import('../services/documentParser.service.js');
       const { openaiService } = await import('../services/openai.service.js');
-      
+
       console.log(`📄 Procesando documento: ${file.originalname} (${file.size} bytes)`);
-      
+
       const documentData = await documentParserService.parseDocumentFromBuffer(
         file.buffer,
         file.mimetype,
         file.originalname
       );
-      
+
       console.log(`✅ Documento parseado: ${documentData.metadata.length} caracteres, ${documentData.metadata.chunkCount} chunks`);
       console.log(`📋 Estructura detectada: ${documentData.structure.sections?.length || 0} secciones, título: "${documentData.structure.title || 'no detectado'}"`);
-      
+
       // 2. Generar metadata del deck con IA
       const documentSummary = documentData.text.substring(0, 2000); // Primeros 2000 chars
       const deckMetadata = await openaiService.generateDeckMetadataFromDocument(
@@ -1484,9 +1485,9 @@ export const DeckController = {
         documentData.structure,
         file.originalname
       );
-      
+
       console.log(`📝 Metadata generada: "${deckMetadata.name}"`);
-      
+
       // 3. Crear deck en DB
       const deck = await Deck.create({
         name: deckMetadata.name,
@@ -1494,18 +1495,18 @@ export const DeckController = {
         userId,
         coverUrl: null
       });
-      
+
       // 4. Generar flashcards con IA
       const { flashcardCount = 15, generateCover = true } = req.body;
       const flashcardsCount = parseInt(flashcardCount) || 15;
-      
+
       console.log(`🤖 Generando ${flashcardsCount} flashcards con IA...`);
-      
+
       const flashcards = await openaiService.generateFlashcardsFromDocument(documentData, {
         flashcardCount: flashcardsCount,
         difficulty: 'intermediate'
       });
-      
+
       // 5. Crear flashcards en batch (optimizado)
       // 🚀 MEJORA: Validar que haya flashcards generadas
       if (!flashcards || flashcards.length === 0) {
@@ -1518,7 +1519,7 @@ export const DeckController = {
         deckId: deck.id,
         difficulty: 2
       }));
-      
+
       // 🚀 MEJORA: Usar createMany si está disponible, sino Promise.all
       // createMany es más eficiente (1 query SQL vs N queries)
       let createdFlashcards;
@@ -1530,27 +1531,27 @@ export const DeckController = {
           flashcardsData.map(fc => Flashcard.create(fc))
         );
       }
-      
+
       console.log(`✅ ${createdFlashcards.length} flashcards creadas`);
-      
+
       // 6. Generar portada (async) si corresponde
       if (generateCover === 'true' || generateCover === true) {
         deckGeneratorService.generateAndAssignCoverAsync(deck.id, deck.name, deck.description);
       }
-      
+
       BaseController.success(res, {
         deck,
         flashcards: createdFlashcards,
         message: `Deck creado exitosamente desde documento con ${createdFlashcards.length} flashcards`
       }, 'Deck generado desde documento', 201);
-      
+
     } catch (error) {
       console.error('Error generando deck desde documento:', error);
-      
+
       // Clasificar errores: usuario (400) vs servidor (500)
       let errorMessage = 'Error procesando documento';
       let statusCode = 500;
-      
+
       // Errores esperados del usuario (400 - Bad Request)
       if (error.message.includes('escaneada') || error.message.includes('OCR')) {
         errorMessage = error.message;
@@ -1578,7 +1579,7 @@ export const DeckController = {
         errorMessage = 'El procesamiento está tardando demasiado. Intenta con un documento más pequeño.';
         statusCode = 408; // Request Timeout
       }
-      
+
       BaseController.error(res, errorMessage, statusCode);
     }
   })
