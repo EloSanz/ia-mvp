@@ -11,6 +11,7 @@ export class DeckEntity {
     this.coverUrl = data.coverUrl || null;
     this.visibility = data.visibility || 'private';
     this.clonesCount = data.clonesCount || 0;
+    this.clonedFromId = data.clonedFromId || null;
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
     this.tags = data.tags || [];
@@ -29,6 +30,7 @@ export class DeckEntity {
       coverUrl: this.coverUrl,
       visibility: this.visibility,
       clonesCount: this.clonesCount,
+      clonedFromId: this.clonedFromId,
       coverGenerationStatus: this.coverGenerationStatus,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
@@ -47,6 +49,7 @@ export class DeckEntity {
       coverUrl: prismaData.coverUrl,
       visibility: prismaData.visibility,
       clonesCount: prismaData.clonesCount,
+      clonedFromId: prismaData.clonedFromId,
       coverGenerationStatus: prismaData.coverGenerationStatus,
       createdAt: prismaData.createdAt,
       updatedAt: prismaData.updatedAt,

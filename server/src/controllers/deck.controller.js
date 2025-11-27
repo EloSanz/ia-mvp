@@ -453,24 +453,12 @@ export const DeckController = {
    */
   deleteDeck: BaseController.wrap(async (req, res) => {
     const { id } = req.params;
-    const existingDeck = await Deck.findById(id);
-
-    if (!existingDeck) {
-      throw new NotFoundError('Deck no encontrado');
-    }
-
-    if (existingDeck.userId !== req.userId) {
-      throw new ForbiddenError('No tienes permiso para eliminar este deck');
-    }
-
-    // Eliminar la imagen de portada de Cloudinary si existe
-    // Eliminar solo si es propio, el campo de coverGenerationStatus indica que fue generado por el sistema y no se comparte en la clonacion
-    if (existingDeck.coverUrl && (existingDeck.coverGenerationStatus === 'COMPLETED' || existingDeck.coverGenerationStatus)) {
-      console.log(`Eliminando imagen de portada para deck ${id}: ${existingDeck.coverUrl}`);
-      await deleteImageFromCloudinary(existingDeck.coverUrl);
-    }
-
-    await Deck.delete(id);
+    // Importar el servicio de deck bajo demanda
+    const { DeckService } = await import('../services/deck.service.js');
+    
+    // La lógica compleja de eliminación ahora está encapsulada en el servicio
+    await DeckService.deleteDeck(parseInt(id), req.userId);
+    
     BaseController.success(res, null, 'Deck eliminado exitosamente');
   }),
 
@@ -1077,7 +1065,8 @@ export const DeckController = {
         description: newDescription,
         coverUrl: sourceDeck.coverUrl,
         userId,
-        visibility: 'private'
+        visibility: 'private',
+        clonedFromId: sourceDeck.id
       });
 
       // Clonar flashcards con tags
