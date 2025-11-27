@@ -166,7 +166,7 @@ export class Deck {
       coverGenerationStatus: this.coverGenerationStatus,
       visibility: this.visibility,
       clonesCount: this.clonesCount,
-      //clonedFromId: this.clonedFromId,// Omitido para no exponer info de clonación
+      clonedFromId: this.clonedFromId,// Omitido para no exponer info de clonación
       userId: this.userId,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,

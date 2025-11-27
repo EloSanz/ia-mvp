@@ -11,6 +11,7 @@ export class DeckDto {
     this.generateCover = data.generateCover ?? false;
     this.createdAt = data.createdAt || null;
     this.updatedAt = data.updatedAt || null;
+    this.clonedFromId = data.clonedFromId || null;
   }
 
   /**
@@ -23,7 +24,8 @@ export class DeckDto {
       description: deckModel.description,
       coverUrl: deckModel.coverUrl,
       createdAt: deckModel.createdAt,
-      updatedAt: deckModel.updatedAt
+      updatedAt: deckModel.updatedAt,
+      clonedFromId: deckModel.clonedFromId
     });
   }
 
