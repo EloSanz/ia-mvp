@@ -113,7 +113,7 @@ jobs:
           npx prisma migrate deploy
 
           echo "➡️ Iniciando servicios Backend y Frontend con Screen..."
-          cd /root/ia-mvp
+          cd ../
           chmod +x start_services_screen.sh
           ./start_services_screen.sh
           echo "✅ Servicios levantados con Screen"
