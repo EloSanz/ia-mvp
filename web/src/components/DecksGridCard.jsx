@@ -50,7 +50,7 @@ export default function DecksGridCard({ decks, deckMonitory, onEdit, onDelete, o
                 <CardMedia
                   component="img"
                   height="140"
-                  image={`data:image/png;base64,${deck.coverUrl}`}
+                  image={deck.coverUrl}
                   alt={deck.name}
                   sx={{ objectFit: 'cover' }}
                 />
@@ -85,10 +85,14 @@ export default function DecksGridCard({ decks, deckMonitory, onEdit, onDelete, o
                   gutterBottom
                   sx={{
                     color: '#FFFFFF',
-                    width: '15rem',
+                    mb: 1,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    mb: 1
+                    lineHeight: '1.2em',
+                    height: '2.4em' // 2 líneas * 1.2em
                   }}
                 >
                   {deck.name}
@@ -99,36 +103,21 @@ export default function DecksGridCard({ decks, deckMonitory, onEdit, onDelete, o
                     color="text.secondary"
                     sx={{
                       mb: 1,
-                      width: '15rem' // ancho fijo
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      lineHeight: '1.2em',
+                      height: '3.6em' // 3 líneas * 1.2em
                     }}
                   >
                     {deck.description}
                   </Typography>
                 )}
-                <Box sx={{ mb: 2 }}>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: '#9CA3AF',
-                      fontSize: '0.875rem',
-                      mb: 0.5
-                    }}
-                  >
-                    Nuevas: {deck.newCount ?? 0} • Aprendiendo: {deck.learnCount ?? 0}
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: '#9CA3AF',
-                      fontSize: '0.875rem'
-                    }}
-                  >
-                    Pendientes: {deck.dueCount ?? 0}
-                  </Typography>
-                </Box>
-                <Box 
-                  display="flex" 
-                  justifyContent="flex-end" 
+                <Box
+                  display="flex"
+                  justifyContent="flex-end"
                   gap={1.5}
                   sx={{ mt: 'auto' }}
                 >

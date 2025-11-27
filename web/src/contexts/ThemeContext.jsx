@@ -15,8 +15,8 @@ const kyotoTheme = Object.assign(
   createTheme({
     palette: {
       mode: 'light',
-      primary: { main: '#e573a7' }, // Sakura pink
-      secondary: { main: '#f7cac9' }, // Soft pink
+      primary: { main: '#e573a7', contrastText: '#ffffff' }, // Sakura pink
+      secondary: { main: '#f7cac9', contrastText: '#6d4c41' }, // Soft pink
       background: {
         default: 'rgba(247, 202, 201, 0.7)', // Soft pink with transparency
         paper: 'rgba(255, 255, 255, 0.85)'
@@ -49,8 +49,8 @@ const tokyoTheme = Object.assign(
   createTheme({
     palette: {
       mode: 'dark',
-      primary: { main: '#00eaff' }, // Neon blue
-      secondary: { main: '#ff00cc' }, // Neon pink
+      primary: { main: '#00eaff', contrastText: '#000000' }, // Neon blue
+      secondary: { main: '#ff00cc', contrastText: '#ffffff' }, // Neon pink
       background: {
         default: 'rgba(10, 20, 40, 0.85)',
         paper: 'rgba(30, 40, 60, 0.95)'
@@ -84,8 +84,8 @@ const themes = {
     createTheme({
       palette: {
         mode: 'light',
-        primary: { main: '#1976d2' },
-        secondary: { main: '#9c27b0' },
+        primary: { main: '#1976d2', contrastText: '#ffffff' },
+        secondary: { main: '#9c27b0', contrastText: '#ffffff' },
         background: {
           default: '#f7f9fa',
           paper: '#fdfdfd'
@@ -109,8 +109,8 @@ const themes = {
     createTheme({
       palette: {
         mode: 'dark',
-        primary: { main: '#90caf9' },
-        secondary: { main: '#ce93d8' },
+        primary: { main: '#90caf9', contrastText: '#000000' },
+        secondary: { main: '#ce93d8', contrastText: '#000000' },
         background: { default: '#1e1e1e', paper: '#2d2d2d' },
         grey: { 800: '#333333', 900: '#1e1e1e' }
       }
@@ -120,8 +120,8 @@ const themes = {
   github: createTheme({
     palette: {
       mode: 'dark',
-      primary: { main: '#2ea44f' },
-      secondary: { main: '#24292f' },
+      primary: { main: '#2ea44f', contrastText: '#ffffff' },
+      secondary: { main: '#58a6ff', contrastText: '#000000' },
       background: { default: '#0d1117', paper: '#161b22' },
       text: { primary: '#c9d1d9', secondary: '#8b949e' }
     }

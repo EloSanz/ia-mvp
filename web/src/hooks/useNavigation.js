@@ -39,8 +39,13 @@ export const useNavigation = () => {
           await decks.getById(lastDeckId);
           setLastDeckExists(true);
         } catch (error) {
-          // Si el deck no existe, limpiarlo del localStorage
-          console.warn(`Deck ${lastDeckId} no encontrado, limpiando localStorage`);
+          // Si el deck no existe o no tenemos permiso (403), limpiarlo del localStorage
+          // Esto puede pasar si el usuario visitó un deck de biblioteca antes del fix
+          if (error.response?.status === 403 || error.response?.status === 404) {
+            console.warn(`Deck ${lastDeckId} no accesible, limpiando localStorage`);
+          } else {
+            console.warn(`Error validando deck ${lastDeckId}:`, error.message);
+          }
           clearLastDeck();
           setLastDeckExists(false);
         }
@@ -66,7 +71,11 @@ export const useNavigation = () => {
 
   // Funciones de navegación inteligente
   const goToDecks = () => {
-    navigate('/');
+    navigate('/home');
+  };
+
+  const goToHome = () => {
+    navigate('/home');
   };
 
   const goToDeck = (deckId) => {
@@ -86,6 +95,10 @@ export const useNavigation = () => {
     navigate('/study');
   };
 
+  const goToLandig = () => {
+    navigate('/');
+  };
+
   const goToCurrentDeck = () => {
     const deckId = getCurrentDeckId();
     if (deckId) {
@@ -102,11 +115,11 @@ export const useNavigation = () => {
   const goBackToDecks = () => {
     // Si estamos en una página de deck, volver a la lista de decks
     // Si estamos en cualquier otra página, ir a la lista de decks
-    navigate('/');
+    navigate('/home');
   };
 
   // Funciones de breadcrumb
-  const getBreadcrumbItems = () => {
+  const getBreadcrumbItems = (deckName = null) => {
     const items = [];
 
     if (isOnDeckPage) {
@@ -120,10 +133,11 @@ export const useNavigation = () => {
       );
     } else if (currentPath.startsWith('/study/session/')) {
       const sessionId = currentSessionId;
+      const sessionLabel = deckName ? deckName : `Sesión ${sessionId}`;
       items.push(
         { label: 'Mis Decks', path: '/', onClick: goToDecks },
         { label: 'Estudiar', path: '/study', onClick: goToStudy },
-        { label: `Sesión ${sessionId}`, path: currentPath }
+        { label: sessionLabel, path: currentPath }
       );
     } else if (currentPath === '/') {
       items.push({ label: 'Inicio', path: '/' });
@@ -145,17 +159,24 @@ export const useNavigation = () => {
 
   // Determinar la acción del botón de navegación principal
   const getNavigationButtonAction = () => {
-    if (isOnDeckPage || isOnStudyPage) {
-      // Si estamos en páginas específicas, ir a la lista de decks
-      return goToDecks;
-    } else {
-      // Si estamos en home y tenemos un último deck visitado que existe, ir directamente a ese deck
-      if (lastDeckExists) {
-        return goToLastDeck;
-      } else {
+    // Validación solicitada:
+    // - Si estamos en una página de deck o de estudio, el botón debe llevar al listado de decks ('/').
+    // - En caso contrario, si existe un último deck válido, ir a ese deck.
+    // - Si no existe un último deck válido, ir al listado de decks.
+    // Esta lógica se aplica sólo cuando hay sesión (token). Si no hay sesión, llevar al landing público.
+    if (token) {
+      if (isOnDeckPage || isOnStudyPage) {
         return goToDecks;
+      } else {
+        if (lastDeckExists) {
+          return goToLastDeck;
+        } else {
+          return goToHome;
+        }
       }
     }
+
+    return goToLandig;
   };
 
   return {

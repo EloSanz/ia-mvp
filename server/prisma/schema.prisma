@@ -26,6 +26,9 @@ model Deck {
   name        String
   description String   @db.Text
   coverUrl    String?  // URL de la portada generada por IA
+  coverGenerationStatus String? // Control para controlaURL por IA
+  visibility  String   @default("private") // "private" | "public"
+  clonesCount Int      @default(0) // Contador de popularidad
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

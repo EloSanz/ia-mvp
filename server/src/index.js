@@ -9,10 +9,21 @@ import syncRoutes from './routes/sync.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import studyRoutes from './routes/study.routes.js';
 import loggingRoutes from './routes/logging.routes.js';
+import libraryRoutes from './routes/library.routes.js';
 import { errorHandler } from './middlewares/error.middleware.js';
 import { authMiddleware } from './middlewares/auth.middleware.js';
 import { requestLogger, apiLogger, errorLogger } from './middlewares/logging.middleware.js';
 import { getQueryStats } from './config/database.js';
+import { swaggerUi, specs } from './config/swagger.config.js';
+import { BaseController } from './controllers/base.controller.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Define __dirname para módulos ES
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 
@@ -24,8 +35,27 @@ app.use(apiLogger);     // Logging específico de API
 app.use(cors());
 app.use(express.json());
 
+// Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
+  swaggerOptions: {
+    persistAuthorization: true,
+    displayRequestDuration: true,
+    docExpansion: 'none',
+    filter: true,
+    showExtensions: true,
+    showCommonExtensions: true,
+    tryItOutEnabled: true
+  },
+  customCss: `
+    .swagger-ui .topbar { display: none }
+    .swagger-ui .info .title { color: #3b4151 }
+  `,
+  customSiteTitle: 'iCards API Documentation',
+  customfavIcon: '/favicon.ico'
+}));
+
 // Health check route
-app.get('/api/health', (_req, res) => res.json({ ok: true }));
+app.get('/api/health', (_req, res) => BaseController.success(res, { ok: true }, 'Health check exitoso'));
 
 // Enhanced health check with logging info
 app.get('/api/health/detailed', (req, res) => {
@@ -64,14 +94,12 @@ app.get('/api/health/detailed', (req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
-app.use('/api/decks', authMiddleware, deckRoutes); // Tags ahora están bajo /api/decks/:deckId/tags
-app.use('/api/decks', authMiddleware, tagRoutes);  // Tags integradas con decks
+app.use('/api/decks', deckRoutes); // Ahora deckRoutes maneja sus propias sub-rutas de tags
 app.use('/api/flashcards', flashcardRoutes);
 app.use('/api/sync', syncRoutes);
 app.use('/api/study', studyRoutes);
 app.use('/api/logging', loggingRoutes);
-// Tags legacy (deprecated)
-app.use('/api/tags', authMiddleware, tagRoutes);
+app.use('/api/library', libraryRoutes);
 
 // Middleware de logging de errores
 app.use(errorLogger);
@@ -85,3 +113,21 @@ app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`API on :${PORT}`);
 });
+
+const migrationFlagPath = path.join(__dirname, 'migration_done.txt');
+
+(async () => {
+  if (!fs.existsSync(migrationFlagPath)) {
+    console.log('Ejecutando script de migración de imágenes a Cloudinary...');
+
+    try {
+      await import('../scripts/migrate_images_to_cloudinary.js');
+      fs.writeFileSync(migrationFlagPath, 'La migración se ejecutó el ' + new Date().toISOString());
+      console.log('Migración completada y registrada.');
+    } catch (error) {
+      console.error('Error durante la migración:', error);
+    }
+  } else {
+    console.log('La migración ya se ejecutó previamente.');
+  }
+})();

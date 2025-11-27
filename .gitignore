@@ -73,7 +73,10 @@ prisma/*.db
 /server/coverage/
 /server/.env*
 /server/uploads/
+/server/check_port.sh
 
+reference/*
+|
 # Package manager specific
 yarn.lock
 package-lock.json
@@ -83,3 +86,6 @@ npm-shrinkwrap.json
 .DS_Store
 Thumbs.db
 .github/prompts/ia-mvp.code-workspace
+docs/stitch_landing_page_de_icards/*
+
+server/src/migration_done.txt

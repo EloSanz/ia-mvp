@@ -1,5 +1,6 @@
 import { DeckEntity } from '../entities/deck.entity.js';
 import { DeckRepository } from '../repositories/deck.repository.js';
+import { uploadImageToCloudinary } from '../utils/cloudinary.js';
 
 /**
  * Deck - Modelo de dominio con lógica de negocio
@@ -11,13 +12,19 @@ export class Deck {
     this.name = data.name || '';
     this.description = data.description || '';
     this.coverUrl = data.coverUrl || null;
+    this.coverGenerationStatus = data.coverGenerationStatus || null;
+    this.visibility = data.visibility || 'private';
+    this.clonesCount = data.clonesCount || 0;
     this.userId = data.userId;
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
+    // Agregado para conservar estadísticas
+    this.stats = data.stats || null;
+    this.tags = data.tags || [];
   }
 
   /**
-   * Crea un nuevo deck aplicando reglas de negocio
+   * Crea un nuevo deck aplicando reglas de negocio .
    */
   static async create(deckData) {
     const deck = new Deck(deckData);
@@ -26,6 +33,7 @@ export class Deck {
     deck.name = deck.name.trim();
     deck.description = deck.description.trim();
     deck.updatedAt = new Date();
+
 
     // Convertir a entidad para persistir
     const entity = new DeckEntity(deck);
@@ -52,7 +60,15 @@ export class Deck {
    */
   static async findAll(filter = {}) {
     const entities = await DeckRepository.findAll(filter);
-    return entities.map((entity) => Deck.fromEntity(entity));
+    return entities.map((entity) => Deck.fromEntityWithStast(entity));
+  }
+
+  /**
+   * Obtiene todos los decks sin coverUrl (optimizado para MCP)
+   */
+  static async findAllWithoutCoverUrl(filter = {}) {
+    const entities = await DeckRepository.findAllWithoutCoverUrl(filter);
+    return entities.map((entity) => Deck.fromEntityWithStast(entity));
   }
 
   /**
@@ -70,7 +86,7 @@ export class Deck {
       ...updateData,
       updatedAt: new Date()
     });
-    
+
 
     updatedDeck.name = updatedDeck.name.trim();
     updatedDeck.description = updatedDeck.description.trim();
@@ -105,9 +121,33 @@ export class Deck {
       name: entity.name,
       description: entity.description,
       coverUrl: entity.coverUrl,
+      coverGenerationStatus: entity.coverGenerationStatus,
+      visibility: entity.visibility,
+      clonesCount: entity.clonesCount,
       userId: entity.userId,
       createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt
+      updatedAt: entity.updatedAt,
+      tags: entity.tags
+    });
+  }
+
+  /**
+  * Convierte una entidad a modelo con estadísticas
+  */
+  static fromEntityWithStast(entity) {
+    return new Deck({
+      id: entity.id,
+      name: entity.name,
+      description: entity.description,
+      coverUrl: entity.coverUrl,
+      visibility: entity.visibility,
+      coverGenerationStatus: entity.coverGenerationStatus,
+      clonesCount: entity.clonesCount,
+      userId: entity.userId,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+      stats: entity.stats,
+      tags: entity.tags
     });
   }
 
@@ -120,9 +160,15 @@ export class Deck {
       name: this.name,
       description: this.description,
       coverUrl: this.coverUrl,
+      coverGenerationStatus: this.coverGenerationStatus,
+      visibility: this.visibility,
+      clonesCount: this.clonesCount,
       userId: this.userId,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
+      // Agregado para enviar stats
+      stats: this.stats,
+      tags: this.tags
     };
   }
 }

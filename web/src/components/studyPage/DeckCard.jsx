@@ -4,11 +4,19 @@ import { Card, CardContent, CardActions, Box, Typography, Chip, Button } from '@
 import { LibraryBooks as BooksIcon, PlayArrow as PlayIcon } from '@mui/icons-material';
 
 export default function DeckCard({ deck, selected, onSelect, onView }) {
-  // Stats mockeadas (mismo cálculo que tenías)
-  const totalCards = deck.cardCount || 0;
-  const dueCards = totalCards > 0 ? Math.floor(Math.random() * totalCards) : 0;
-  const reviewedCards = totalCards > 0 ? Math.floor(Math.random() * (totalCards - dueCards)) : 0;
-  const newCards = Math.max(0, totalCards - dueCards - reviewedCards);
+
+  let totalCards, dueCards, reviewedCards, newCards;
+  if (deck.stats) {
+    totalCards = deck.stats.flashcardsCount;
+    dueCards = deck.stats.newFlashcardsCount;
+    reviewedCards = totalCards - deck.stats.newFlashcardsCount;
+    // newCards = Math.abs(totalCards - dueCards - reviewedCards);
+  } else {
+    totalCards = deck.cardCount || 0;
+    dueCards = totalCards > 0 ? Math.floor(Math.random() * totalCards) : 0;
+    // reviewedCards = totalCards > 0 ? Math.floor(Math.random() * (totalCards - dueCards)) : 0;
+    newCards = Math.max(0, totalCards - dueCards);
+  }
 
   return (
     <Card
@@ -24,25 +32,55 @@ export default function DeckCard({ deck, selected, onSelect, onView }) {
     >
       <CardContent sx={{ flex: 1 }}>
         <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-          <Typography variant="h6" component="h3" fontWeight={600}>
+          <Typography
+            variant="h6"
+            component="h3"
+            fontWeight={600}
+            sx={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              lineHeight: '1.2em',
+              height: '2.4em', // 2 líneas * 1.2em
+              flex: 1,
+              mr: 1
+            }}
+          >
             {deck.name}
           </Typography>
           <Chip
-            label={deck.isPublic ? 'Público' : 'Privado'}
+            label={deck.visibility === 'public' ? 'Público' : 'Privado'}
             size="small"
-            color={deck.isPublic ? 'success' : 'default'}
+            color={deck.visibility === 'public' ? 'success' : 'default'}
             variant="outlined"
+            sx={{ flexShrink: 0 }}
           />
         </Box>
 
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{
+            mb: 2,
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            lineHeight: '1.2em',
+            height: '3.6em' // 3 líneas * 1.2em
+          }}
+        >
           {deck.description || 'Sin descripción'}
         </Typography>
 
         <Box display="flex" flexDirection="column" gap={1}>
           <Row label="Total de tarjetas:" value={totalCards} icon={<BooksIcon />} />
-          <Row label="Pendientes:" value={dueCards} chipProps={{ color: 'warning' }} />
-          <Row label="Nuevas:" value={newCards} chipProps={{ color: 'info' }} />
+          <Row label="Revisada:" value={reviewedCards} chipProps={{ color: 'success' }} />
+          <Row label="Pendientes de revision:" value={dueCards} chipProps={{ color: 'warning' }} />
+
         </Box>
       </CardContent>
 

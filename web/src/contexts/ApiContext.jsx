@@ -80,33 +80,48 @@ export const useApi = () => {
   return context;
 };
 
-// Interceptor para agregar el token de autenticación
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// Interceptor duplicado removido - el token ya se maneja en el primer interceptor
 
 export const ApiProvider = ({ children }) => {
   // Decks API
   const decks = {
     getAll: () => api.get('/api/decks'),
     getById: (id) => api.get(`/api/decks/${id}`),
+    getCoverStatusById: (id) => api.get(`/api/decks/${id}/cover-status`),
     create: (data) => api.post('/api/decks', data, { timeout: 30000 }),
     update: (id, data) => api.put(`/api/decks/${id}`, data),
-    delete: (id) => api.delete(`/api/decks/${id}`)
+    delete: (id) => api.delete(`/api/decks/${id}`),
+    // Nuevos métodos para generación con IA
+    suggestTopics: (count = 3) => api.post('/api/decks/suggest-topics', { count }),
+    generateWithAI: (config) => api.post('/api/decks/generate-with-ai', config, {
+      timeout: 120000  // 2 minutos para generación completa
+    }),
+    generateFromDocument: (formData) => api.post('/api/decks/generate-from-document', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      timeout: 180000, // 3 minutos para documentos (suficiente para procesamiento con IA)
+      onUploadProgress: (progressEvent) => {
+        const percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total
+        );
+        console.log('Upload progress:', percentCompleted + '%');
+      }
+    }),
+    // Métodos para biblioteca
+    updateVisibility: (id, visibility) => api.patch(`/api/decks/${id}/visibility`, { visibility }),
+    clone: (id) => api.post(`/api/decks/${id}/clone`)
   };
 
   // Flashcards API
   const flashcards = {
     getAll: () => api.get('/api/flashcards'),
     getById: (id) => api.get(`/api/flashcards/${id}`),
-    getByDeck: (deckId, { page = 0, pageSize = 15 } = {}) => {
+    getByDeck: (deckId, { page = 0, pageSize = 15, tagId = null } = {}) => {
       const params = {};
       if (page !== undefined && page !== null) params.page = page;
       if (pageSize !== undefined && pageSize !== null) params.pageSize = pageSize;
+      if (tagId !== undefined && tagId !== null) params.tagId = tagId;
 
       return api.get(`/api/flashcards/deck/${deckId}`, { params });
     },
@@ -184,6 +199,16 @@ export const ApiProvider = ({ children }) => {
     getGlobalStats: () => api.get('/api/study/stats')
   };
 
+  // Library API - Biblioteca pública de decks
+  const library = {
+    // Obtener todos los decks públicos
+    getAll: (search = '', sortBy = 'recent') => api.get('/api/library', {
+      params: { search, sortBy }
+    }),
+    // Obtener preview de un deck público
+    getPreview: (deckId) => api.get(`/api/library/${deckId}`)
+  };
+
   // Health check
   const health = {
     check: () => api.get('/api/health'),
@@ -196,6 +221,7 @@ export const ApiProvider = ({ children }) => {
     tags,
     sync,
     study,
+    library,
     health
   };
 

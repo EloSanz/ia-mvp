@@ -28,7 +28,20 @@ import {
   CardMedia,
   Card,
   Skeleton,
-  Snackbar
+  Snackbar,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  Backdrop,
+  Zoom,
+  Grow,
+  Slide,
+  Stepper,
+  Step,
+  StepLabel,
+  LinearProgress
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -38,7 +51,12 @@ import {
   GitHub as GitHubIcon,
   Email as EmailIcon,
   Info as InfoIcon,
-  ArrowForward as ArrowForwardIcon
+  ArrowForward as ArrowForwardIcon,
+  AutoAwesome as AIIcon,
+  Create as CreateIcon,
+  AutoFixHigh as AutoFixHighIcon,
+  Description as DocumentIcon,
+  VpnKey as TokenIcon
 } from '@mui/icons-material';
 import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
@@ -52,6 +70,8 @@ import DeckSorting from '../components/DeckSorting';
 import { useTheme as useMuiTheme } from '@mui/material';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
 import DecksGridCard from '../components/DecksGridCard';
+import AIDeckGeneratorModal from '../components/AIDeckGeneratorModal';
+import DocumentUploadModal from '../components/DocumentUploadModal';
 const HomePage = () => {
   const muiTheme = useMuiTheme();
   const { themeName } = useAppTheme();
@@ -95,6 +115,16 @@ const HomePage = () => {
   // Modal para contacto
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
 
+  // Modal para generación de deck con IA
+  const [aiDeckGeneratorOpen, setAiDeckGeneratorOpen] = useState(false);
+
+  // Modal para generación desde documento
+  const [documentUploadOpen, setDocumentUploadOpen] = useState(false);
+
+  // Menu de creación de decks
+  const [createMenuAnchor, setCreateMenuAnchor] = useState(null);
+  const createMenuOpen = Boolean(createMenuAnchor);
+
   //Monitoreo de deck para portada IA
   const [deckMonitory, setDeckMonitory] = useState(null);
 
@@ -105,6 +135,18 @@ const HomePage = () => {
   const showToast = (message, severity = 'success') => {
     setToast({ open: true, message, severity });
   };
+
+  const [estimatedTime, setEstimatedTime] = useState(null);
+
+  const [statusDialogManualOpen, setStatusDialogManualOpen] = useState(false); // Para el nuevo modal de estado
+
+  const [generationManualStep, setGenerationManualStep] = useState(0);
+
+  const generationManualSteps = [
+    'Generando Deck...',
+    'Creando portada...'
+  ];
+
 
   const loadDecks = useCallback(async () => {
     try {
@@ -124,25 +166,54 @@ const HomePage = () => {
     loadDecks();
   }, [loadDecks]);
 
+
   const handleCreateDeck = async () => {
     if (!newDeck.name.trim()) return;
 
     try {
       setCreating(true);
-      const { data: createdDeck } = await decks.create(newDeck);
-      if (newDeck.generateCover && createdDeck && createdDeck.data.id) {
-        console.log('Generando portada IA...:', createdDeck.data);
-        // monitorear solo este deck recién creado
-        setDeckMonitory(createdDeck.data);
+
+      if (!newDeck.generateCover) {
+        // --- RUTA A: FLUJO SIMPLE (SIN PORTADA CON IA) NI MONITOREO ---
+        await decks.create(newDeck);
+
+        setCreateDialogOpen(false);
+        setNewDeck({ name: '', description: '', generateCover: false });
+        loadDecks(); // Recargar la lista
+        showToast(`Deck "${newDeck.name}" creado exitosamente`);
+
       }
 
-      setCreateDialogOpen(false);
-      setNewDeck({ name: '', description: '', generateCover: false });
-      loadDecks(); // Recargar la lista
-      showToast(`Deck "${newDeck.name}" creado exitosamente`);
+      else {
+        // --- RUTA B: FLUJO CON ESTADOS (PORTADA CON IA) ---
+
+        setCreateDialogOpen(false);
+        setStatusDialogManualOpen(true);
+        setEstimatedTime(20); // Estimar 20 segundos para todo el proceso de creación
+        setGenerationManualStep(0);
+
+        // Llama al endpoint que inicia el trabajo asíncrono
+        const { data: createdDeck } = await decks.create(newDeck);
+        setGenerationManualStep(1);
+
+        if (createdDeck && createdDeck.data.id) {
+          showToast('Generando portada con IA...', 'warning');
+          // monitorear solo este deck recién creado
+          setDeckMonitory(createdDeck.data);
+        }
+
+        setNewDeck({ name: '', description: '', generateCover: false });
+        loadDecks(); // Recargar la lista
+        showToast(`Deck "${newDeck.name}" creado exitosamente`);
+
+      }
+
     } catch (err) {
       console.error('Error creating deck:', err);
+      setStatusDialogManualOpen(false);
+      setEstimatedTime(null);
     } finally {
+
       setCreating(false);
     }
   };
@@ -150,23 +221,48 @@ const HomePage = () => {
   /***Interval para monitorisar la deck creada */
   useEffect(() => {
     let interval;
-    if (deckMonitory && !deckMonitory.coverUrl) {
+    if (deckMonitory && (!deckMonitory.coverUrl || !deckMonitory.coverUrl.startsWith('https:'))) {
       interval = setInterval(async () => {
         try {
-          const { data: updated } = await decks.getById(deckMonitory.id);
-          if (updated.data.coverUrl) {
-            setDecksList((prev) => prev.map((d) => (d.id === updated.data.id ? updated.data : d)));
-            setDeckMonitory(null); // dejar de monitorear
-            // loadDecks();             // refresca lista completa
+          // Usar el nuevo endpoint que solo trae el estado
+          const { data: statusResult } = await decks.getCoverStatusById(deckMonitory.id);
+          const updatedStatus = statusResult.data;
+
+          console.log("🚀 ~ HomePage ~ Deck Status:", updatedStatus);
+
+          if (updatedStatus.coverGenerationStatus === 'FAILED') {
+            setDeckMonitory(null);
+            showToast('Error Generando la portada con IA', 'error');
             clearInterval(interval);
+            if (statusDialogManualOpen) {
+              setStatusDialogManualOpen(false);
+            }
+          }
+
+          if (updatedStatus.coverUrl && updatedStatus.coverUrl.startsWith('https:') && updatedStatus.coverGenerationStatus === 'COMPLETED') {
+            showToast('Portada generada exitosamente con IA', 'success');
+            
+            // Ahora que está lista, obtener el deck completo para actualizar la UI
+            const { data: finalDeck } = await decks.getById(deckMonitory.id);
+            
+            setDecksList((prev) => prev.map((d) => (d.id === finalDeck.data.id ? finalDeck.data : d)));
+            setDeckMonitory(null);
+            clearInterval(interval);
+
+            if (statusDialogManualOpen) {
+              setGenerationManualStep(2);
+              setStatusDialogManualOpen(false);
+            }
           }
         } catch (err) {
-          console.error('Error fetching deck update:', err);
+          showToast('Error consultando estado de la portada', 'error');
+          setDeckMonitory(null);
+          console.error('Error fetching deck status update:', err);
         }
-      }, 10000); //Por lo general suel tardar menos de 30 segundos
+      }, 15000); // Por lo general suele tardar menos de 30 segundos
     }
     return () => clearInterval(interval);
-  }, [deckMonitory]);
+  }, [deckMonitory, decks, showToast, statusDialogManualOpen]);
 
   const handleEditDeck = async () => {
     if (!editingDeck?.name?.trim()) return;
@@ -218,9 +314,79 @@ const HomePage = () => {
     setEditDialogOpen(true);
   };
 
+  const handleAIDeckGenerated = (result) => {
+    console.log('Deck generado con IA:', result);
+    // Recargar la lista
+    loadDecks();
+
+    showToast(`Deck "${result.deck?.name || 'sin nombre'}" creado exitosamente con ${result.flashcards?.length || 0} flashcards`);
+
+    // Si el deck fue creado pero aún no tiene portada, monitorizarlo para actualizar la portada cuando el backend la genere solo si corrresponde
+    if (result && result.deck && !result.deck.coverUrl && result.deck.coverGenerationStatus === 'PENDING') {
+      showToast('Generando portada con IA...', 'warning');
+      setDeckMonitory(result.deck);
+    }
+
+
+  };
+
+  const handleDocumentGenerate = (result) => {
+    console.log('Deck generado desde documento:', result);
+    // Recargar la lista
+    loadDecks();
+
+    // Si el deck fue creado pero aún no tiene portada, monitorizarlo para actualizar la portada cuando el backend la genere
+    if (result && result.deck && !result.deck.coverUrl) {
+      setDeckMonitory(result.deck);
+    }
+
+    showToast(`Deck "${result.deck?.name || 'sin nombre'}" creado exitosamente con ${result.flashcards?.length || 0} flashcards desde documento`);
+  };
+
+  // Handlers del menú de creación
+  const handleCreateMenuOpen = (event) => {
+    setCreateMenuAnchor(event.currentTarget);
+  };
+
+  const handleCreateMenuClose = () => {
+    setCreateMenuAnchor(null);
+  };
+
+  const handleCreateOption = (option) => {
+    handleCreateMenuClose();
+
+    switch (option) {
+      case 'document':
+        setDocumentUploadOpen(true);
+        break;
+      case 'ai':
+        setAiDeckGeneratorOpen(true);
+        break;
+      case 'manual':
+        setCreateDialogOpen(true);
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Cerrar menú con tecla ESC
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape' && createMenuOpen) {
+        handleCreateMenuClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscKey);
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [createMenuOpen]);
+
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+      <Container maxWidth="xl" sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <CircularProgress />
       </Container>
     );
@@ -230,11 +396,12 @@ const HomePage = () => {
     <>
       <Navigation />
       <Container
-        maxWidth="lg"
+        maxWidth="xl"
         sx={{
-          py: 2,
+          pt: 2,
+          pb: 1, // Reducir padding inferior
           backgroundColor: muiTheme.palette.background.default,
-          minHeight: '100vh',
+          minHeight: 'calc(100vh - 64px)', // Restar la altura del header de navegación
           position: 'relative',
           fontFamily: muiTheme.fontFamily
         }}
@@ -249,19 +416,21 @@ const HomePage = () => {
               severity="info"
               icon={<SchoolIcon />}
               action={
-                <Button
-                  color="inherit"
-                  size="small"
-                  onClick={goToLastDeck}
-                  startIcon={<ArrowForwardIcon />}
-                  sx={{ 
-                    fontWeight: 'bold',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}
-                >
-                  Continuar
-                </Button>
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={goToLastDeck}
+                    endIcon={<ArrowForwardIcon />}
+                    sx={{
+                      fontWeight: 'bold',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}
+                  >
+                    Continuar
+                  </Button>
+                </Box>
               }
               sx={{
                 backgroundColor: themeName === 'github' ? '#21262d' : undefined,
@@ -278,8 +447,7 @@ const HomePage = () => {
               }}
             >
               <AlertTitle>Continuar estudiando</AlertTitle>
-              Estabas estudiando el deck "
-              {decksList.find((d) => d.id === lastDeckId)?.name || `ID: ${lastDeckId}`}". Haz clic
+              Estabas estudiando el deck <strong>{decksList.find((d) => d.id === lastDeckId)?.name || `ID: ${lastDeckId}`}</strong>. Haz clic
               en "Continuar" para retomar tu sesión.
             </Alert>
           </Box>
@@ -308,7 +476,7 @@ const HomePage = () => {
               font-family: ${themeName === 'kyoto' ? '"Sawarabi Mincho", "Noto Serif JP", serif' : themeName === 'tokyo' ? '"M PLUS 1p", "Noto Sans JP", sans-serif' : 'inherit'};
               letter-spacing: ${themeName === 'kyoto' ? '0.08em' : themeName === 'tokyo' ? '0.12em' : 'normal'};
               font-weight: ${themeName === 'kyoto' ? '600' : themeName === 'tokyo' ? '700' : 'normal'};
-              color: ${themeName === 'kyoto' ? '#6d4c41' : themeName === 'tokyo' ? '#00eaff' : 'inherit'};
+              color: ${themeName === 'kyoto' ? '#6d4c41' : themeName === 'tokyo' ? '#00eaff' : themeName === 'light' ? '#222' : themeName === 'dark' ? '#e0e0e0' : themeName === 'github' ? '#c9d1d9' : 'inherit'};
               text-shadow: ${themeName === 'kyoto' ? '0 2px 8px #f7cac9' : themeName === 'tokyo' ? '0 2px 12px #ff00cc' : 'none'};
             }
           `}
@@ -383,7 +551,7 @@ const HomePage = () => {
               sortOrder={sortOrder}
               onSortChange={handleSortChange}
             />
-            
+
             {/* Grid de decks */}
             <DecksGridCard
               decks={paginatedDecks}
@@ -392,7 +560,7 @@ const HomePage = () => {
               onDelete={handleDeleteDeck}
               onNavigate={(id) => navigate(`/decks/${id}`)}
             />
-            
+
             {/* Paginación */}
             <Pagination
               currentPage={currentPage}
@@ -405,24 +573,387 @@ const HomePage = () => {
             />
           </>
         )}
-        {/* FAB para crear nuevo deck */}
-        <Fab
-          color="primary"
-          aria-label="add"
+        {/* Backdrop oscuro cuando el menú está abierto */}
+        <Backdrop
+          open={createMenuOpen}
+          onClick={handleCreateMenuClose}
+          sx={{
+            zIndex: (theme) => theme.zIndex.drawer - 1,
+            bgcolor: 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(2px)',
+            transition: 'opacity 0.2s ease-in-out',
+          }}
+        />
+
+        {/* Botón flotante único para crear deck con animación de rotación */}
+        <Zoom in timeout={300}>
+          <Fab
+            color="primary"
+            aria-label="crear deck"
+            aria-expanded={createMenuOpen}
+            aria-haspopup="true"
+            onClick={handleCreateMenuOpen}
+            sx={{
+              position: 'fixed',
+              bottom: 24,
+              right: 24,
+              width: 64,
+              height: 64,
+              boxShadow: 6,
+              zIndex: (theme) => theme.zIndex.drawer,
+              background: (theme) =>
+                theme.palette.mode === 'dark'
+                  ? `linear-gradient(145deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`
+                  : theme.palette.primary.main,
+              '&:hover': {
+                boxShadow: 12,
+                transform: 'scale(1.08)',
+                background: (theme) =>
+                  theme.palette.mode === 'dark'
+                    ? `linear-gradient(145deg, ${theme.palette.primary.light}, ${theme.palette.primary.main})`
+                    : theme.palette.primary.dark,
+              },
+              '&:active': {
+                transform: 'scale(0.96)',
+              },
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+          >
+            <AddIcon
+              sx={{
+                fontSize: 32,
+                transform: createMenuOpen ? 'rotate(45deg)' : 'rotate(0deg)',
+                transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              }}
+            />
+          </Fab>
+        </Zoom>
+
+        {/* Botón flotante para copiar token JWT */}
+        <Zoom in timeout={500}>
+          <Fab
+            color="success"
+            aria-label="copiar token"
+            onClick={async () => {
+              const token = localStorage.getItem('token');
+              if (token) {
+                try {
+                  // Intentar con Clipboard API (solo funciona en HTTPS o localhost)
+                  if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(token);
+                  } else {
+                    // Fallback para HTTP: usar textarea temporal
+                    const textArea = document.createElement('textarea');
+                    textArea.value = token;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-9999px';
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                  }
+                  showToast('Token copiado al portapapeles con éxito');
+                } catch (err) {
+                  showToast('Error al copiar el token', 'error');
+                }
+              } else {
+                showToast('No hay token disponible', 'warning');
+              }
+            }}
+            sx={{
+              position: 'fixed',
+              bottom: 24,
+              left: 24,
+              width: 64,
+              height: 64,
+              boxShadow: 6,
+              zIndex: (theme) => theme.zIndex.drawer,
+              background: (theme) =>
+                theme.palette.mode === 'dark'
+                  ? `linear-gradient(145deg, ${theme.palette.success.main}, ${theme.palette.success.dark})`
+                  : theme.palette.success.main,
+              '&:hover': {
+                boxShadow: 12,
+                transform: 'scale(1.08)',
+                background: (theme) =>
+                  theme.palette.mode === 'dark'
+                    ? `linear-gradient(145deg, ${theme.palette.success.light}, ${theme.palette.success.main})`
+                    : theme.palette.success.dark,
+              },
+              '&:active': {
+                transform: 'scale(0.96)',
+              },
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+          >
+            <TokenIcon
+              sx={{
+                fontSize: 28,
+                transition: 'transform 0.3s ease',
+                '&:hover': {
+                  transform: 'rotate(15deg)',
+                },
+              }}
+            />
+          </Fab>
+        </Zoom>
+
+        {/* Menú desplegable mejorado con animaciones escalonadas */}
+        <Box
           sx={{
             position: 'fixed',
-            bottom: 24,
+            bottom: 100,
             right: 24,
-            width: 64,
-            height: 64,
-            '& .MuiSvgIcon-root': {
-              fontSize: 32
-            }
+            zIndex: (theme) => theme.zIndex.drawer,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1,
+            pointerEvents: createMenuOpen ? 'auto' : 'none',
           }}
-          onClick={() => setCreateDialogOpen(true)}
         >
-          <AddIcon />
-        </Fab>
+          {/* Opción 1: Desde Documento */}
+          <Slide
+            direction="up"
+            in={createMenuOpen}
+            timeout={{
+              enter: 300,
+              exit: 200
+            }}
+            style={{
+              transitionDelay: createMenuOpen ? '0ms' : '100ms',
+            }}
+          >
+            <Zoom
+              in={createMenuOpen}
+              timeout={{
+                enter: 300,
+                exit: 200
+              }}
+              style={{
+                transitionDelay: createMenuOpen ? '0ms' : '100ms',
+              }}
+            >
+              <Paper
+                elevation={6}
+                onClick={() => handleCreateOption('document')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleCreateOption('document');
+                  }
+                }}
+                tabIndex={createMenuOpen ? 0 : -1}
+                role="button"
+                aria-label="Crear deck desde documento PDF o Word"
+                sx={{
+                  px: 3,
+                  py: 1.5,
+                  borderRadius: '50px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  bgcolor: (theme) =>
+                    theme.palette.mode === 'dark' ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  border: (theme) =>
+                    theme.palette.mode === 'dark' ? '1px solid rgba(240, 147, 251, 0.3)' : '1px solid rgba(240, 147, 251, 0.2)',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    transform: 'translateX(-4px) scale(1.05)',
+                    bgcolor: (theme) =>
+                      theme.palette.mode === 'dark' ? 'rgba(40, 40, 40, 0.95)' : 'rgba(250, 250, 250, 0.95)',
+                    boxShadow: 8,
+                    border: (theme) =>
+                      theme.palette.mode === 'dark' ? '1px solid rgba(240, 147, 251, 0.5)' : '1px solid rgba(240, 147, 251, 0.4)',
+                  },
+                  '&:active': {
+                    transform: 'translateX(-4px) scale(1.02)',
+                  },
+                  '&:focus-visible': {
+                    outline: '2px solid',
+                    outlineColor: '#f093fb',
+                    outlineOffset: 2,
+                  },
+                }}
+              >
+                <DocumentIcon sx={{ color: '#f093fb', fontSize: 24 }} />
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    color: (theme) => theme.palette.text.primary,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Desde Documento
+                </Typography>
+              </Paper>
+            </Zoom>
+          </Slide>
+
+          {/* Opción 2: Crear con IA */}
+          <Slide
+            direction="up"
+            in={createMenuOpen}
+            timeout={{
+              enter: 300,
+              exit: 200
+            }}
+            style={{
+              transitionDelay: createMenuOpen ? '50ms' : '50ms',
+            }}
+          >
+            <Zoom
+              in={createMenuOpen}
+              timeout={{
+                enter: 300,
+                exit: 200
+              }}
+              style={{
+                transitionDelay: createMenuOpen ? '50ms' : '50ms',
+              }}
+            >
+              <Paper
+                elevation={6}
+                onClick={() => handleCreateOption('ai')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleCreateOption('ai');
+                  }
+                }}
+                tabIndex={createMenuOpen ? 0 : -1}
+                role="button"
+                aria-label="Crear deck con inteligencia artificial desde un tema"
+                sx={{
+                  px: 3,
+                  py: 1.5,
+                  borderRadius: '50px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  bgcolor: (theme) =>
+                    theme.palette.mode === 'dark' ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  border: (theme) =>
+                    theme.palette.mode === 'dark' ? '1px solid rgba(156, 39, 176, 0.3)' : '1px solid rgba(156, 39, 176, 0.2)',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    transform: 'translateX(-4px) scale(1.05)',
+                    bgcolor: (theme) =>
+                      theme.palette.mode === 'dark' ? 'rgba(40, 40, 40, 0.95)' : 'rgba(250, 250, 250, 0.95)',
+                    boxShadow: 8,
+                    border: (theme) =>
+                      theme.palette.mode === 'dark' ? '1px solid rgba(156, 39, 176, 0.5)' : '1px solid rgba(156, 39, 176, 0.4)',
+                  },
+                  '&:active': {
+                    transform: 'translateX(-4px) scale(1.02)',
+                  },
+                  '&:focus-visible': {
+                    outline: '2px solid',
+                    outlineColor: 'secondary.main',
+                    outlineOffset: 2,
+                  },
+                }}
+              >
+                <AutoFixHighIcon color="secondary" sx={{ fontSize: 24 }} />
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    color: (theme) => theme.palette.text.primary,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Crear con IA
+                </Typography>
+              </Paper>
+            </Zoom>
+          </Slide>
+
+          {/* Opción 3: Crear Manual */}
+          <Slide
+            direction="up"
+            in={createMenuOpen}
+            timeout={{
+              enter: 300,
+              exit: 200
+            }}
+            style={{
+              transitionDelay: createMenuOpen ? '100ms' : '0ms',
+            }}
+          >
+            <Zoom
+              in={createMenuOpen}
+              timeout={{
+                enter: 300,
+                exit: 200
+              }}
+              style={{
+                transitionDelay: createMenuOpen ? '100ms' : '0ms',
+              }}
+            >
+              <Paper
+                elevation={6}
+                onClick={() => handleCreateOption('manual')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleCreateOption('manual');
+                  }
+                }}
+                tabIndex={createMenuOpen ? 0 : -1}
+                role="button"
+                aria-label="Crear deck manual vacío"
+                sx={{
+                  px: 3,
+                  py: 1.5,
+                  borderRadius: '50px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  bgcolor: (theme) =>
+                    theme.palette.mode === 'dark' ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  border: (theme) =>
+                    theme.palette.mode === 'dark' ? '1px solid rgba(25, 118, 210, 0.3)' : '1px solid rgba(25, 118, 210, 0.2)',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    transform: 'translateX(-4px) scale(1.05)',
+                    bgcolor: (theme) =>
+                      theme.palette.mode === 'dark' ? 'rgba(40, 40, 40, 0.95)' : 'rgba(250, 250, 250, 0.95)',
+                    boxShadow: 8,
+                    border: (theme) =>
+                      theme.palette.mode === 'dark' ? '1px solid rgba(25, 118, 210, 0.5)' : '1px solid rgba(25, 118, 210, 0.4)',
+                  },
+                  '&:active': {
+                    transform: 'translateX(-4px) scale(1.02)',
+                  },
+                  '&:focus-visible': {
+                    outline: '2px solid',
+                    outlineColor: 'primary.main',
+                    outlineOffset: 2,
+                  },
+                }}
+              >
+                <CreateIcon color="primary" sx={{ fontSize: 24 }} />
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    color: (theme) => theme.palette.text.primary,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Crear Manual
+                </Typography>
+              </Paper>
+            </Zoom>
+          </Slide>
+        </Box>
 
         {/* Modal para crear deck */}
         <Dialog
@@ -473,6 +1004,40 @@ const HomePage = () => {
             >
               {creating ? <CircularProgress size={20} /> : 'Crear'}
             </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Modal para Controlar estados deck manuales*/}
+        <Dialog
+          open={statusDialogManualOpen}
+          onClose={() => setStatusDialogManualOpen(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>Crear Nuevo Deck Con Portada</DialogTitle>
+          <DialogContent>
+            {/* Proceso de generación */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Generando tu deck...
+              </Typography>
+              <Stepper activeStep={generationManualStep} alternativeLabel>
+                {generationManualSteps.map((label) => (
+                  <Step key={label}>
+                    <StepLabel>{label}</StepLabel>
+                  </Step>
+                ))}
+              </Stepper>
+              <LinearProgress sx={{ mt: 2 }} />
+              {estimatedTime && (
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
+                  Tiempo estimado: {estimatedTime} seg.
+                </Typography>
+              )}
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setStatusDialogManualOpen(false)}>  <CircularProgress size={20} /> Generando...</Button>
           </DialogActions>
         </Dialog>
 
@@ -568,6 +1133,20 @@ const HomePage = () => {
           size="xs"
         />
 
+        {/* Modal para generación de deck con IA */}
+        <AIDeckGeneratorModal
+          open={aiDeckGeneratorOpen}
+          onClose={() => setAiDeckGeneratorOpen(false)}
+          onGenerate={handleAIDeckGenerated}
+        />
+
+        {/* Modal para generación desde documento */}
+        <DocumentUploadModal
+          open={documentUploadOpen}
+          onClose={() => setDocumentUploadOpen(false)}
+          onGenerate={handleDocumentGenerate}
+        />
+
         {/* Toast de confirmación */}
         <Snackbar
           open={toast.open}
@@ -579,7 +1158,7 @@ const HomePage = () => {
           <Alert
             onClose={() => setToast({ ...toast, open: false })}
             severity={toast.severity}
-            sx={{ 
+            sx={{
               width: '100%',
               minWidth: '300px',
               fontSize: '1rem',

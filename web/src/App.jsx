@@ -5,10 +5,13 @@ import { ApiProvider } from './contexts/ApiContext';
 import { ThemeProvider, ThemeContext } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
 import DeckPage from './pages/DeckPage';
 import StudyPage from './pages/StudyPage';
 import StudySessionPage from './pages/StudySessionPage';
+import LibraryPage from './pages/LibraryPage';
+import LibraryPreviewPage from './pages/LibraryPreviewPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 
@@ -42,10 +45,11 @@ export default function App() {
           </ThemeContext.Consumer>
           <Router>
             <Routes>
+              <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route
-                path="/"
+                path="/home"
                 element={
                   <ProtectedRoute>
                     <HomePage />
@@ -73,6 +77,22 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <StudySessionPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/library"
+                element={
+                  <ProtectedRoute>
+                    <LibraryPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/library/:deckId"
+                element={
+                  <ProtectedRoute>
+                    <LibraryPreviewPage />
                   </ProtectedRoute>
                 }
               />

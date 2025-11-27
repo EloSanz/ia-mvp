@@ -49,6 +49,7 @@ export default function StudyConfig({
                 <MenuItem value="normal">Normal (todas las cards)</MenuItem>
                 <MenuItem value="review">Solo revisión (vencidas)</MenuItem>
                 <MenuItem value="new">Solo nuevas</MenuItem>
+                <MenuItem value="quick_review">Runner</MenuItem>
               </Select>
             </FormControl>
           </Grid>

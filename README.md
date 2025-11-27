@@ -249,3 +249,40 @@ docker-compose up --build
    docker compose exec frontend sh
    docker compose exec postgres psql -U postgres
 ```
+# Reinicio completo del entorno Docker (desarrollo)
+
+Si tienes problemas con migraciones, datos corruptos o simplemente quieres empezar desde cero, sigue estos pasos para borrar **todos** los contenedores, imágenes y volúmenes de Docker relacionados con el proyecto:
+
+```bash
+# Detén y elimina todos los contenedores y volúmenes del proyecto
+docker-compose down -v
+
+## Configurar MCP de Jira
+1. Cursor
+   - Ir a Settings
+   - En la sección MCP (Model Context Protocol) activar el toggle "Enable MCP"
+   - En "MCP Servers", add server:
+     Name: atlassian-mcp-server
+     Type: SSE (Server-Sent Events)
+     URL: https://mcp.atlassian.com/v1/sse
+   - Se abrirá el navegador, autenticar con cuenta de Atlassian
+   - Abrir el panel de chat, en Tools / MCP Servers activar atlassian-mcp-server
+   - Ya se pueden hacer prompts
+2. VS Code
+   - En Extensiones, instalar Atlassian Rovo
+   - Se abrirá el navegador, autenticar con cuenta de Atlassian
+   - Verificar que el archivo mcp.json sea correcto:
+     ```
+     {
+       "servers": {
+         "atlassian-mcp-server": {
+          "url": "https://mcp.atlassian.com/v1/sse",
+          "type": "http"
+          }
+       },
+     "inputs": []
+     }
+  - Abrir el panel del chat, seleccionar modo agente y agregar como contexto mcp.json
+  - Ya se pueden hacer prompts
+
+Fuente: https://support.atlassian.com/atlassian-rovo-mcp-server/docs/getting-started-with-the-atlassian-remote-mcp-server/

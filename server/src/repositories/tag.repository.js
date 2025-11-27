@@ -98,17 +98,28 @@ export class TagRepository {
     return deck !== null;
   }
 
+  // Contar tags por deck
+  static async countByDeckId(deckId) {
+    try {
+      return await prisma.tag.count({
+        where: { deckId: Number(deckId) }
+      });
+    } catch (error) {
+      throw new Error(`Error counting tags by deck: ${error.message}`);
+    }
+  }
+
   // Método legacy para mantener compatibilidad (deprecated)
   static async findAll() {
     console.warn('TagRepository.findAll() is deprecated. Use findByDeckId() instead.');
-    const tags = await prisma.tag.findMany({ 
+    const tags = await prisma.tag.findMany({
       include: {
         flashcards: true,
         deck: {
           select: { id: true, name: true, userId: true }
         }
       },
-      orderBy: { name: 'asc' } 
+      orderBy: { name: 'asc' }
     });
     return tags.map((tag) => new TagEntity(tag));
   }

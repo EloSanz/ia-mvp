@@ -2,6 +2,10 @@
 INSERT INTO "User" (username, password) VALUES
   ('testuser', '$2b$10$J5Xs/sflseV23CZgpH/rOuY4S5nUq0l2mvyBFxkYggyRD6g29Q/9m');
 
+-- Crear usuario admin (password: 'admin123')
+INSERT INTO "User" (username, password) VALUES
+  ('admin', '$2b$10$Q7zqFgUeJvNqKrLcYdKR4e4N7A5kN6VzHfQcR3jY7VxK7Q4jVzKs');
+
 -- Crear algunos mazos de ejemplo
 INSERT INTO "Deck" (name, description, "userId") VALUES
   ('Español-Inglés Básico', 'Vocabulario básico para principiantes', 1),

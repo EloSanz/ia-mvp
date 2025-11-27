@@ -12,7 +12,11 @@ import {
   Tooltip,
   Typography,
   IconButton,
-  Stack
+  Stack,
+  Switch,
+  FormControlLabel,
+  Snackbar,
+  Chip
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -21,7 +25,9 @@ import {
   FirstPage as FirstPageIcon,
   LastPage as LastPageIcon,
   RestartAlt as RestartAltIcon,
-  ClearAll as ClearAllIcon
+  ClearAll as ClearAllIcon,
+  Public as PublicIcon,
+  Lock as LockIcon
 } from '@mui/icons-material';
 import { useApi } from '../contexts/ApiContext';
 import Navigation from '../components/Navigation';
@@ -49,6 +55,8 @@ const DeckPage = () => {
   const [totalCards, setTotalCards] = useState(0);
   const [loading, setLoading] = useState(true);
   const [_error, setError] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [changingVisibility, setChangingVisibility] = useState(false);
 
   // Búsqueda y paginación
   const [searchQuery, setSearchQuery] = useState('');
@@ -229,15 +237,72 @@ const DeckPage = () => {
   };
 
   // Función para manejar cambios en el filtro de tags
-  const handleTagFilterChange = (value) => {
+  const handleTagFilterChange = async (value) => {
     setTagFilter(value);
     setPage(0);
+
+    // Si se selecciona una tag específica, recargar las cards filtradas
+    if (value !== 'all' && value !== 'no-tag') {
+      try {
+        setLoading(true);
+        // Usar el endpoint existente con parámetro tagId
+        const tagId = parseInt(value, 10);
+        const response = await flashcards.getByDeck(deckId, { page: 0, pageSize: rowsPerPage, tagId });
+        const cardsData = response.data.data || response.data || [];
+        const totalCount = response.data.total || cardsData.length || 0;
+
+        setCards(Array.isArray(cardsData) ? cardsData : []);
+        setTotalCards(totalCount);
+      } catch (error) {
+        console.error('Error cargando cards filtradas por tag:', error);
+        setCards([]);
+        setTotalCards(0);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Para "all" o "no-tag", recargar normalmente
+      loadDeckAndCards(0, rowsPerPage);
+    }
   };
 
   // Función para manejar cambios en el filtro de revisiones
   const handleReviewFilterChange = (value) => {
     setReviewFilter(value);
     setPage(0);
+  };
+
+  // Función para cambiar la visibilidad del deck
+  const handleVisibilityChange = async (event) => {
+    const newVisibility = event.target.checked ? 'public' : 'private';
+
+    try {
+      setChangingVisibility(true);
+      await decks.updateVisibility(deckId, newVisibility);
+
+      // Actualizar el deck local
+      setDeck(prev => ({ ...prev, visibility: newVisibility }));
+
+      // Mostrar snackbar con animación
+      setSnackbar({
+        open: true,
+        message: `Deck ahora es ${newVisibility === 'public' ? 'público' : 'privado'}`,
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error changing visibility:', error);
+      setSnackbar({
+        open: true,
+        message: 'Error al cambiar la visibilidad del deck',
+        severity: 'error'
+      });
+    } finally {
+      setChangingVisibility(false);
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
   const handleCreateCard = async () => {
@@ -341,7 +406,7 @@ const DeckPage = () => {
   // Loading
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+      <Container maxWidth="xl" sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <CircularProgress />
       </Container>
     );
@@ -351,11 +416,12 @@ const DeckPage = () => {
   if (!deck) {
     return (
       <Container
-        maxWidth="lg"
+        maxWidth="xl"
         sx={{
-          py: 4,
+          pt: 4,
+          pb: 2, // Reducir padding inferior
           backgroundColor: muiTheme.palette.background.default,
-          minHeight: '100vh',
+          minHeight: 'calc(100vh - 64px)', // Restar la altura del header de navegación
           position: 'relative'
         }}
       >
@@ -374,7 +440,7 @@ const DeckPage = () => {
           />
         )}
         <Alert severity="error">Deck no encontrado</Alert>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/')} sx={{ mt: 2 }}>
+        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/home')} sx={{ mt: 2 }}>
           Volver al Inicio
         </Button>
       </Container>
@@ -386,11 +452,12 @@ const DeckPage = () => {
     <>
       <Navigation />
       <Container
-        maxWidth="lg"
+        maxWidth="xl"
         sx={{
-          py: 4,
+          pt: 4,
+          pb: 2, // Reducir padding inferior
           position: 'relative',
-          minHeight: '100vh',
+          minHeight: 'calc(100vh - 64px)', // Restar la altura del header de navegación
           fontFamily: muiTheme.fontFamily,
           backgroundColor: muiTheme.palette.background.default
         }}
@@ -400,24 +467,74 @@ const DeckPage = () => {
 
         {/* Información del deck */}
         {deck && (
-          <Box sx={{ mb: 1 }}>
-            <Typography
-              variant="h4"
-              component="h1"
-              gutterBottom
-              sx={{ fontFamily: muiTheme.fontFamily, fontWeight: 'bold' }}
-            >
-              {deck.name}
-            </Typography>
-            {deck.description && (
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                sx={{ fontFamily: muiTheme.fontFamily }}
-              >
-                {deck.description}
-              </Typography>
-            )}
+          <Box sx={{ mb: 3 }}>
+            <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={2}>
+              <Box flex={1}>
+                <Typography
+                  variant="h4"
+                  component="h1"
+                  gutterBottom
+                  sx={{
+                    fontFamily: muiTheme.fontFamily, fontWeight: 'bold',
+                    fontSize: { xs: '1.5rem', md: '2rem' }, // 👈 tamaño de título adaptativo
+                  }}
+                >
+                  {deck.name}
+                </Typography>
+                {deck.description && (
+                  <Typography
+                    variant="body1"
+                    color="text.secondary"
+                    sx={{ fontFamily: muiTheme.fontFamily }}
+                  >
+                    {deck.description}
+                  </Typography>
+                )}
+              </Box>
+              
+              {/* Visibility Toggle */}
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 2,
+                flexDirection: 'column'
+              }}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={deck.visibility === 'public'}
+                      onChange={handleVisibilityChange}
+                      disabled={changingVisibility}
+                      color="success"
+                    />
+                  }
+                  label={
+                    <Box display="flex" alignItems="center" gap={1}>
+                      {deck.visibility === 'public' ? (
+                        <>
+                          <PublicIcon color="success" />
+                          <Typography>Público</Typography>
+                        </>
+                      ) : (
+                        <>
+                          <LockIcon />
+                          <Typography>Privado</Typography>
+                        </>
+                      )}
+                    </Box>
+                  }
+                  labelPlacement="start"
+                />
+                {deck.visibility === 'public' && deck.clonesCount > 0 && (
+                  <Chip
+                    label={`${deck.clonesCount} ${deck.clonesCount === 1 ? 'clon' : 'clones'}`}
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                  />
+                )}
+              </Box>
+            </Box>
           </Box>
         )}
 
@@ -571,6 +688,18 @@ const DeckPage = () => {
           onClose={() => flashcardManager.setAiGeneratorOpen(false)}
           onGenerate={handleGeneratedCards}
         />
+
+        {/* Snackbar para feedback de visibilidad */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={3000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Container>
     </>
   );

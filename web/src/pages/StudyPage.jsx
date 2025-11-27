@@ -9,6 +9,9 @@ import LoadingState from '../components/studyPage/LoadingState';
 import { useNavigate } from 'react-router-dom';
 import { useApi } from '../contexts/ApiContext';
 import { School as SchoolIcon, LibraryBooks as BooksIcon } from '@mui/icons-material';
+import useDeckPagination from '../hooks/useDeckPagination';
+import Pagination from '../components/Pagination';
+import DeckSorting from '../components/DeckSorting';
 
 export default function StudyPage() {
   const navigate = useNavigate();
@@ -21,6 +24,22 @@ export default function StudyPage() {
   const [studyOptions, setStudyOptions] = useState({ limit: '', mode: 'normal' });
   const [availableTags, setAvailableTags] = useState([]);
   const [selectedTag, setSelectedTag] = useState('');
+
+  // Hook de paginación y ordenamiento
+  const {
+    paginatedDecks,
+    currentPage,
+    itemsPerPage,
+    totalPages,
+    totalItems,
+    sortBy,
+    sortOrder,
+    handlePageChange,
+    handleItemsPerPageChange,
+    handleSortChange,
+    hasItems,
+    isEmpty
+  } = useDeckPagination(availableDecks, 8); // Por defecto 8 elementos por página
 
   useEffect(() => {
     (async () => {
@@ -89,7 +108,7 @@ export default function StudyPage() {
   return (
     <>
       <Navigation />
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+      <Container maxWidth="xl" sx={{ mt: 4, mb: 8 }}>
         <Breadcrumbs />
         <StudyHeader />
 
@@ -111,14 +130,35 @@ export default function StudyPage() {
         />
 
         {hasDecks ? (
-          <DeckList
-            decks={availableDecks}
-            selectedDeckId={selectedDeck}
-            onSelect={setSelectedDeck}
-            onViewDeck={(id) => navigate(`/decks/${id}`)}
-          />
+          <>
+            {/* Controles de ordenamiento */}
+            <DeckSorting
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSortChange={handleSortChange}
+            />
+            
+            {/* Lista de decks con paginación */}
+            <DeckList
+              decks={paginatedDecks}
+              selectedDeckId={selectedDeck}
+              onSelect={setSelectedDeck}
+              onViewDeck={(id) => navigate(`/decks/${id}`)}
+            />
+            
+            {/* Paginación */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              itemsPerPageOptions={[8, 16, 24]}
+            />
+          </>
         ) : (
-          <EmptyState onGoHome={() => navigate('/')} />
+          <EmptyState onGoHome={() => navigate('/home')} />
         )}
       </Container>
     </>

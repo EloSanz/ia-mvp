@@ -11,7 +11,7 @@ export class FlashcardRepository {
   /**
    * Busca flashcards por deckId y consigna (front)
    */
-  static async searchByDeckIdAndFront(deckId, query, { page = 0, pageSize = 15 } = {}) {
+  static async searchByDeckIdAndFront(deckId, query, { page = 0, pageSize = 50 } = {}) {
     try {
       const skip = page * pageSize;
       const take = pageSize;
@@ -94,7 +94,7 @@ export class FlashcardRepository {
   /**
    * Busca flashcards por deckId
    */
-  static async findByDeckId(deckId, { page = 0, pageSize = 15 } = {}) {
+  static async findByDeckId(deckId, { page = 0, pageSize = 50 } = {}) {
     try {
       const cacheKey = `deck:${deckId}:page:${page}:size:${pageSize}`;
 
@@ -133,6 +133,47 @@ export class FlashcardRepository {
       return result;
     } catch (error) {
       throw new Error(`Error al buscar flashcards por deck: ${error.message}`);
+    }
+  }
+
+  /**
+   * Busca TODAS las flashcards por deckId (sin paginado)
+   */
+  static async findByDeckIdAll(deckId) {
+    try {
+      const cacheKey = `deck:${deckId}:all`;
+
+      const cached = cacheAdapter.get(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
+      const flashcards = await prisma.flashcard.findMany({
+        where: { deckId: parseInt(deckId) },
+        include: {
+          deck: {
+            select: {
+              id: true,
+              name: true,
+              userId: true
+            }
+          },
+          tag: {
+            select: {
+              id: true,
+              name: true
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      const result = flashcards.map(card => FlashcardEntity.fromPrisma(card));
+      cacheAdapter.set(cacheKey, result, CACHE_TTL_FLASHCARDS);
+
+      return result;
+    } catch (error) {
+      throw new Error(`Error al buscar todas las flashcards por deck: ${error.message}`);
     }
   }
 
@@ -406,6 +447,130 @@ export class FlashcardRepository {
       // );
     } catch (error) {
       console.error(`Error al invalidar cache del deck ${deckId}:`, error);
+    }
+  }
+
+  /**
+   * Cuenta flashcards por tag
+   */
+  static async countByTagId(tagId) {
+    try {
+      return await prisma.flashcard.count({
+        where: { tagId: parseInt(tagId) }
+      });
+    } catch (error) {
+      throw new Error(`Error counting flashcards by tag: ${error.message}`);
+    }
+  }
+
+  /**
+   * Cuenta flashcards sin tag por deck
+   */
+  static async countUntaggedByDeckId(deckId) {
+    try {
+      return await prisma.flashcard.count({
+        where: {
+          deckId: parseInt(deckId),
+          tagId: null
+        }
+      });
+    } catch (error) {
+      throw new Error(`Error counting untagged flashcards by deck: ${error.message}`);
+    }
+  }
+
+  /**
+   * Busca flashcards por deckId SIN información de tags (paginado)
+   */
+  static async findByDeckIdNoTags(deckId, { page = 0, pageSize = 50 } = {}) {
+    try {
+      const cacheKey = `deck:${deckId}:no-tags:page:${page}:size:${pageSize}`;
+
+      const cached = cacheAdapter.get(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
+      const skip = page * pageSize;
+      const take = pageSize;
+      const whereCondition = {
+        deckId: parseInt(deckId),
+        tagId: null  // Solo flashcards sin tag asignado
+      };
+
+      const [flashcards, total] = await Promise.all([
+        prisma.flashcard.findMany({
+          where: whereCondition,
+          select: {
+            id: true,
+            front: true,
+            back: true,
+            deckId: true,
+            difficulty: true,
+            lastReviewed: true,
+            nextReview: true,
+            reviewCount: true,
+            createdAt: true,
+            updatedAt: true
+            // Excluye tagId y tag
+          },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take
+        }),
+        prisma.flashcard.count({ where: whereCondition })
+      ]);
+
+      const result = {
+        items: flashcards,
+        total
+      };
+      cacheAdapter.set(cacheKey, result, CACHE_TTL_FLASHCARDS);
+
+      return result;
+    } catch (error) {
+      throw new Error(`Error al buscar flashcards por deck (sin tags): ${error.message}`);
+    }
+  }
+
+  /**
+   * Busca TODAS las flashcards por deckId SIN información de tags (sin paginado)
+   */
+  static async findByDeckIdAllNoTags(deckId) {
+    try {
+      const cacheKey = `deck:${deckId}:all:no-tags`;
+
+      const cached = cacheAdapter.get(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
+      const flashcards = await prisma.flashcard.findMany({
+        where: {
+          deckId: parseInt(deckId),
+          tagId: null  // Solo flashcards sin tag asignado
+        },
+        select: {
+          id: true,
+          front: true,
+          back: true,
+          deckId: true,
+          difficulty: true,
+          lastReviewed: true,
+          nextReview: true,
+          reviewCount: true,
+          createdAt: true,
+          updatedAt: true
+          // Excluye tagId y tag
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      cacheAdapter.set(cacheKey, flashcards, CACHE_TTL_FLASHCARDS);
+
+      return flashcards;
+    } catch (error) {
+      throw new Error(`Error al buscar todas las flashcards por deck (sin tags): ${error.message}`);
     }
   }
 }
