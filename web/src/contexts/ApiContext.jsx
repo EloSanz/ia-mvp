@@ -2,8 +2,10 @@ import React, { createContext, useContext } from 'react';
 import axios from 'axios';
 
 // Configurar axios con la URL base
+// Usar ruta relativa /api para que pase por el proxy de Nginx
+// Esto evita problemas de Mixed Content cuando la página se carga sobre HTTPS
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+  baseURL: '/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
@@ -85,18 +87,18 @@ export const useApi = () => {
 export const ApiProvider = ({ children }) => {
   // Decks API
   const decks = {
-    getAll: () => api.get('/api/decks'),
-    getById: (id) => api.get(`/api/decks/${id}`),
-    getCoverStatusById: (id) => api.get(`/api/decks/${id}/cover-status`),
-    create: (data) => api.post('/api/decks', data, { timeout: 30000 }),
-    update: (id, data) => api.put(`/api/decks/${id}`, data),
-    delete: (id) => api.delete(`/api/decks/${id}`),
+    getAll: () => api.get('/decks'),
+    getById: (id) => api.get(`/decks/${id}`),
+    getCoverStatusById: (id) => api.get(`/decks/${id}/cover-status`),
+    create: (data) => api.post('/decks', data, { timeout: 30000 }),
+    update: (id, data) => api.put(`/decks/${id}`, data),
+    delete: (id) => api.delete(`/decks/${id}`),
     // Nuevos métodos para generación con IA
-    suggestTopics: (count = 3) => api.post('/api/decks/suggest-topics', { count }),
-    generateWithAI: (config) => api.post('/api/decks/generate-with-ai', config, {
+    suggestTopics: (count = 3) => api.post('/decks/suggest-topics', { count }),
+    generateWithAI: (config) => api.post('/decks/generate-with-ai', config, {
       timeout: 120000  // 2 minutos para generación completa
     }),
-    generateFromDocument: (formData) => api.post('/api/decks/generate-from-document', formData, {
+    generateFromDocument: (formData) => api.post('/decks/generate-from-document', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -109,110 +111,110 @@ export const ApiProvider = ({ children }) => {
       }
     }),
     // Métodos para biblioteca
-    updateVisibility: (id, visibility) => api.patch(`/api/decks/${id}/visibility`, { visibility }),
-    clone: (id) => api.post(`/api/decks/${id}/clone`)
+    updateVisibility: (id, visibility) => api.patch(`/decks/${id}/visibility`, { visibility }),
+    clone: (id) => api.post(`/decks/${id}/clone`)
   };
 
   // Flashcards API
   const flashcards = {
-    getAll: () => api.get('/api/flashcards'),
-    getById: (id) => api.get(`/api/flashcards/${id}`),
+    getAll: () => api.get('/flashcards'),
+    getById: (id) => api.get(`/flashcards/${id}`),
     getByDeck: (deckId, { page = 0, pageSize = 15, tagId = null } = {}) => {
       const params = {};
       if (page !== undefined && page !== null) params.page = page;
       if (pageSize !== undefined && pageSize !== null) params.pageSize = pageSize;
       if (tagId !== undefined && tagId !== null) params.tagId = tagId;
 
-      return api.get(`/api/flashcards/deck/${deckId}`, { params });
+      return api.get(`/flashcards/deck/${deckId}`, { params });
     },
-    getDue: () => api.get('/api/flashcards/due'),
-    create: (data) => api.post('/api/flashcards', data),
+    getDue: () => api.get('/flashcards/due'),
+    create: (data) => api.post('/flashcards', data),
     createMany: (flashcardsInput) => {
       // Si ya viene como { flashcards: [...] }, lo usa tal cual
       // Si viene como array, lo envuelve correctamente
       const payload = Array.isArray(flashcardsInput)
         ? { flashcards: flashcardsInput }
         : flashcardsInput;
-      return api.post('/api/flashcards/batch', payload);
+      return api.post('/flashcards/batch', payload);
     },
-    update: (id, data) => api.put(`/api/flashcards/${id}`, data),
-    review: (id, data) => api.put(`/api/flashcards/${id}/review`, data),
-    delete: (id) => api.delete(`/api/flashcards/${id}`),
+    update: (id, data) => api.put(`/flashcards/${id}`, data),
+    review: (id, data) => api.put(`/flashcards/${id}/review`, data),
+    delete: (id) => api.delete(`/flashcards/${id}`),
     search: (query, deckId) =>
-      api.get('/api/flashcards/search', {
+      api.get('/flashcards/search', {
         params: { q: query, deckId }
       }),
     searchInDeck: (deckId, consigna, { page = 0, pageSize = 15 } = {}) =>
-      api.get(`/api/flashcards/deck/${deckId}/search`, {
+      api.get(`/flashcards/deck/${deckId}/search`, {
         params: { q: consigna, page, pageSize }
       }),
     generateWithAI: (text, options = {}) => {
       const { timeout = 90000, retries = 1 } = options;
-      return api.post('/api/flashcards/ai-generate', { text }, { timeout });
+      return api.post('/flashcards/ai-generate', { text }, { timeout });
     }
   };
 
   // Tags API (RESTful, anidadas bajo decks)
   const tags = {
     // Obtener todas las tags de un deck
-    getByDeckId: (deckId) => api.get(`/api/decks/${deckId}/tags`),
+    getByDeckId: (deckId) => api.get(`/decks/${deckId}/tags`),
     // Obtener una tag específica de un deck
-    getById: (deckId, tagId) => api.get(`/api/decks/${deckId}/tags/${tagId}`),
+    getById: (deckId, tagId) => api.get(`/decks/${deckId}/tags/${tagId}`),
     // Crear una tag en un deck
-    create: (deckId, data) => api.post(`/api/decks/${deckId}/tags`, data),
+    create: (deckId, data) => api.post(`/decks/${deckId}/tags`, data),
     // Actualizar una tag de un deck
-    update: (deckId, tagId, data) => api.put(`/api/decks/${deckId}/tags/${tagId}`, data),
+    update: (deckId, tagId, data) => api.put(`/decks/${deckId}/tags/${tagId}`, data),
     // Eliminar una tag de un deck
-    delete: (deckId, tagId) => api.delete(`/api/decks/${deckId}/tags/${tagId}`)
+    delete: (deckId, tagId) => api.delete(`/decks/${deckId}/tags/${tagId}`)
   };
 
   // Sync API (para futuras integraciones)
   const sync = {
-    checkAnki: () => api.get('/api/sync/anki/status'),
-    syncWithAnki: (deckId) => api.post(`/api/sync/anki/sync${deckId ? `/${deckId}` : ''}`),
-    getStats: () => api.get('/api/sync/stats')
+    checkAnki: () => api.get('/sync/anki/status'),
+    syncWithAnki: (deckId) => api.post(`/sync/anki/sync${deckId ? `/${deckId}` : ''}`),
+    getStats: () => api.get('/sync/stats')
   };
 
   // Study API - Sistema de repetición espaciada
   const study = {
     // Iniciar sesión de estudio
-    startSession: (deckId, limit, tagId) => api.post('/api/study/start', { deckId, limit, tagId }),
+    startSession: (deckId, limit, tagId) => api.post('/study/start', { deckId, limit, tagId }),
 
     // Obtener siguiente card
-    getNextCard: (sessionId) => api.get(`/api/study/${sessionId}/next`),
+    getNextCard: (sessionId) => api.get(`/study/${sessionId}/next`),
 
     // Revisar card
     reviewCard: (sessionId, cardId, difficulty, responseTime) =>
-      api.post(`/api/study/${sessionId}/review`, {
+      api.post(`/study/${sessionId}/review`, {
         cardId,
         difficulty,
         responseTime
       }),
 
     // Obtener estado de sesión
-    getSessionStatus: (sessionId) => api.get(`/api/study/${sessionId}/status`),
+    getSessionStatus: (sessionId) => api.get(`/study/${sessionId}/status`),
 
     // Finalizar sesión
-    finishSession: (sessionId) => api.post(`/api/study/${sessionId}/finish`),
+    finishSession: (sessionId) => api.post(`/study/${sessionId}/finish`),
 
     // Estadísticas globales (admin)
-    getGlobalStats: () => api.get('/api/study/stats')
+    getGlobalStats: () => api.get('/study/stats')
   };
 
   // Library API - Biblioteca pública de decks
   const library = {
     // Obtener todos los decks públicos
-    getAll: (search = '', sortBy = 'recent') => api.get('/api/library', {
+    getAll: (search = '', sortBy = 'recent') => api.get('/library', {
       params: { search, sortBy }
     }),
     // Obtener preview de un deck público
-    getPreview: (deckId) => api.get(`/api/library/${deckId}`)
+    getPreview: (deckId) => api.get(`/library/${deckId}`)
   };
 
   // Health check
   const health = {
-    check: () => api.get('/api/health'),
-    detailed: () => api.get('/api/health/detailed')
+    check: () => api.get('/health'),
+    detailed: () => api.get('/health/detailed')
   };
 
   const value = {

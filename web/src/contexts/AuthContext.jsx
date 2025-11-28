@@ -19,12 +19,12 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
+  // Usar ruta relativa /api para que pase por el proxy de Nginx
+  // Esto evita problemas de Mixed Content cuando la página se carga sobre HTTPS
   const login = async (username, password) => {
     try {
-      // console.debug('Intentando login con URL:', `${API_URL}/api/auth/login`);
-      const response = await axios.post(`${API_URL}/api/auth/login`, {
+      // console.debug('Intentando login con URL: /api/auth/login');
+      const response = await axios.post('/api/auth/login', {
         username,
         password
       });
@@ -45,8 +45,8 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, password) => {
     try {
-      // console.debug('Intentando registro con URL:', `${API_URL}/api/auth/register`);
-      const response = await axios.post(`${API_URL}/api/auth/register`, {
+      // console.debug('Intentando registro con URL: /api/auth/register');
+      const response = await axios.post('/api/auth/register', {
         username,
         password
       });
