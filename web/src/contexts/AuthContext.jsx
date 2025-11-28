@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
 
   const testLogin = async (name) => {
     try {
-      const response = await axios.post(`${API_URL}/api/auth/test-login`, { name });
+      const response = await axios.post(`/api/auth/test-login`, { name });
 
       const { token, ...userData } = response.data.data;
       localStorage.setItem('token', token);
@@ -86,7 +86,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       if (user?.isTestUser && token) {
-        await axios.delete(`${API_URL}/api/auth/delete-test-user`, {
+        await axios.delete(`/api/auth/delete-test-user`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
