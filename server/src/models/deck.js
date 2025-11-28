@@ -15,6 +15,7 @@ export class Deck {
     this.coverGenerationStatus = data.coverGenerationStatus || null;
     this.visibility = data.visibility || 'private';
     this.clonesCount = data.clonesCount || 0;
+    this.clonedFromId = data.clonedFromId || null;
     this.userId = data.userId;
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
@@ -124,6 +125,7 @@ export class Deck {
       coverGenerationStatus: entity.coverGenerationStatus,
       visibility: entity.visibility,
       clonesCount: entity.clonesCount,
+      clonedFromId: entity.clonedFromId,
       userId: entity.userId,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
@@ -143,6 +145,7 @@ export class Deck {
       visibility: entity.visibility,
       coverGenerationStatus: entity.coverGenerationStatus,
       clonesCount: entity.clonesCount,
+      //clonedFromId: this.clonedFromId,// No expongo info de clonación, no es necesaria para estadísticas
       userId: entity.userId,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
@@ -163,6 +166,7 @@ export class Deck {
       coverGenerationStatus: this.coverGenerationStatus,
       visibility: this.visibility,
       clonesCount: this.clonesCount,
+      clonedFromId: this.clonedFromId,// Omitido para no exponer info de clonación
       userId: this.userId,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,

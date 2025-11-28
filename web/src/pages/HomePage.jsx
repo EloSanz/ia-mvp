@@ -147,7 +147,6 @@ const HomePage = () => {
     'Creando portada...'
   ];
 
-
   const loadDecks = useCallback(async () => {
     try {
       setLoading(true);
@@ -167,6 +166,7 @@ const HomePage = () => {
   }, [loadDecks]);
 
 
+  /***handle de la CREACION MANUAL */
   const handleCreateDeck = async () => {
     if (!newDeck.name.trim()) return;
 
@@ -197,7 +197,7 @@ const HomePage = () => {
         setGenerationManualStep(1);
 
         if (createdDeck && createdDeck.data.id) {
-          showToast('Generando portada con IA...', 'warning');
+          showToast('Generando la portada con IA...', 'warning');
           // monitorear solo este deck recién creado
           setDeckMonitory(createdDeck.data);
         }
@@ -241,10 +241,10 @@ const HomePage = () => {
 
           if (updatedStatus.coverUrl && updatedStatus.coverUrl.startsWith('https:') && updatedStatus.coverGenerationStatus === 'COMPLETED') {
             showToast('Portada generada exitosamente con IA', 'success');
-            
+
             // Ahora que está lista, obtener el deck completo para actualizar la UI
             const { data: finalDeck } = await decks.getById(deckMonitory.id);
-            
+
             setDecksList((prev) => prev.map((d) => (d.id === finalDeck.data.id ? finalDeck.data : d)));
             setDeckMonitory(null);
             clearInterval(interval);
@@ -314,6 +314,7 @@ const HomePage = () => {
     setEditDialogOpen(true);
   };
 
+  /***handle de la CREACION Automatica Por IA  por tematica o sugerencia de existentes */
   const handleAIDeckGenerated = (result) => {
     console.log('Deck generado con IA:', result);
     // Recargar la lista
@@ -322,14 +323,15 @@ const HomePage = () => {
     showToast(`Deck "${result.deck?.name || 'sin nombre'}" creado exitosamente con ${result.flashcards?.length || 0} flashcards`);
 
     // Si el deck fue creado pero aún no tiene portada, monitorizarlo para actualizar la portada cuando el backend la genere solo si corrresponde
-    if (result && result.deck && !result.deck.coverUrl && result.deck.coverGenerationStatus === 'PENDING') {
-      showToast('Generando portada con IA...', 'warning');
+    if (result && result.deck && !result.deck.coverUrl) {
+      showToast('Generando la portada con IA...', 'warning');
       setDeckMonitory(result.deck);
     }
 
 
   };
 
+  /****handle de la CREACION desde un Docuemnto por IA */
   const handleDocumentGenerate = (result) => {
     console.log('Deck generado desde documento:', result);
     // Recargar la lista
@@ -337,6 +339,7 @@ const HomePage = () => {
 
     // Si el deck fue creado pero aún no tiene portada, monitorizarlo para actualizar la portada cuando el backend la genere
     if (result && result.deck && !result.deck.coverUrl) {
+      showToast('Generando la portada con IA...', 'warning');
       setDeckMonitory(result.deck);
     }
 

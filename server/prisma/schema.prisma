@@ -32,6 +32,9 @@ model Deck {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  // ID del deck del que fue clonado. Solo para referencia, no es una FK.
+  clonedFromId Int?
+
   // Relación con usuario y flashcards
   userId      Int
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -61,12 +64,12 @@ model Flashcard {
 
 model Tag {
   id        Int        @id @default(autoincrement())
-  name      String     
-  deckId    Int        
+  name      String
+  deckId    Int
   deck      Deck       @relation(fields: [deckId], references: [id], onDelete: Cascade)
   flashcards Flashcard[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
-  
+
   @@unique([name, deckId])
 }

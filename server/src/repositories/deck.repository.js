@@ -338,6 +338,31 @@ export class DeckRepository {
   }
 
   /**
+   * Decrementa el contador de clones de un deck
+   */
+  static async decrementClonesCount(id) {
+    try {
+      const updatedDeck = await prisma.deck.update({
+        where: { id: parseInt(id) },
+        data: {
+          clonesCount: {
+            decrement: 1
+          }
+        }
+      });
+      return DeckEntity.fromPrisma(updatedDeck);
+    } catch (error) {
+      // Si el deck no se encuentra, no es un error crítico.
+      // Puede que el padre haya sido eliminado antes.
+      if (error.code === 'P2025') {
+        console.warn(`Deck con id ${id} no encontrado al intentar decrementar clones. Pudo haber sido eliminado.`);
+        return null;
+      }
+      throw new Error(`Error al decrementar contador de clones: ${error.message}`);
+    }
+  }
+
+  /**
    * Actualiza la visibilidad de un deck
    */
   static async updateVisibility(id, visibility) {
