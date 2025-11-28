@@ -159,21 +159,10 @@ export const useNavigation = () => {
 
   // Determinar la acción del botón de navegación principal
   const getNavigationButtonAction = () => {
-    // Validación solicitada:
-    // - Si estamos en una página de deck o de estudio, el botón debe llevar al listado de decks ('/').
-    // - En caso contrario, si existe un último deck válido, ir a ese deck.
-    // - Si no existe un último deck válido, ir al listado de decks.
-    // Esta lógica se aplica sólo cuando hay sesión (token). Si no hay sesión, llevar al landing público.
+    // El botón de inicio siempre lleva a la página de home (/home)
+    // independientemente de si hay un último deck o no
     if (token) {
-      if (isOnDeckPage || isOnStudyPage) {
-        return goToDecks;
-      } else {
-        if (lastDeckExists) {
-          return goToLastDeck;
-        } else {
-          return goToHome;
-        }
-      }
+      return goToHome;
     }
 
     return goToLandig;
