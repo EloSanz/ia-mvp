@@ -28,6 +28,8 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       allowedHosts: [
         'icards-djfeb7c0cvdxhpav.canadacentral-01.azurewebsites.net',
+        'icards.fun',
+        'www.icards.fun',
       ],
     },
   };
