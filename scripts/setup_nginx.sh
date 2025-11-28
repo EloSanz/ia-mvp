@@ -28,8 +28,8 @@ print_info() {
 }
 
 # Verificar que estamos en el directorio correcto
-if [ ! -f "nginx/icards.fun.conf" ]; then
-    print_error "No se encontró nginx/icards.fun.conf. Ejecuta este script desde la raíz del proyecto."
+if [ ! -f "nginx/icards.fun.conf.http" ]; then
+    print_error "No se encontró nginx/icards.fun.conf.http. Ejecuta este script desde la raíz del proyecto."
     exit 1
 fi
 
@@ -45,16 +45,27 @@ else
     print_status "Nginx ya está instalado"
 fi
 
+# Verificar si ya existe el certificado SSL
+if [ -d "/etc/letsencrypt/live/icards.fun" ]; then
+    print_info "Certificado SSL encontrado. Usando configuración HTTPS..."
+    CONFIG_FILE="nginx/icards.fun.conf.https"
+    SSL_EXISTS=true
+else
+    print_info "No hay certificado SSL. Usando configuración HTTP inicial..."
+    CONFIG_FILE="nginx/icards.fun.conf.http"
+    SSL_EXISTS=false
+fi
+
 # Copiar configuración de Nginx
 print_info "Copiando configuración de Nginx..."
-cp nginx/icards.fun.conf /etc/nginx/sites-available/icards.fun.conf
+cp "$CONFIG_FILE" /etc/nginx/sites-available/icards.fun.conf
 
 # Crear enlace simbólico si no existe
 if [ ! -L /etc/nginx/sites-enabled/icards.fun.conf ]; then
     ln -s /etc/nginx/sites-available/icards.fun.conf /etc/nginx/sites-enabled/icards.fun.conf
     print_status "Configuración habilitada"
 else
-    print_warning "La configuración ya está habilitada"
+    print_warning "La configuración ya está habilitada, actualizando..."
 fi
 
 # Verificar configuración de Nginx
@@ -75,23 +86,25 @@ else
     print_status "Certbot ya está instalado"
 fi
 
-# Verificar si ya existe el certificado SSL
-if [ -d "/etc/letsencrypt/live/icards.fun" ]; then
-    print_warning "El certificado SSL ya existe. Omitiendo generación."
-    print_info "Para renovar el certificado, ejecuta: certbot renew"
-else
+# Generar certificado SSL si no existe
+if [ "$SSL_EXISTS" = false ]; then
     print_info "Generando certificado SSL con Let's Encrypt..."
     print_warning "Asegúrate de que el dominio icards.fun apunta a esta IP antes de continuar"
     read -p "¿El dominio está apuntado correctamente? (y/n): " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
+        # Certbot actualizará automáticamente la configuración de Nginx
         certbot --nginx -d icards.fun -d www.icards.fun --non-interactive --agree-tos --email admin@icards.fun --redirect
-        print_status "Certificado SSL generado"
+        print_status "Certificado SSL generado y configuración actualizada"
     else
         print_warning "Omitiendo generación de certificado SSL. Configura el dominio primero."
         print_info "Para generar el certificado después, ejecuta:"
         print_info "certbot --nginx -d icards.fun -d www.icards.fun"
+        print_info "El sitio funcionará en HTTP por ahora: http://icards.fun"
     fi
+else
+    print_warning "El certificado SSL ya existe. Omitiendo generación."
+    print_info "Para renovar el certificado, ejecuta: certbot renew"
 fi
 
 # Recargar Nginx
