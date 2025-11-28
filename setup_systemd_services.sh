@@ -29,6 +29,27 @@ print_info() {
 echo "🚀 Configurando servicios systemd para iCards..."
 echo ""
 
+# Verificar la rama actual de Git en /root/ia-mvp
+print_info "Verificando la rama de Git en /root/ia-mvp..."
+# Asumimos que el script se ejecuta desde el repo, pero es más seguro hacer cd
+# a la ruta absoluta del repo que nos interesa.
+REPO_PATH="/root/ia-mvp"
+if [ -d "$REPO_PATH/.git" ]; then
+    current_branch=$(cd "$REPO_PATH" && git rev-parse --abbrev-ref HEAD)
+    
+    if [ "$current_branch" != "develop" ]; then
+        print_error "Error: El repositorio en '$REPO_PATH' debe estar en la rama 'develop'."
+        print_error "Rama actual: $current_branch. Abortando."
+        exit 1
+    fi
+    print_status "Repositorio en la rama 'develop'. Procediendo con la configuración."
+else
+    print_warning "No se pudo verificar la rama de Git. Directorio '$REPO_PATH/.git' no encontrado."
+    # Opcional: podrías querer que el script falle si no puede verificar la rama.
+    # print_error "Abortando porque no se puede confirmar la rama de Git."
+    # exit 1
+fi
+
 # Verificar que somos root o tenemos sudo
 if [ "$EUID" -ne 0 ]; then
     print_warning "Este script requiere permisos de root. Usando sudo..."

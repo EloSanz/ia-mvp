@@ -34,6 +34,25 @@ fi
 
 print_info "🚀 Iniciando servicios con Screen..."
 
+# Verificar la rama actual de Git en /root/ia-mvp
+print_info "Verificando la rama de Git en /root/ia-mvp..."
+current_branch=$(cd /root/ia-mvp && git rev-parse --abbrev-ref HEAD)
+
+if [ "$current_branch" != "develop" ]; then
+    print_error "Error: El repositorio /root/ia-mvp debe estar en la rama 'develop'. Rama actual: $current_branch"
+    exit 1
+fi
+
+print_status "El repositorio /root/ia-mvp está en la rama 'develop'. Procediendo..."
+
+# Verificar que screen está instalado
+if ! command -v screen &> /dev/null; then
+    print_error "Screen no está instalado. Instala con: apt install screen"
+    exit 1
+fi
+
+print_info "🚀 Iniciando servicios con Screen..."
+
 # Función para iniciar servicio en screen
 start_in_screen() {
     local session_name=$1
