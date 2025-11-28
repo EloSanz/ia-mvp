@@ -103,14 +103,16 @@ jobs:
         script: |
           echo "➡️ Actualizando proyecto en VPS..."
           cd /root/ia-mvp || exit 1
-          git pull origin develop
+          git fetch origin develop && git reset --hard origin/develop
+          git clean -fd
 
           echo "➡️ Configurando PATH..."
           export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 
-          echo "➡️ Aplicando migraciones de base de datos..."
+          echo "➡️ Aplicando migraciones y generando cliente Prisma..."
           cd /root/ia-mvp/server
           npx prisma migrate deploy
+          npx prisma generate
 
           echo "➡️ Iniciando servicios Backend y Frontend con Screen..."
           cd ../
