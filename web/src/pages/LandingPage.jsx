@@ -10,11 +10,15 @@ import {
     Stack,
     Icon,
     Card,
-    Avatar
+    Avatar,
+    Paper
 } from '@mui/material';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import SchoolIcon from '@mui/icons-material/School';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
+import ApiIcon from '@mui/icons-material/Api';
+import IntegrationInstructionsIcon from '@mui/icons-material/IntegrationInstructions';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -536,6 +540,292 @@ export default function LandingPage() {
                     />
                 </Grid>
             </Grid>
+
+            {/* MCP Section */}
+            <Container maxWidth="xl" sx={{
+                py: { xs: 4, sm: 8 }
+            }}
+            >
+                <Box sx={{ textAlign: { xs: 'center', md: 'left' }, mb: 6 }}>
+                    <Typography
+                        variant="h2"
+                        sx={{
+                            fontSize: { xs: '2rem', sm: '2.5rem' },
+                            fontWeight: { xs: 'bold', sm: 900 },
+                            letterSpacing: 'tight',
+                            color: 'text.primary',
+                            mb: 2,
+                        }}
+                    >
+                        MCP - Model Context Protocol
+                    </Typography>
+                    <Typography
+                        variant="body1"
+                        sx={{
+                            fontSize: { xs: '1rem', sm: '1.125rem' },
+                            color: 'text.secondary',
+                            maxWidth: '60rem',
+                            mx: { xs: 'auto', md: 0 },
+                        }}
+                    >
+                        Integra ICards con herramientas de IA a través del Model Context Protocol.
+                        Crea flashcards directamente desde cualquier IDE o aplicación que soporte MCP.
+                    </Typography>
+                </Box>
+
+                <Grid container spacing={4} justifyContent="center" sx={{ mb: 8 }}>
+                    {[
+                        {
+                            icon: <SmartToyIcon sx={{ fontSize: '2rem', color: 'primary.main' }} />,
+                            title: 'Creación Inteligente',
+                            description: 'Genera flashcards automáticamente con IA, considerando el contexto completo de tu aprendizaje.'
+                        },
+                        {
+                            icon: <ApiIcon sx={{ fontSize: '2rem', color: 'primary.main' }} />,
+                            title: 'Integración Nativa',
+                            description: 'Funciona directamente en tus herramientas favoritas sin cambiar de aplicación.'
+                        },
+                        {
+                            icon: <IntegrationInstructionsIcon sx={{ fontSize: '2rem', color: 'primary.main' }} />,
+                            title: 'Flujo Unificado',
+                            description: 'Mantén tu concentración creando tarjetas mientras estudias o investigas.'
+                        }
+                    ].map((mcpFeature, index) => (
+                        <Grid item xs={12} sm={4} key={index} sx={{ display: 'flex' }}>
+                            <Card
+                                sx={{
+                                    p: 4,
+                                    width: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    textAlign: 'center',
+                                    borderRadius: 4,
+                                    boxShadow: 3,
+                                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                                    '&:hover': {
+                                        transform: 'translateY(-6px)',
+                                        boxShadow: 6,
+                                    },
+                                }}
+                            >
+                                <Box sx={{ mb: 2 }}>
+                                    {mcpFeature.icon}
+                                </Box>
+                                <Typography
+                                    variant="h6"
+                                    sx={{
+                                        mb: 1,
+                                        color: 'text.primary',
+                                        fontWeight: 700,
+                                    }}
+                                >
+                                    {mcpFeature.title}
+                                </Typography>
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        color: 'text.secondary',
+                                        flexGrow: 1,
+                                    }}
+                                >
+                                    {mcpFeature.description}
+                                </Typography>
+                            </Card>
+                        </Grid>
+                    ))}
+                </Grid>
+
+                {/* MCP Configuration */}
+                <Box sx={{ mb: 8 }}>
+                    <Typography
+                        variant="h3"
+                        sx={{
+                            fontSize: { xs: '1.5rem', sm: '2rem' },
+                            fontWeight: 700,
+                            color: 'text.primary',
+                            mb: 4,
+                            textAlign: 'center'
+                        }}
+                    >
+                        Configuración MCP
+                    </Typography>
+
+                    <Grid container spacing={4} justifyContent="center">
+                        <Grid item xs={12} md={10}>
+                            <Card sx={{ p: 4, borderRadius: 3, boxShadow: 3 }}>
+                                <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold', color: 'text.primary' }}>
+                                    Configuración MCP
+                                </Typography>
+
+                                <Typography variant="body1" sx={{ mb: 3, color: 'text.secondary' }}>
+                                    Agrega esta configuración a tu archivo de configuración MCP (como <code>mcp.json</code>, <code>.cursor/mcp.json</code>, etc.) para integrar ICards con tu IDE:
+                                </Typography>
+
+                                {/* Instructions */}
+                                <Box sx={{ mb: 4, p: 3, bgcolor: 'grey.800', borderRadius: 2, border: '1px solid', borderColor: 'grey.600' }}>
+                                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: 'white' }}>
+                                        📋 Pasos de instalación:
+                                    </Typography>
+                                    <Box component="ol" sx={{ pl: 3, m: 0, '& li': { mb: 1, color: 'grey.200' } }}>
+                                        <li>Instala MCP proxy: <code style={{ color: '#61dafb' }}>pip install mcp-proxy</code></li>
+                                        <li>Crea/edita el archivo de configuración MCP en tu workspace (ej: <code style={{ color: '#61dafb' }}>mcp.json</code>, <code style={{ color: '#61dafb' }}>.cursor/mcp.json</code>)</li>
+                                        <li>Agrega la configuración de abajo</li>
+                                        <li>Obtén tu token JWT desde esta página (botón verde arriba)</li>
+                                        <li>Reemplaza <code style={{ color: '#61dafb' }}>"tu_token_jwt_aqui"</code> con tu token real</li>
+                                        <li>Reinicia tu IDE/editor para cargar la configuración</li>
+                                    </Box>
+                                </Box>
+
+                                {/* JSON Configuration */}
+                                <Box sx={{ mb: 2 }}>
+                                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: 'text.primary' }}>
+                                        📄 Archivo de configuración MCP
+                                    </Typography>
+                                </Box>
+
+                                <Paper
+                                    sx={{
+                                        p: 3,
+                                        bgcolor: 'grey.900',
+                                        color: '#f8f8f2',
+                                        borderRadius: 2,
+                                        fontFamily: '"JetBrains Mono", "Fira Code", "Consolas", "Monaco", monospace',
+                                        fontSize: '0.875rem',
+                                        lineHeight: 1.6,
+                                        position: 'relative',
+                                        '&::before': {
+                                            content: '""',
+                                            position: 'absolute',
+                                            top: 12,
+                                            left: 12,
+                                            width: 12,
+                                            height: 12,
+                                            borderRadius: '50%',
+                                            bgcolor: '#ff5f56',
+                                            boxShadow: '20px 0 #ffbd2e, 40px 0 #27ca3f'
+                                        }
+                                    }}
+                                >
+                                    <Box sx={{ mt: 2 }}>
+                                        <Box component="pre" sx={{
+                                            margin: 0,
+                                            whiteSpace: 'pre-wrap',
+                                            wordBreak: 'break-all'
+                                        }}>
+{`{
+  "icards": {
+    "command": "uvx",
+    "args": [
+      "mcp-proxy",
+      "-H",
+      "Authorization",
+      "tu_token_jwt_aqui",
+      "https://icards.fun/sse"
+    ],
+    "env": {},
+    "restart": true
+  }
+}`}
+                                        </Box>
+                                    </Box>
+                                </Paper>
+
+                                <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary', fontStyle: 'italic' }}>
+                                    💡 <strong>Nota:</strong> Reemplaza <code>"tu_token_jwt_aqui"</code> con tu token JWT real obtenido arriba
+                                </Typography>
+                            </Card>
+                        </Grid>
+                    </Grid>
+                </Box>
+
+                {/* MCP How To Use */}
+                <Box sx={{ textAlign: 'center' }}>
+                    <Typography
+                        variant="h3"
+                        sx={{
+                            fontSize: { xs: '1.5rem', sm: '2rem' },
+                            fontWeight: 700,
+                            color: 'text.primary',
+                            mb: 4,
+                        }}
+                    >
+                        ¿Cómo empezar?
+                    </Typography>
+
+                    <Grid container spacing={3} justifyContent="center">
+                        {[
+                            {
+                                step: '1',
+                                title: 'Instala MCP Proxy',
+                                description: 'Ejecuta `pip install mcp-proxy` o usa `uvx mcp-proxy` para tener la herramienta disponible.'
+                            },
+                            {
+                                step: '2',
+                                title: 'Configura tu IDE',
+                                description: 'Agrega la configuración MCP de arriba a tu archivo de configuración con tu token JWT.'
+                            },
+                            {
+                                step: '3',
+                                title: 'Reinicia tu IDE',
+                                description: 'Reinicia tu IDE/editor para que cargue la nueva configuración MCP.'
+                            }
+                        ].map((step, index) => (
+                            <Grid item xs={12} sm={4} key={index} sx={{ display: 'flex' }}>
+                                <Box
+                                    sx={{
+                                        p: 3,
+                                        border: '1px solid',
+                                        borderColor: 'divider',
+                                        borderRadius: 3,
+                                        width: '100%',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        textAlign: 'center',
+                                    }}
+                                >
+                                    <Box
+                                        sx={{
+                                            width: 40,
+                                            height: 40,
+                                            borderRadius: '50%',
+                                            bgcolor: 'primary.main',
+                                            color: 'primary.contrastText',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontWeight: 'bold',
+                                            mb: 2,
+                                        }}
+                                    >
+                                        {step.step}
+                                    </Box>
+                                    <Typography
+                                        variant="h6"
+                                        sx={{
+                                            mb: 1,
+                                            color: 'text.primary',
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        {step.title}
+                                    </Typography>
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
+                                            color: 'text.secondary',
+                                            flexGrow: 1,
+                                        }}
+                                    >
+                                        {step.description}
+                                    </Typography>
+                                </Box>
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Box>
+            </Container>
 
             {/* Testimonio Section */}
             <Box component="section" sx={{ py: { xs: 8, sm: 12 } }}>
