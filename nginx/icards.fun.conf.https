@@ -1,0 +1,73 @@
+# Configuración de Nginx para icards.fun (HTTPS - Con SSL)
+# Esta configuración se usa después de generar el certificado SSL con certbot
+# Proxy inverso que redirige el tráfico al puerto 5173 (frontend) y 3000 (backend API)
+
+# Redirección HTTP a HTTPS
+server {
+    listen 80;
+    listen [::]:80;
+    server_name icards.fun www.icards.fun;
+
+    # Redirigir todo el tráfico HTTP a HTTPS
+    return 301 https://icards.fun$request_uri;
+}
+
+# Configuración HTTPS
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name icards.fun www.icards.fun;
+
+    # Certificados SSL (generados con certbot)
+    ssl_certificate /etc/letsencrypt/live/icards.fun/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/icards.fun/privkey.pem;
+
+    # Configuración SSL moderna
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+
+    # Headers de seguridad
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    # Tamaño máximo de archivos
+    client_max_body_size 10M;
+
+    # Proxy para API Backend (puerto 3000)
+    location /api {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        proxy_read_timeout 300s;
+        proxy_connect_timeout 300s;
+    }
+
+    # Proxy para Frontend (puerto 5173)
+    location / {
+        proxy_pass http://localhost:5173;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        proxy_read_timeout 300s;
+        proxy_connect_timeout 300s;
+    }
+}
+
