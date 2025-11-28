@@ -46,8 +46,18 @@ jobs:
           cd /root/ia-mvp/web
           npm install
 
-          echo "➡️ Iniciando servicios Backend y Frontend con Screen..."
+          echo "➡️ Verificando configuración de Nginx..."
           cd /root/ia-mvp
+          if [ ! -f "/etc/nginx/sites-enabled/icards.fun.conf" ]; then
+            echo "⚠️  Nginx no está configurado. Ejecuta manualmente:"
+            echo "   cd /root/ia-mvp && chmod +x scripts/setup_nginx.sh && ./scripts/setup_nginx.sh"
+          else
+            echo "✅ Nginx ya está configurado"
+            # Recargar Nginx para aplicar cambios
+            nginx -t && systemctl reload nginx || echo "⚠️  Error al recargar Nginx"
+          fi
+
+          echo "➡️ Iniciando servicios Backend y Frontend con Screen..."
           chmod +x start_services_screen.sh
           ./start_services_screen.sh
           echo "✅ Servicios levantados con Screen"
