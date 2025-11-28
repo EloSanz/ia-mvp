@@ -45,6 +45,13 @@ else
     print_status "Nginx ya está instalado"
 fi
 
+# Deshabilitar configuración por defecto de Nginx si existe
+if [ -L /etc/nginx/sites-enabled/default ]; then
+    print_info "Deshabilitando configuración por defecto de Nginx..."
+    rm /etc/nginx/sites-enabled/default
+    print_status "Configuración por defecto deshabilitada"
+fi
+
 # Verificar si ya existe el certificado SSL
 if [ -d "/etc/letsencrypt/live/icards.fun" ]; then
     print_info "Certificado SSL encontrado. Usando configuración HTTPS..."
