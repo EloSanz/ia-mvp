@@ -135,7 +135,7 @@ export const ApiProvider = ({ children }) => {
       const payload = Array.isArray(flashcardsInput)
         ? { flashcards: flashcardsInput }
         : flashcardsInput;
-      return api.post('/flashcards/batch', payload);
+      return api.post('/flashcards/bulk', payload);
     },
     update: (id, data) => api.put(`/flashcards/${id}`, data),
     review: (id, data) => api.put(`/flashcards/${id}/review`, data),
