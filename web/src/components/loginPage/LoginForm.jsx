@@ -137,7 +137,7 @@ export const LoginForm = () => {
                   >
                     Contraseña
                   </Typography>
-                  <Link
+                  {/* <Link
                     component={RouterLink}
                     to="/forgot-password"
                     sx={{
@@ -147,7 +147,7 @@ export const LoginForm = () => {
                     }}
                   >
                     ¿Olvidaste tu contraseña?
-                  </Link>
+                  </Link> */}
                 </Box>
                 <TextField
                   required
