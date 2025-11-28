@@ -16,10 +16,10 @@ server {
     # Tamaño máximo de archivos
     client_max_body_size 10M;
 
-    # Proxy para MCP Server SSE (puerto 3001)
-    # El MCP server espera recibir las requests en /sse directamente
-    location /sse {
-        proxy_pass http://localhost:3001/sse;
+    # Proxy para MCP Server (puerto 3001)
+    # El MCP server necesita múltiples rutas: /sse, /messages, etc.
+    location ~ ^/(sse|messages) {
+        proxy_pass http://localhost:3001;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -31,7 +31,7 @@ server {
         proxy_read_timeout 24h;
         proxy_connect_timeout 24h;
         proxy_send_timeout 24h;
-        # Headers para SSE
+        # Headers para SSE y MCP
         add_header Cache-Control 'no-cache';
         add_header X-Accel-Buffering 'no';
         # Permitir CORS si es necesario
