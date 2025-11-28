@@ -16,8 +16,13 @@ const loginSchema = Joi.object({
   password: Joi.string().min(6).max(128).required()
 });
 
+const testLoginSchema = Joi.object({
+  name: Joi.string().min(1).max(50).required()
+});
+
 router.post('/register', validateBody(registerSchema), AuthController.register);
 router.post('/login', validateBody(loginSchema), AuthController.login);
+router.post('/test-login', validateBody(testLoginSchema), AuthController.testLogin);
 router.delete('/delete-test-user', authMiddleware, AuthController.deleteTestUser);
 
 export default router;

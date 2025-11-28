@@ -960,6 +960,10 @@ export const DeckController = {
   *               $ref: '#/components/schemas/Error'
   */
   generateDeckWithAI: BaseController.wrap(async (req, res) => {
+    if (req.isTestUser) {
+      throw new ForbiddenError('La funcionalidad de IA no está disponible para usuarios de prueba');
+    }
+  
     const userId = parseInt(req.userId);
     const { mode, topic, flashcardCount, difficulty, tags, generateCover = true } = req.body;
 
@@ -1444,6 +1448,10 @@ export const DeckController = {
    *               $ref: '#/components/schemas/Error'
    */
   generateDeckFromDocument: BaseController.wrap(async (req, res) => {
+    if (req.isTestUser) {
+      throw new ForbiddenError('La funcionalidad de IA no está disponible para usuarios de prueba');
+    }
+    
     const userId = parseInt(req.userId);
     const file = req.file;
 

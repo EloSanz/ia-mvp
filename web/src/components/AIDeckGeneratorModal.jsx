@@ -30,6 +30,7 @@ import {
   Lightbulb as LightbulbIcon,
   Psychology as PsychologyIcon
 } from '@mui/icons-material';
+import { useAuth } from '../contexts/AuthContext';
 
 const AIDeckGeneratorModal = ({ open, onClose, onGenerate }) => {
   const muiTheme = useMuiTheme();
@@ -42,6 +43,8 @@ const AIDeckGeneratorModal = ({ open, onClose, onGenerate }) => {
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [error, setError] = useState(null);
   const [generationStep, setGenerationStep] = useState(0);
+  const { user, logout } = useAuth();
+  const isTestUser = user?.isTestUser;
   
   // Estados del formulario
   const [formData, setFormData] = useState({
@@ -82,6 +85,11 @@ const AIDeckGeneratorModal = ({ open, onClose, onGenerate }) => {
   };
 
   const handleGenerate = async (mode, topic = null) => {
+    if (isTestUser) {
+      setError('La generación con IA no está disponible para usuarios de prueba.');
+      return;
+    }
+
     const finalTopic = topic || formData.topic;
     
     if (!finalTopic.trim()) {
@@ -147,8 +155,32 @@ const AIDeckGeneratorModal = ({ open, onClose, onGenerate }) => {
     }
   };
 
+  const handleGoToRegister = async () => {
+    await logout();
+    onClose?.();
+    navigate('/register');
+  };
+
   const renderFreeMode = () => (
     <Box>
+       <DialogContent dividers>
+        {isTestUser && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Estás usando un <strong>usuario de prueba</strong>.  
+            Las funcionalidades de IA están <strong>deshabilitadas</strong> en este modo.
+            Para usar la generación automática de decks con IA, iniciá sesión con una cuenta registrada.
+          <Box mt={1}>
+              <Typography
+                variant="body2"
+                sx={{ cursor: 'pointer', textDecoration: 'underline', fontWeight: 500 }}
+                onClick={handleGoToRegister}
+              >
+                Toca aqui para crear tu cuenta
+              </Typography>
+            </Box>
+          </Alert>
+        )}
+      </DialogContent>
       <Typography variant="body1" gutterBottom sx={{ mb: 2 }}>
         Ingresa un tema y la IA creará un deck completo con flashcards relevantes.
       </Typography>
@@ -193,6 +225,24 @@ const AIDeckGeneratorModal = ({ open, onClose, onGenerate }) => {
 
   const renderSuggestedMode = () => (
     <Box>
+       <DialogContent dividers>
+        {isTestUser && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Estás usando un <strong>usuario de prueba</strong>.  
+            Las funcionalidades de IA están <strong>deshabilitadas</strong> en este modo.
+            Para usar la generación automática de decks con IA, iniciá sesión con una cuenta registrada.
+            <Box mt={1}>
+              <Typography
+                variant="body2"
+                sx={{ cursor: 'pointer', textDecoration: 'underline', fontWeight: 500 }}
+                onClick={handleGoToRegister}
+              >
+                Toca aqui para crear tu cuenta
+              </Typography>
+            </Box>
+          </Alert>
+        )}
+      </DialogContent>
       <Typography variant="body1" gutterBottom sx={{ mb: 2 }}>
         La IA analizará tus decks existentes y sugerirá temas relacionados.
       </Typography>
@@ -215,7 +265,7 @@ const AIDeckGeneratorModal = ({ open, onClose, onGenerate }) => {
             variant="contained"
             startIcon={loadingSuggestions ? <CircularProgress size={20} /> : <LightbulbIcon />}
             onClick={loadSuggestions}
-            disabled={loadingSuggestions}
+            disabled={loadingSuggestions || isTestUser}
             sx={{ mb: 2 }}
           >
             {loadingSuggestions ? 'Generando sugerencias...' : 'Obtener Sugerencias'}
@@ -335,7 +385,7 @@ const AIDeckGeneratorModal = ({ open, onClose, onGenerate }) => {
           <Button
             onClick={() => handleGenerate(activeTab === 0 ? 'free' : 'configured')}
             variant="contained"
-            disabled={!formData.topic.trim()}
+            disabled={!formData.topic.trim() || isTestUser}
             startIcon={<AIIcon />}
           >
             Generar Deck

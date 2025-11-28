@@ -724,6 +724,9 @@ export const FlashcardController = {
    */
   generateAIFlashcards: async (req, res, _next) => {
     try {
+      if (req.isTestUser) {
+        throw new ForbiddenError('La funcionalidad de IA no está disponible para usuarios de prueba');
+      }
       const { text } = req.body;
       if (!text || typeof text !== 'string' || !text.trim()) {
         return res.status(400).json({ error: 'Texto requerido para generar flashcards.' });

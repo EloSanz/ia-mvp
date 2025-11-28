@@ -146,6 +146,45 @@ export const AuthController = {
     );
   }),
 
+  testLogin: asyncHandler(async (req, res) => {
+    const { name } = req.body;
+
+    if (!name || typeof name !== 'string' || !name.trim()) {
+      throw new ValidationError('El nombre es requerido para el usuario de prueba');
+    }
+
+    const trimmedName = name.trim();
+
+    const randomSuffix = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    const username = `test-user-${randomSuffix}`;
+    const dummyPassword = `test-${randomSuffix}-${Math.random().toString(36).slice(2, 8)}`;
+    const passwordHash = await bcrypt.hash(dummyPassword, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        username,
+        password: passwordHash
+      }
+    });
+
+    const token = generateToken(user.id, {
+      isTestUser: true,
+      displayName: trimmedName
+    });
+
+    BaseController.success(
+      res,
+      {
+        id: user.id,
+        username: user.username,
+        displayName: trimmedName,
+        isTestUser: true,
+        token
+      },
+      'Login de usuario de prueba exitoso'
+    );
+  }),
+
   /**
    * @swagger
    * /api/auth/delete-test-user:
