@@ -43,6 +43,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const testLogin = async (name) => {
+    try {
+      const response = await axios.post(`${API_URL}/api/auth/test-login`, { name });
+
+      const { token, ...userData } = response.data.data;
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+      setToken(token);
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Error al iniciar como usuario de prueba'
+      };
+    }
+  };
+
   const register = async (username, password) => {
     try {
       // console.debug('Intentando registro con URL:', `${API_URL}/api/auth/register`);
@@ -65,11 +83,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-    setToken(null);
+  const logout = async () => {
+    try {
+      if (user?.isTestUser && token) {
+        await axios.delete(`${API_URL}/api/auth/delete-test-user`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Error al borrar usuario de prueba en logout:', error);
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+      setToken(null);
+    }
   };
 
   if (loading) {
@@ -77,7 +107,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, login, register, logout, testLogin }}>
       {children}
     </AuthContext.Provider>
   );

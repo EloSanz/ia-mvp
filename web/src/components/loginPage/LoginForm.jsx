@@ -23,7 +23,9 @@ export const LoginForm = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const { login } = useAuth();
+  const [testName, setTestName] = useState('');
+  const [testError, setTestError] = useState('');
+  const { login, testLogin } = useAuth();
   const navigate = useNavigate();
   const theme = useTheme();
 
@@ -36,6 +38,23 @@ export const LoginForm = () => {
       navigate('/home');
     } else {
       setError(result.error);
+    }
+  };
+
+  const handleTestLogin = async () => {
+    setError('');
+    setTestError('');
+
+    if (!testName.trim()) {
+      setTestError('Ingresa un nombre para continuar');
+      return;
+    }
+
+    const result = await testLogin(testName.trim());
+    if (result.success) {
+      navigate('/home');
+    } else {
+      setTestError(result.error);
     }
   };
 
@@ -194,6 +213,40 @@ export const LoginForm = () => {
               >
                 Iniciar Sesión
               </Button>
+              <Box sx={{ mt: 4, pt: 3, borderTop: '1px solid', borderColor: 'divider' }}>
+                <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 500 }}>
+                  O entra como <strong>usuario de prueba</strong>
+                </Typography>
+
+                <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                  No necesitas registrarte. Algunas funciones de IA estarán deshabilitadas,
+                  pero podrás crear decks y cartas manualmente o desde archivos.
+                </Typography>
+
+                <TextField
+                  fullWidth
+                  label="Tu nombre"
+                  placeholder="Ingresa un nombre para identificar tu sesión"
+                  value={testName}
+                  onChange={(e) => setTestName(e.target.value)}
+                  sx={{ mb: 2 }}
+                />
+
+                {testError && (
+                  <Alert severity="error" sx={{ mb: 2 }}>
+                    {testError}
+                  </Alert>
+                )}
+
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleTestLogin}
+                >
+                  Entrar como usuario de prueba
+                </Button>
+              </Box>
             </Box>
           </Box>
         </Container>

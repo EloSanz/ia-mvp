@@ -66,6 +66,7 @@ import { useNavigation } from '../hooks/useNavigation';
 import useDeckPagination from '../hooks/useDeckPagination';
 import Pagination from '../components/Pagination';
 import DeckSorting from '../components/DeckSorting';
+import { useAuth } from '../contexts/AuthContext';
 
 import { useTheme as useMuiTheme } from '@mui/material';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
@@ -81,6 +82,7 @@ const HomePage = () => {
   const [decksList, setDecksList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user } = useAuth();
 
   // Hook de paginación y ordenamiento
   const {
@@ -788,7 +790,7 @@ const HomePage = () => {
             }}
           >
             <Zoom
-              in={createMenuOpen}
+              in={createMenuOpen && !user?.isTestUser}
               timeout={{
                 enter: 300,
                 exit: 200
@@ -1118,6 +1120,7 @@ const HomePage = () => {
 
         {/* Modal para generación de deck con IA */}
         <AIDeckGeneratorModal
+          in = {!user?.isTestUser}
           open={aiDeckGeneratorOpen}
           onClose={() => setAiDeckGeneratorOpen(false)}
           onGenerate={handleAIDeckGenerated}

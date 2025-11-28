@@ -9,8 +9,12 @@ export class AuthError extends CustomError {
   }
 }
 
-export const generateToken = (userId) => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '24h' });
+export const generateToken = (userId, extraPayload = {}) => {
+  return jwt.sign(
+    { userId, ...extraPayload },
+    JWT_SECRET,
+    { expiresIn: '24h' }
+  );
 };
 
 export const verifyToken = (token) => {
@@ -21,10 +25,10 @@ export const verifyToken = (token) => {
   }
 };
 
-export const authMiddleware = (req, res, next) => {
+export const authMiddleware = (req, _res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       throw new AuthError('Token no proporcionado');
     }
 
@@ -35,6 +39,9 @@ export const authMiddleware = (req, res, next) => {
 
     const decoded = verifyToken(token);
     req.userId = decoded.userId;
+
+    req.isTestUser = !!decoded.isTestUser;
+    req.displayName = decoded.displayName || null;
     next();
   } catch (error) {
     next(error);

@@ -27,6 +27,7 @@ import {
   Close as CloseIcon,
   AutoAwesome as AIIcon
 } from '@mui/icons-material';
+import { useAuth } from '../contexts/AuthContext';
 
 const DocumentUploadModal = ({ open, onClose, onGenerate }) => {
   const muiTheme = useMuiTheme();
@@ -39,6 +40,8 @@ const DocumentUploadModal = ({ open, onClose, onGenerate }) => {
   const [generationStep, setGenerationStep] = useState(0);
   const [dragActive, setDragActive] = useState(false);
   const [estimatedTime, setEstimatedTime] = useState(null);
+  const { user, logout } = useAuth();
+  const isTestUser = user?.isTestUser;
 
   // Configuración
   const [formData, setFormData] = useState({
@@ -262,6 +265,12 @@ const DocumentUploadModal = ({ open, onClose, onGenerate }) => {
     return null; // No hay sugerencia específica
   };
 
+  const handleGoToRegister = async () => {
+    await logout();
+    onClose?.();
+    navigate('/register');
+  };
+
   return (
     <Dialog
       open={open}
@@ -280,6 +289,25 @@ const DocumentUploadModal = ({ open, onClose, onGenerate }) => {
       >
         <FileIcon /> Crear Deck desde Documento
       </DialogTitle>
+
+      <DialogContent dividers>
+              {isTestUser && (
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  Estás usando un <strong>usuario de prueba</strong>.  
+                  Las funcionalidades de IA están <strong>deshabilitadas</strong> en este modo.
+                  Para usar la generación automática de decks con IA, iniciá sesión con una cuenta registrada.
+                 <Box mt={1}>
+                  <Typography
+                    variant="body2"
+                    sx={{ cursor: 'pointer', textDecoration: 'underline', fontWeight: 500 }}
+                    onClick={handleGoToRegister}
+                  >
+                  Toca aqui para crear tu cuenta
+                  </Typography>
+                </Box>
+                </Alert>
+              )}
+      </DialogContent>
 
       <DialogContent sx={{ fontFamily: muiTheme.fontFamily }}>
         {error && (
@@ -493,7 +521,7 @@ const DocumentUploadModal = ({ open, onClose, onGenerate }) => {
           <Button
             onClick={handleGenerate}
             variant="contained"
-            disabled={!file}
+            disabled={!file || isTestUser}
             startIcon={<AIIcon />}
           >
             Generar Deck
