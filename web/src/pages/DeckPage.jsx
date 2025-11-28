@@ -44,7 +44,7 @@ import { useFlashcardManager } from '../hooks/useFlashcardManager';
 const DeckPage = () => {
   const muiTheme = useMuiTheme();
   const { themeName } = useAppTheme();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { deckId } = useParams();
   const navigate = useNavigate();
   const { flashcards, decks, tags: tagsService } = useApi();
@@ -653,6 +653,7 @@ const DeckPage = () => {
               <AddCardIcon />
             </Fab>
           </Tooltip>
+          {!user?.isTestUser && (
           <Tooltip title="Generar flashcards con IA" placement="left">
             <Fab
               color="secondary"
@@ -669,6 +670,7 @@ const DeckPage = () => {
               <AIIcon />
             </Fab>
           </Tooltip>
+          )}
         </Box>
 
         {/* Modal para crear flashcard */}
@@ -683,11 +685,13 @@ const DeckPage = () => {
         />
 
         {/* Modal para generar flashcards con IA */}
+        {!user?.isTestUser && (
         <AIFlashcardsGenerator
           open={flashcardManager.aiGeneratorOpen}
           onClose={() => flashcardManager.setAiGeneratorOpen(false)}
           onGenerate={handleGeneratedCards}
         />
+        )}
 
         {/* Snackbar para feedback de visibilidad */}
         <Snackbar
