@@ -46,16 +46,52 @@ jobs:
           cd /root/ia-mvp/web
           npm install
 
-          echo "➡️ Verificando configuración de Nginx..."
+          echo "➡️ Configurando Nginx..."
           cd /root/ia-mvp
-          if [ ! -f "/etc/nginx/sites-enabled/icards.fun.conf" ]; then
-            echo "⚠️  Nginx no está configurado. Ejecuta manualmente:"
-            echo "   cd /root/ia-mvp && chmod +x scripts/setup_nginx.sh && ./scripts/setup_nginx.sh"
-          else
-            echo "✅ Nginx ya está configurado"
-            # Recargar Nginx para aplicar cambios
-            nginx -t && systemctl reload nginx || echo "⚠️  Error al recargar Nginx"
+          
+          # Verificar si Nginx está instalado
+          if ! command -v nginx &> /dev/null; then
+            echo "⚠️  Nginx no está instalado. Instalando..."
+            apt-get update -qq
+            apt-get install -y nginx
           fi
+          
+          # Deshabilitar configuración por defecto si existe
+          if [ -L /etc/nginx/sites-enabled/default ]; then
+            rm /etc/nginx/sites-enabled/default
+            echo "✅ Configuración por defecto de Nginx deshabilitada"
+          fi
+          
+          # Determinar qué configuración usar (HTTPS si existe certificado SSL, sino HTTP)
+          if [ -d "/etc/letsencrypt/live/icards.fun" ]; then
+            echo "✅ Certificado SSL encontrado. Usando configuración HTTPS..."
+            CONFIG_FILE="nginx/icards.fun.conf.https"
+          else
+            echo "ℹ️  No hay certificado SSL. Usando configuración HTTP..."
+            CONFIG_FILE="nginx/icards.fun.conf.http"
+          fi
+          
+          # Copiar configuración de Nginx
+          cp "$CONFIG_FILE" /etc/nginx/sites-available/icards.fun.conf
+          
+          # Crear enlace simbólico si no existe
+          if [ ! -L /etc/nginx/sites-enabled/icards.fun.conf ]; then
+            ln -s /etc/nginx/sites-available/icards.fun.conf /etc/nginx/sites-enabled/icards.fun.conf
+            echo "✅ Configuración de Nginx habilitada"
+          fi
+          
+          # Verificar y recargar Nginx
+          if nginx -t; then
+            echo "✅ Configuración de Nginx válida"
+            systemctl reload nginx
+            echo "✅ Nginx recargado"
+          else
+            echo "❌ Error en la configuración de Nginx"
+            exit 1
+          fi
+          
+          # Asegurar que Nginx esté habilitado para iniciar al arrancar
+          systemctl enable nginx
 
           echo "➡️ Iniciando servicios Backend y Frontend con Screen..."
           chmod +x start_services_screen.sh
