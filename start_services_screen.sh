@@ -71,13 +71,13 @@ start_in_screen() {
 }
 
 # 1. MCP Server
-start_in_screen "icards-mcp" "AUTH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc2NDAxODE1OCwiZXhwIjoxNzY0MTA0NTU4fQ.lO1m4NTVPsoKnRbzd18uj9w-31apLUm9lKYYQ3df-bA uv run python server.py" "/root/iCardsMCP"
+start_in_screen "icards-mcp" "uv run python server.py" "/root/iCardsMCP"
 
 # 2. API Backend
-start_in_screen "icards-api" "npm run dev" "/root/ia-mvp/server"
+start_in_screen "icards-api" "NODE_ENV=production npm run dev" "/root/ia-mvp/server"
 
 # 3. Frontend
-start_in_screen "icards-frontend" "npm run dev" "/root/ia-mvp/web"
+start_in_screen "icards-frontend" "NODE_ENV=production npm run dev" "/root/ia-mvp/web"
 
 echo ""
 print_info "🎉 Servicios iniciados en sesiones de Screen!"
