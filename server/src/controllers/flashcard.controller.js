@@ -729,14 +729,13 @@ export const FlashcardController = {
         throw new ForbiddenError('La funcionalidad de IA no está disponible para usuarios de prueba');
       }
       const { text } = req.body;
-      console.log("🚀 ~ req.body:", req.body)
+
       if (!text || typeof text !== 'string' || !text.trim()) {
         return res.status(400).json({ error: 'Texto requerido para generar flashcards.' });
       }
 
       // Llama al servicio que integra OpenAI
       const generatedCards = await generateFromAI(text);
-      console.log("🚀 ~ generateAIFlashcards:", generatedCards)
       return res.status(200).json({ flashcards: generatedCards });
     } catch (error) {
       console.error('Error generando flashcards con IA:', error);
@@ -876,7 +875,7 @@ export const FlashcardController = {
    */
   createManyFlashcards: BaseController.wrap(async (req, res) => {
     // Ayuda de depuración: muestra cómo llega el cuerpo
-    console.log('POST /api/flashcards/bulk:', req.body);
+    // console.log('POST /api/flashcards/bulk:', req.body);
 
     const { deck_name, deckId, flashcards } = req.body;
 
