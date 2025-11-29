@@ -3,8 +3,9 @@ import { Deck } from '../models/deck.js';
 import { FlashcardDto } from '../dtos/flashcard.dto.js';
 import { FlashcardRepository } from '../repositories/flashcard.repository.js';
 import { BaseController } from './base.controller.js';
-import { ForbiddenError } from '../utils/custom.errors.js';
 import { generateFromAI } from '../services/flashcard.service.js';
+import { ForbiddenError, NotFoundError } from '../utils/custom.errors.js';
+
 
 export const FlashcardController = {
   /**
@@ -728,6 +729,7 @@ export const FlashcardController = {
         throw new ForbiddenError('La funcionalidad de IA no está disponible para usuarios de prueba');
       }
       const { text } = req.body;
+      console.log("🚀 ~ req.body:", req.body)
       if (!text || typeof text !== 'string' || !text.trim()) {
         return res.status(400).json({ error: 'Texto requerido para generar flashcards.' });
       }
@@ -860,49 +862,62 @@ export const FlashcardController = {
    *               $ref: '#/components/schemas/Error'
    */
 
+
+  // ... (existing code) ...
+
+  /**
+   * Crea múltiples flashcards
+   */
+
+  // ... (existing code) ...
+
   /**
    * Crea múltiples flashcards
    */
   createManyFlashcards: BaseController.wrap(async (req, res) => {
     // Ayuda de depuración: muestra cómo llega el cuerpo
-    console.log('POST /api/flashcards/batch req.body:', req.body);
+    console.log('POST /api/flashcards/bulk:', req.body);
 
-    const { deck_name, flashcards } = req.body;
-
-    if (!deck_name || typeof deck_name !== 'string' || deck_name.trim().length === 0) {
-      return BaseController.error(res, 'Se requiere un "deck_name" válido', 400, [
-        'Nombre del deck requerido'
-      ]);
-    }
+    const { deck_name, deckId, flashcards } = req.body;
 
     if (!Array.isArray(flashcards) || flashcards.length === 0) {
-      // Mensaje adicional para ayudar al frontend
       console.warn('⚠️ Estructura esperada: { deck_name: "...", flashcards: [ ... ] }');
-      return BaseController.error(res, 'Se requiere un array de flashcards en la propiedad "flashcards" del body. Ejemplo: { deck_name: "...", flashcards: [ ... ] }', 400, [
+      return BaseController.error(res, 'Se requiere un array de flashcards en la propiedad "flashcards" del body.', 400, [
         'Array de flashcards vacío o inválido'
       ]);
     }
 
-    // Buscar o crear el deck
     let deck;
     try {
-      // Intentar encontrar el deck por nombre para este usuario
-      const { DeckRepository } = await import('../repositories/deck.repository.js');
-      const decks = await DeckRepository.findAll({ userId: req.userId, name: deck_name.trim() });
+      if (deckId) {
+        const parsedDeckId = BaseController.validateId(deckId);
+        const foundDeck = await Deck.findById(parsedDeckId);
+        if (!foundDeck) {
+          throw new NotFoundError('Deck');
+        }
+        if (foundDeck.userId !== req.userId) {
+          throw new ForbiddenError('No tienes permiso para añadir flashcards a este deck.');
+        }
+        deck = foundDeck;
+      } else if (deck_name) {
+        const { DeckRepository } = await import('../repositories/deck.repository.js');
+        const decks = await DeckRepository.findAll({ userId: req.userId, name: deck_name.trim() });
 
-      if (decks.length > 0) {
-        deck = decks[0];
+        if (decks.length > 0) {
+          deck = decks[0]; // Usa el primer deck encontrado con ese nombre
+        } else {
+          deck = await Deck.create({
+            name: deck_name.trim(),
+            description: `Deck creado automáticamente para importar flashcards`,
+            userId: req.userId,
+            visibility: 'private'
+          });
+        }
       } else {
-        // Crear nuevo deck si no existe
-        const { Deck } = await import('../models/deck.js');
-        deck = await Deck.create({
-          name: deck_name.trim(),
-          description: `Deck creado automáticamente para importar flashcards`,
-          userId: req.userId,
-          visibility: 'private'
-        });
+        return BaseController.error(res, 'Se requiere "deckId" o "deck_name" para crear las flashcards.', 400);
       }
     } catch (error) {
+      if (error instanceof CustomError) throw error;
       console.error('Error al buscar/crear deck:', error);
       return BaseController.error(res, 'Error al procesar el deck', 500, [error.message]);
     }
@@ -917,7 +932,6 @@ export const FlashcardController = {
     const validatedFlashcards = [];
     for (const [index, flashcard] of flashcardsWithDeckId.entries()) {
       const validation = FlashcardDto.validateCreate(flashcard);
-
       if (!validation.success) {
         return BaseController.error(
           res,
@@ -926,13 +940,12 @@ export const FlashcardController = {
           validation.errors
         );
       }
-
-      validatedFlashcards.push(validation.data);
+      validatedFlashcards.push(validation.data.toModel());
     }
 
     // Crear todas las flashcards
     const createdFlashcards = await Promise.all(
-      validatedFlashcards.map((flashcard) => Flashcard.create(flashcard))
+      validatedFlashcards.map((flashcardModel) => Flashcard.create(flashcardModel))
     );
 
     BaseController.success(
