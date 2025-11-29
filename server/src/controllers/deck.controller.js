@@ -455,10 +455,10 @@ export const DeckController = {
     const { id } = req.params;
     // Importar el servicio de deck bajo demanda
     const { DeckService } = await import('../services/deck.service.js');
-    
+
     // La lógica compleja de eliminación ahora está encapsulada en el servicio
     await DeckService.deleteDeck(parseInt(id), req.userId);
-    
+
     BaseController.success(res, null, 'Deck eliminado exitosamente');
   }),
 
@@ -963,7 +963,7 @@ export const DeckController = {
     if (req.isTestUser) {
       throw new ForbiddenError('La funcionalidad de IA no está disponible para usuarios de prueba');
     }
-  
+
     const userId = parseInt(req.userId);
     const { mode, topic, flashcardCount, difficulty, tags, generateCover = true } = req.body;
 
@@ -1451,7 +1451,7 @@ export const DeckController = {
     if (req.isTestUser) {
       throw new ForbiddenError('La funcionalidad de IA no está disponible para usuarios de prueba');
     }
-    
+
     const userId = parseInt(req.userId);
     const file = req.file;
 

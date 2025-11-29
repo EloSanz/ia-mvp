@@ -99,10 +99,16 @@ export class DeckDto {
     }
 
     const updateData = {};
-    if (data.name !== undefined) updateData.name = data.name.trim();
-    if (data.description !== undefined) updateData.description = data.description.trim();
 
-    return new DeckDto(updateData);
+    if (data.name !== undefined) updateData.name = data.name.trim();
+
+    if (data.description !== undefined) updateData.description = data.description.trim();
+    //Deduce y asigna solo los campos que se van a actualizar
+
+    // evito crear un objeto con campos undefined
+    // return new DeckDto(updateData);
+    return updateData;
+
   }
 
   /**
