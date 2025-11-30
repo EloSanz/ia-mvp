@@ -326,6 +326,8 @@ const DeckPage = () => {
   const handleGeneratedCards = async (generatedCards) => {
     try {
       await flashcards.createMany({
+        deck_name: deck.name,
+        deckId: deckId,
         flashcards: generatedCards.map((card) => ({
           ...card,
           deckId: deckId
@@ -491,11 +493,11 @@ const DeckPage = () => {
                   </Typography>
                 )}
               </Box>
-              
+
               {/* Visibility Toggle */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
+              <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
                 gap: 2,
                 flexDirection: 'column'
               }}>
@@ -654,22 +656,22 @@ const DeckPage = () => {
             </Fab>
           </Tooltip>
           {!user?.isTestUser && (
-          <Tooltip title="Generar flashcards con IA" placement="left">
-            <Fab
-              color="secondary"
-              aria-label="generate with ai"
-              onClick={() => flashcardManager.setAiGeneratorOpen(true)}
-              sx={{
-                width: 64,
-                height: 64,
-                '& .MuiSvgIcon-root': {
-                  fontSize: 32
-                }
-              }}
-            >
-              <AIIcon />
-            </Fab>
-          </Tooltip>
+            <Tooltip title="Generar flashcards con IA" placement="left">
+              <Fab
+                color="secondary"
+                aria-label="generate with ai"
+                onClick={() => flashcardManager.setAiGeneratorOpen(true)}
+                sx={{
+                  width: 64,
+                  height: 64,
+                  '& .MuiSvgIcon-root': {
+                    fontSize: 32
+                  }
+                }}
+              >
+                <AIIcon />
+              </Fab>
+            </Tooltip>
           )}
         </Box>
 
@@ -686,11 +688,11 @@ const DeckPage = () => {
 
         {/* Modal para generar flashcards con IA */}
         {!user?.isTestUser && (
-        <AIFlashcardsGenerator
-          open={flashcardManager.aiGeneratorOpen}
-          onClose={() => flashcardManager.setAiGeneratorOpen(false)}
-          onGenerate={handleGeneratedCards}
-        />
+          <AIFlashcardsGenerator
+            open={flashcardManager.aiGeneratorOpen}
+            onClose={() => flashcardManager.setAiGeneratorOpen(false)}
+            onGenerate={handleGeneratedCards}
+          />
         )}
 
         {/* Snackbar para feedback de visibilidad */}
