@@ -99,7 +99,7 @@ const Navigation = () => {
         >
           <SchoolIcon sx={{ mr: 2 }} />
           <Typography variant="h6" component="div">
-            ICard - estudia inteligente Hola Carlos ! ! !
+            ICard - estudia inteligente
           </Typography>
           <Chip label="Beta" size="small" color="secondary" sx={{ ml: 2 }} />
         </Box>
