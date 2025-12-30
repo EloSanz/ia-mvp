@@ -1,36 +1,26 @@
 import { defineConfig, loadEnv } from 'vite';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
+
   return {
+    plugins: [react()],
     server: {
-      proxy: {
-        '/api': {
-          target: env.VITE_API_URL || 'http://72.61.45.36:3000',
-          changeOrigin: true,
-          secure: false,
-          configure: (proxy, options) => {
-            proxy.on('error', (err, req, res) => {
-              console.log('proxy error', err);
-            });
-            proxy.on('proxyReq', (proxyReq, req, res) => {
-              if (proxyReq.getHeader('authorization')) {
-                proxyReq.setHeader(
-                  'authorization',
-                  proxyReq.getHeader('authorization')
-                );
-              }
-            });
-          },
-        },
-      },
-      host: '0.0.0.0', // IMPORTANTE: Permitir conexiones externas
+      host: '0.0.0.0',
       port: 5173,
+      // 1. Configuramos el HMR para que pase por NGINX (Puerto 443)
+      hmr: {
+        clientPort: 443,
+      },
+      // 2. Permitimos tus dominios
       allowedHosts: [
-        'icards-djfeb7c0cvdxhpav.canadacentral-01.azurewebsites.net',
         'icards.fun',
         'www.icards.fun',
+        'icards-djfeb7c0cvdxhpav.canadacentral-01.azurewebsites.net',
       ],
+      // 3. ELIMINAMOS el bloque 'proxy'. 
+      // NGINX se encarga de redirigir /api al puerto 3000.
     },
   };
 });
