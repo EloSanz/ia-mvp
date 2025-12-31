@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     try {
       // console.debug('Intentando login con URL: /api/auth/login');
-      const response = await axios.post('/api/auth/login', {
+      const response = await axios.post('/flashcards/api/auth/login', {
         username,
         password
       });
@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
 
   const testLogin = async (name) => {
     try {
-      const response = await axios.post(`/api/auth/test-login`, { name });
+      const response = await axios.post(`/flashcards/api/auth/test-login`, { name });
 
       const { token, ...userData } = response.data.data;
       localStorage.setItem('icards_token', token);
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (username, password) => {
     try {
       // console.debug('Intentando registro con URL: /api/auth/register');
-      const response = await axios.post('/api/auth/register', {
+      const response = await axios.post('/flashcards/api/auth/register', {
         username,
         password
       });
@@ -86,7 +86,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       if (user?.isTestUser && token) {
-        await axios.delete(`/api/auth/delete-test-user`, {
+        await axios.delete(`/flashcards/api/auth/delete-test-user`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

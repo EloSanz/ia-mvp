@@ -713,7 +713,7 @@ export default function LandingPage() {
                                             whiteSpace: 'pre-wrap',
                                             wordBreak: 'break-all'
                                         }}>
-{`{
+                                            {`{
   "icards": {
     "command": "uvx",
     "args": [
@@ -721,7 +721,7 @@ export default function LandingPage() {
       "-H",
       "Authorization",
       "tu_token_jwt_aqui",
-      "https://icards.fun/sse"
+      "https://icards.fun/flashcards/sse"
     ],
     "env": {},
     "restart": true
