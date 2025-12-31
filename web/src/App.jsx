@@ -14,6 +14,7 @@ import LibraryPage from './pages/LibraryPage';
 import LibraryPreviewPage from './pages/LibraryPreviewPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
   // Use theme context to get themeName and customBackground
@@ -96,6 +97,7 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Router>
         </ApiProvider>

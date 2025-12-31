@@ -132,12 +132,12 @@ const themes = {
 
 export const ThemeProvider = ({ children }) => {
   const [themeName, setThemeName] = useState(() => {
-    const saved = localStorage.getItem('themeName');
+    const saved = localStorage.getItem('icards_themeName');
     return saved || 'dark';
   });
 
   useEffect(() => {
-    localStorage.setItem('themeName', themeName);
+    localStorage.setItem('icards_themeName', themeName);
   }, [themeName]);
 
   const setTheme = (name) => {

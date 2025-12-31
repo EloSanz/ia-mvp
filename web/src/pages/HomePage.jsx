@@ -499,7 +499,7 @@ const HomePage = () => {
         >
           <Box display="flex" alignItems="center" gap={1}>
             <Typography variant="h5" component="h1" sx={{ color: muiTheme.palette.text.primary, fontWeight: 'bold' }}>
-              <span className="japanese-title">Mis Decks</span>
+              <span className="japanese-title">Mis Decks test ! </span>
             </Typography>
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
@@ -640,7 +640,7 @@ const HomePage = () => {
             color="success"
             aria-label="copiar token"
             onClick={async () => {
-              const token = localStorage.getItem('token');
+              const token = localStorage.getItem('icards_token');
               if (token) {
                 try {
                   // Intentar con Clipboard API (solo funciona en HTTPS o localhost)
@@ -1140,7 +1140,7 @@ const HomePage = () => {
 
         {/* Modal para generación de deck con IA */}
         <AIDeckGeneratorModal
-          in = {!user?.isTestUser}
+          in={!user?.isTestUser}
           open={aiDeckGeneratorOpen}
           onClose={() => setAiDeckGeneratorOpen(false)}
           onGenerate={handleAIDeckGenerated}

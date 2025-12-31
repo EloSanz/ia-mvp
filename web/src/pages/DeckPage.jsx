@@ -92,7 +92,7 @@ const DeckPage = () => {
 
   // Estado local para paginación
   const getInitialRowsPerPage = () => {
-    const stored = localStorage.getItem('deck_rows_per_page');
+    const stored = localStorage.getItem('icards_deck_rows_per_page');
     return stored ? parseInt(stored, 10) : 15;
   };
   const [rowsPerPage, setRowsPerPageState] = useState(getInitialRowsPerPage);
@@ -212,7 +212,7 @@ const DeckPage = () => {
   const setRowsPerPage = (event) => {
     const newRowsPerPage = parseInt(event.target.value, 10);
     setRowsPerPageState(newRowsPerPage);
-    localStorage.setItem('deck_rows_per_page', newRowsPerPage);
+    localStorage.setItem('icards_deck_rows_per_page', newRowsPerPage);
     setPage(0);
     if (searchQuery.trim()) {
       handleSearch(searchQuery.trim(), 0, newRowsPerPage);

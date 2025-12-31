@@ -23,16 +23,16 @@ const useDeckPagination = (decks = [], initialItemsPerPage = 8) => {
 
   // Estado de paginación
   const [currentPage, setCurrentPage] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(() => 
-    getStoredValue('deck_pagination_itemsPerPage', initialItemsPerPage)
+  const [itemsPerPage, setItemsPerPage] = useState(() =>
+    getStoredValue('icards_deck_pagination_itemsPerPage', initialItemsPerPage)
   );
-  
+
   // Estado de ordenamiento con persistencia
-  const [sortBy, setSortBy] = useState(() => 
-    getStoredValue('deck_pagination_sortBy', 'updatedAt')
+  const [sortBy, setSortBy] = useState(() =>
+    getStoredValue('icards_deck_pagination_sortBy', 'updatedAt')
   );
-  const [sortOrder, setSortOrder] = useState(() => 
-    getStoredValue('deck_pagination_sortOrder', 'desc')
+  const [sortOrder, setSortOrder] = useState(() =>
+    getStoredValue('icards_deck_pagination_sortOrder', 'desc')
   );
 
   // Calcular total de páginas
@@ -88,7 +88,7 @@ const useDeckPagination = (decks = [], initialItemsPerPage = 8) => {
   const handleItemsPerPageChange = (newItemsPerPage) => {
     const newValue = parseInt(newItemsPerPage, 10);
     setItemsPerPage(newValue);
-    setStoredValue('deck_pagination_itemsPerPage', newValue);
+    setStoredValue('icards_deck_pagination_itemsPerPage', newValue);
     setCurrentPage(0); // Resetear a la primera página
   };
 
@@ -96,8 +96,8 @@ const useDeckPagination = (decks = [], initialItemsPerPage = 8) => {
   const handleSortChange = (newSortBy, newSortOrder) => {
     setSortBy(newSortBy);
     setSortOrder(newSortOrder);
-    setStoredValue('deck_pagination_sortBy', newSortBy);
-    setStoredValue('deck_pagination_sortOrder', newSortOrder);
+    setStoredValue('icards_deck_pagination_sortBy', newSortBy);
+    setStoredValue('icards_deck_pagination_sortOrder', newSortOrder);
     setCurrentPage(0); // Resetear a la primera página
   };
 
@@ -115,37 +115,37 @@ const useDeckPagination = (decks = [], initialItemsPerPage = 8) => {
 
   // Sincronizar cambios de estado con localStorage
   useEffect(() => {
-    setStoredValue('deck_pagination_sortBy', sortBy);
+    setStoredValue('icards_deck_pagination_sortBy', sortBy);
   }, [sortBy]);
 
   useEffect(() => {
-    setStoredValue('deck_pagination_sortOrder', sortOrder);
+    setStoredValue('icards_deck_pagination_sortOrder', sortOrder);
   }, [sortOrder]);
 
   useEffect(() => {
-    setStoredValue('deck_pagination_itemsPerPage', itemsPerPage);
+    setStoredValue('icards_deck_pagination_itemsPerPage', itemsPerPage);
   }, [itemsPerPage]);
 
   return {
     // Datos paginados
     paginatedDecks,
     sortedDecks,
-    
+
     // Estado de paginación
     currentPage,
     itemsPerPage,
     totalPages,
     totalItems: decks.length,
-    
+
     // Estado de ordenamiento
     sortBy,
     sortOrder,
-    
+
     // Funciones
     handlePageChange,
     handleItemsPerPageChange,
     handleSortChange,
-    
+
     // Información adicional
     hasItems: decks.length > 0,
     isEmpty: decks.length === 0,

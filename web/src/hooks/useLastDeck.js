@@ -8,7 +8,7 @@
 import { useEffect } from 'react';
 import { useRouteDetection } from './useRouteDetection';
 
-const LAST_DECK_KEY = 'lastVisitedDeck';
+const LAST_DECK_KEY = 'icards_lastVisitedDeck';
 
 export const useLastDeck = () => {
   const { currentDeckId, isOnDeckPage, isOnLibraryPage } = useRouteDetection();

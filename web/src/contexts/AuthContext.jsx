@@ -6,12 +6,12 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [token, setToken] = useState(localStorage.getItem('icards_token') || null);
 
   useEffect(() => {
     // Verificar si hay un token guardado
-    const token = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('icards_token');
+    const savedUser = localStorage.getItem('icards_user');
     if (token && savedUser) {
       setUser(JSON.parse(savedUser));
       setToken(token);
@@ -30,8 +30,8 @@ export const AuthProvider = ({ children }) => {
       });
 
       const { token, ...userData } = response.data.data;
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('icards_token', token);
+      localStorage.setItem('icards_user', JSON.stringify(userData));
       setUser(userData);
       setToken(token);
       return { success: true };
@@ -48,8 +48,8 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post(`/api/auth/test-login`, { name });
 
       const { token, ...userData } = response.data.data;
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('icards_token', token);
+      localStorage.setItem('icards_user', JSON.stringify(userData));
       setUser(userData);
       setToken(token);
       return { success: true };
@@ -70,8 +70,8 @@ export const AuthProvider = ({ children }) => {
       });
 
       const { token, ...userData } = response.data.data;
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('icards_token', token);
+      localStorage.setItem('icards_user', JSON.stringify(userData));
       setUser(userData);
       setToken(token);
       return { success: true };
@@ -95,8 +95,8 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Error al borrar usuario de prueba en logout:', error);
     } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      localStorage.removeItem('icards_token');
+      localStorage.removeItem('icards_user');
       setUser(null);
       setToken(null);
     }
