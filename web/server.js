@@ -37,10 +37,17 @@ async function createServer() {
     // Usar el middleware de Vite para desarrollo (incluye el proxy de /api configurado en vite.config.js)
     app.use(vite.middlewares);
   } else {
-    // En producción, servir archivos estáticos
-    app.use(express.static(resolve(__dirname, 'dist')));
-    app.get('*', (req, res) => {
+    // En producción, servir archivos estáticos bajo el prefijo /flashcards
+    app.use('/flashcards', express.static(resolve(__dirname, 'dist')));
+
+    // El catch-all para SPA también bajo el prefijo
+    app.get('/flashcards/*', (req, res) => {
       res.sendFile(resolve(__dirname, 'dist', 'index.html'));
+    });
+
+    // Redirigir la raíz /flashcards (sin slash) a /flashcards/ si fuera necesario
+    app.get('/flashcards', (req, res) => {
+      res.redirect(301, '/flashcards/');
     });
   }
 
