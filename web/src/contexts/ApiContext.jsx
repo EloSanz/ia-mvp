@@ -5,7 +5,7 @@ import axios from 'axios';
 // Usar ruta relativa /api para que pase por el proxy de Nginx
 // Esto evita problemas de Mixed Content cuando la página se carga sobre HTTPS
 const api = axios.create({
-  baseURL: '/flashcards/api',
+  baseURL: '/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
@@ -66,7 +66,7 @@ api.interceptors.response.use(
     }
     if (error.response && error.response.status === 401) {
       // Redirige al usuario al login
-      window.location.href = '/flashcards/login';
+      window.location.href = '/login';
     }
     return Promise.reject(error);
   }
