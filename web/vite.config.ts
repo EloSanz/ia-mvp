@@ -10,10 +10,10 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       host: true,
       proxy: {
-        '/flashcards/api': {
+        '/api': {
           target: env.VITE_API_URL || 'http://localhost:3000',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/flashcards/, '')
+          secure: false
         }
       },
       allowedHosts: [
