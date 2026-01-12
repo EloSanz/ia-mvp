@@ -213,6 +213,16 @@ export const LoginForm = () => {
               >
                 Iniciar Sesión
               </Button>
+
+              <Box sx={{ mt: 2, mb: 2, textAlign: 'center' }}>
+                <Typography variant="body2" color="text.secondary">
+                  ¿No tienes una cuenta?{' '}
+                  <Link component={RouterLink} to="/register" color="primary" sx={{ fontWeight: 500 }}>
+                    Regístrate aquí
+                  </Link>
+                </Typography>
+              </Box>
+
               <Box sx={{ mt: 4, pt: 3, borderTop: '1px solid', borderColor: 'divider' }}>
                 <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 500 }}>
                   O entra como <strong>usuario de prueba</strong>
@@ -247,6 +257,7 @@ export const LoginForm = () => {
                   Entrar como usuario de prueba
                 </Button>
               </Box>
+
             </Box>
           </Box>
         </Container>

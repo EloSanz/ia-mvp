@@ -132,9 +132,7 @@ export default function LandingPage() {
                     position: 'sticky',
                     top: 0,
                     zIndex: 50,
-                    bgcolor: 'background.default',
-                    borderBottom: 1,
-                    borderColor: 'divider',
+                    bgcolor: 'transparent',
                     backdropFilter: 'blur(8px)'
                 }}
             >
@@ -196,7 +194,7 @@ export default function LandingPage() {
                                     Nosotros
                                 </Button> */}
                             </Stack>
-                            {/* <Button
+                            <Button
                                 variant="contained"
                                 color="primary"
                                 onClick={() => navigate(isAuthenticated ? '/home' : '/login')}
@@ -209,8 +207,8 @@ export default function LandingPage() {
                                     fontWeight: 'bold'
                                 }}
                             >
-                                {isAuthenticated ? 'Mis Decks' : 'Ingresar'}
-                            </Button> */}
+                                {isAuthenticated ? 'Ir a Mis Decks' : 'Crea tu primer mazo gratis'}
+                            </Button>
                         </Box>
                         <Box sx={{ display: { xs: 'block', md: 'none' } }}>
                             <Button color="inherit">
