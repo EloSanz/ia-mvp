@@ -719,7 +719,7 @@ export default function LandingPage() {
       "-H",
       "Authorization",
       "tu_token_jwt_aqui",
-      "https://icards.fun/flashcards/sse"
+      "https://icards.fun/sse"
     ],
     "env": {},
     "restart": true

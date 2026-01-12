@@ -4,16 +4,16 @@ import react from "@vitejs/plugin-react";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
-    base: '/flashcards/',
+    base: '/',
     plugins: [react()],
     server: {
       port: 5173,
       host: true,
       proxy: {
-        '/flashcards/api': {
+        '/api': {
           target: env.VITE_API_URL || 'http://localhost:3000',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/flashcards/, '')
+          secure: false
         }
       },
       allowedHosts: [

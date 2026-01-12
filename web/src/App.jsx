@@ -44,7 +44,7 @@ export default function App() {
               </div>
             )}
           </ThemeContext.Consumer>
-          <Router basename="/flashcards">
+          <Router>
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
